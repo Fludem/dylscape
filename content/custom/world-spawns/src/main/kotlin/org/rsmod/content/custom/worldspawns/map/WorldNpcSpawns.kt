@@ -3,12 +3,11 @@ package org.rsmod.content.custom.worldspawns.map
 import org.rsmod.api.type.builders.map.npc.MapNpcSpawnBuilder
 
 /**
- * Every npc spawn outside the areas this server authors by hand, bridged from GregHib/void's
- * world data by `tools/npc-spawns/generate.py`.
+ * Every npc spawn outside the areas this server authors by hand, bridged from GregHib/void's world
+ * data by `tools/npc-spawns/generate.py`.
  *
- * **This does not run at boot.** `onPackMapTask` is invoked only by the Gradle `packCache`
- * task, and only with the server stopped, so the tomls beside this file are inert until the
- * packer runs.
+ * **This does not run at boot.** `onPackMapTask` is invoked only by the Gradle `packCache` task,
+ * and only with the server stopped, so the tomls beside this file are inert until the packer runs.
  *
  * The 33 tomls are generated. Fix a bad spawn in the generator, not here.
  */

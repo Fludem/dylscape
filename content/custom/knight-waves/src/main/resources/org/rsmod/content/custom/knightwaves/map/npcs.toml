@@ -1,0 +1,6 @@
+# The Squire who runs the Knight Waves trial, in Camelot's courtyard at (2757, 3475).
+# Coords are level_mapSquareX_mapSquareZ_localX_localZ.
+
+[[spawn]]
+npc = 'kr_squire'
+coords = '0_43_54_5_19'

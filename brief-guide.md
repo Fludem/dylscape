@@ -146,22 +146,49 @@ shared "you need level X" helper — every module writes its own `mes` inline.
 
 ## 7. The make-menu
 
-`SkillMulti` (`content/interfaces/skill-multi`) owns interface 270's ten buttons; the event bus
-allows one binding per component, so go through it, never bind them yourself.
+`SkillMulti` (`content/interfaces/skill-multi`) drives interface 270. It is a **pause-button
+dialogue**, like `choice2` or the destroy-item confirmation: you open it and suspend, and the press
+resumes you where you left off.
 
 ```kotlin
-skillMulti.open(
-    access = this,
-    type = SkillMultiType.Cut,
-    title = "What would you like to make?",
-    objs = recipe.products.map { it.product },
-    maxQuantity = carried,          // optional; clamped to 1..28
-) { pick -> cut(recipe, recipe.products[pick.slot], count = pick.quantity) }
+private suspend fun ProtectedAccess.openMenu(recipe: CutLogRecipe) {
+    val pick =
+        skillMulti.open(
+            access = this,
+            type = SkillMultiType.Cut,
+            title = "What would you like to make?",
+            objs = recipe.products.map { it.product },
+            maxQuantity = carried,      // optional; clamped to 1..28
+        ) ?: return
+    cut(recipe, recipe.products[pick.slot], count = pick.quantity)
+}
 ```
 
-The callback runs in the *click's* protected-access scope, not the opener's, so `open` returns
-immediately. Verb ids come from client enum 1809 — `SkillMultiDump` prints it; add a new entry to
+Verb ids come from client enum 1809 — `SkillMultiDump` prints it; add a new entry to
 `SkillMultiType` rather than passing a raw number. Max 10 slots.
+
+**It is not an `IfButton` interface, and assuming it was cost a day.** The menu looked right and
+every press vanished. The item buttons carry no events in the cache; their left-click op is set and
+handled entirely in cs2 (`cc_setop` + `cc_setonop` in `proc,skillmulti_itembutton_init`), so the
+press never leaves the client until `proc,skillmulti_itembutton_triggered` re-targets it with
+`cc_find(component, varc,skillmulti_quantity)` and triggers whatever it found. Two things follow:
+
+- The subcomponent of the press *is* the quantity, so the server has to grant a **range**.
+- The grant must be `IfEvent.PauseButton`, not `IfEvent.Op1`. Nothing named the subcomponent's op,
+  so there is no op to fire; the pause-button grant is the only thing that turns the trigger into a
+  packet, and it arrives as `ResumePauseButton`, which `ResumePauseButtonHandler` delivers by
+  resuming the suspended coroutine — it publishes no event, so `onIfModalButton` never sees it.
+
+**How to tell which kind an interface is,** before writing any of it: find the cs2 that handles its
+button and look for `cc_find` followed by opcode `1121` (trigger). If it is there, the interface is
+pause-button driven. Then check what the engine already does for the nearest twin —
+`Player.ifConfirmDestroy`, `ifMenu`, `ifChoice` in `PlayerInterfaceExtensions.kt` all grant
+`PauseButton` over a subcomponent range and then suspend. `if_setevents` over that range is also
+what makes `cc_find` resolve at all; nothing is created by cs2.
+
+The same suspicion applies to anything else here that was written against a cs2-driven panel
+without a real client to try it on — `Jewellery` and construction's `BuildMenu` both still grant
+`Op1`, and neither has been confirmed in game.
 
 ## 8. Tests
 
@@ -172,10 +199,10 @@ in the cache and the cross-table joins hold; and a script test (`runGameTest`) d
 @Execution(ExecutionMode.SAME_THREAD)   // methods share one world otherwise
 class FletchingScriptTest {
     @Test fun GameTestState.`cut logs`() =
-        runGameTest(LogFletching::class, SkillMultiScript::class) {  // list the menu owner too
+        runGameTest(LogFletching::class) {
             player.inv[0] = InvObj(objs.knife)
             useOnHeld(objs.knife, FletchingObjs.logs)                // publish HeldUEvents.Type
-            player.ifButton(SkillMultiComponents.slot_a, comsub = 1)
+            player.resumePauseButton(SkillMultiComponents.slot_a, sub = 1)
             advance(ticks = 6)
             assertEquals(15, player.count(FletchingObjs.arrow_shaft))
         }
@@ -184,9 +211,13 @@ class FletchingScriptTest {
 
 Traps that cost a cycle each:
 
-- **`player.ifButton` queues the click**; it works with the menu open. Publishing `IfModalButton`
-  inside `withProtectedAccess` does *not* — an open modal makes the player access-protected and the
-  block silently no-ops.
+- **Answer a suspended dialogue with `player.resumePauseButton(component, sub)`**, `ifButton` only
+  for interfaces that really do send `IfButton`. Both queue the press, so both work with the modal
+  open; publishing `IfModalButton` inside `withProtectedAccess` does *not* — an open modal makes the
+  player access-protected and the block silently no-ops.
+- **A green test proves the server half only.** Both harness helpers hand the message straight to a
+  handler, so they say nothing about whether the real client would ever send it. Anything driven by
+  a cs2 panel needs a look at the actual client before you call it done.
 - **The message buffer clears every tick.** A refusal raised from a queued click needs
   `advance(ticks = 1)` then the assert — not a bare assert, not "a few extra ticks".
 - **Non-stackable objs**: `InvObj(logs, count = 5)` is not five logs. Fill five slots.

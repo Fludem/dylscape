@@ -24,19 +24,18 @@ import org.rsmod.game.type.obj.ObjType
  *
  * **How the press gets back here.** The item buttons carry no static events in the cache, and their
  * left-click op is set and handled entirely by clientscripts: `proc,skillmulti_itembutton_init`
- * calls `cc_setop` and `cc_setonop`, so pressing one runs
- * `[clientscript,skillmulti_itembutton_op]` locally and sends nothing. That script ends in
- * `proc,skillmulti_itembutton_triggered`, which re-targets the press with
- * `cc_find(component, varc,skillmulti_quantity)` and then triggers the subcomponent it found. So
- * the button we receive names the item, and its subcomponent is how many to make.
+ * calls `cc_setop` and `cc_setonop`, so pressing one runs `[clientscript,skillmulti_itembutton_op]`
+ * locally and sends nothing. That script ends in `proc,skillmulti_itembutton_triggered`, which
+ * re-targets the press with `cc_find(component, varc,skillmulti_quantity)` and then triggers the
+ * subcomponent it found. So the button we receive names the item, and its subcomponent is how many
+ * to make.
  *
  * `if_setevents` over a subcomponent range is what makes that `cc_find` resolve at all, and the
  * event the client needs on the subcomponent is [IfEvent.PauseButton], not an op: nothing named the
  * subcomponent's op, so there is no op to fire, and a `PauseButton` grant is the only thing that
  * turns the trigger into a packet. `confirmdestroy` is the same shape down to the opcode -- see
- * `[clientscript,confirmdestroy_triggerbutton]` against
- * `Player.ifConfirmDestroy`, which grants `PauseButton` over `0..1` on
- * `confirmdestroy:universe` and then suspends.
+ * `[clientscript,confirmdestroy_triggerbutton]` against `Player.ifConfirmDestroy`, which grants
+ * `PauseButton` over `0..1` on `confirmdestroy:universe` and then suspends.
  *
  * @see [SkillMultiComponents] for how the interface's arguments were recovered from the cache.
  */
