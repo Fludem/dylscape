@@ -1,0 +1,5 @@
+# Timers authored by this server. See `content.sym` for the id-allocation reasoning.
+# Upstream `timer.sym` ends at 8, so 1000 leaves no realistic overlap.
+#
+# Timers are name-only server types with no cache encoder, so this needs no `packCache`.
+1000	worldmap_transmit

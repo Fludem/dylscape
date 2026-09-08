@@ -1,0 +1,145 @@
+# Pickpocket targets for the mid and high tiers of the Thieving ladder.
+#
+# Levels 1 and 10 need nothing: `LumbridgeNpcSpawns` already places five `man`, four `man3`, three
+# `woman` and three `farmer1`, so a new account can start thieving where it logs in.
+#
+# Everything above that is placed here, in two clusters chosen so a player trains in one spot rather
+# than running a circuit:
+#
+#   Varrock (levels 25-40) -- warriors, rogues and guards, all at their real OSRS locations.
+#   East Ardougne market (levels 55-80) -- knights, paladins and heroes, also real OSRS locations,
+#     and deliberately the same square as the six `*thiefstall` locs the cache already has standing
+#     there. That makes one hub where both halves of the skill are reachable without moving.
+#
+# The one deviation is the Yanille watchman at level 65. Yanille is a long walk south of Ardougne
+# for a single rung of the ladder, so it stands in the Ardougne market with the rest. Left as a
+# knowing choice, not an error -- moving it back to Yanille is fine if the walk is wanted.
+#
+# Master farmers go in Draynor, where they belong.
+#
+# Coords are `level_mapsquareX_mapsquareZ_localX_localZ`, i.e. `abs / 64` and `abs % 64`.
+# NOTE: this file is only read by `./gradlew packCache` with the server stopped. It is inert at boot.
+
+# --- Varrock: Warrior, level 25 ---------------------------------------------------------------
+
+[[spawn]]
+npc = 'warrior_woman'
+coords = '0_50_53_5_18'
+
+[[spawn]]
+npc = 'warrior_woman'
+coords = '0_50_53_7_22'
+
+[[spawn]]
+npc = 'warrior_woman'
+coords = '0_50_53_2_15'
+
+# --- Varrock: Rogue, level 32 -----------------------------------------------------------------
+
+[[spawn]]
+npc = 'rogue'
+coords = '0_50_53_44_8'
+
+[[spawn]]
+npc = 'rogue'
+coords = '0_50_53_48_4'
+
+# --- Draynor: Master Farmer, level 38 ---------------------------------------------------------
+
+[[spawn]]
+npc = 'master_farmer_1'
+coords = '0_48_50_6_50'
+
+[[spawn]]
+npc = 'master_farmer_2'
+coords = '0_48_50_10_53'
+
+[[spawn]]
+npc = 'master_farmer_1_f'
+coords = '0_48_50_7_55'
+
+# --- Varrock: Guard, level 40 -----------------------------------------------------------------
+
+[[spawn]]
+npc = 'guard1'
+coords = '0_50_53_13_36'
+
+[[spawn]]
+npc = 'guard1'
+coords = '0_50_53_16_40'
+
+[[spawn]]
+npc = 'guard1'
+coords = '0_50_53_10_43'
+
+[[spawn]]
+npc = 'guard1'
+coords = '0_50_53_19_33'
+
+[[spawn]]
+npc = 'guard1_f'
+coords = '0_50_53_14_46'
+
+# --- Ardougne market: Knight of Ardougne, level 55 --------------------------------------------
+
+[[spawn]]
+npc = 'knight_of_ardougne'
+coords = '0_41_51_29_19'
+
+[[spawn]]
+npc = 'knight_of_ardougne'
+coords = '0_41_51_31_22'
+
+[[spawn]]
+npc = 'knight_of_ardougne'
+coords = '0_41_51_26_24'
+
+[[spawn]]
+npc = 'knight_of_ardougne'
+coords = '0_41_51_33_17'
+
+[[spawn]]
+npc = 'knight_of_ardougne2'
+coords = '0_41_51_30_26'
+
+[[spawn]]
+npc = 'knight_of_ardougne2'
+coords = '0_41_51_37_23'
+
+# --- Ardougne market: Watchman, level 65 ------------------------------------------------------
+
+[[spawn]]
+npc = 'yanille_watchman'
+coords = '0_41_51_28_12'
+
+[[spawn]]
+npc = 'yanille_watchman'
+coords = '0_41_51_33_10'
+
+# --- Ardougne: Paladin, level 70 --------------------------------------------------------------
+
+[[spawn]]
+npc = 'paladin'
+coords = '0_41_51_40_31'
+
+[[spawn]]
+npc = 'paladin'
+coords = '0_41_51_44_35'
+
+[[spawn]]
+npc = 'paladin'
+coords = '0_41_51_36_36'
+
+[[spawn]]
+npc = 'paladin2'
+coords = '0_41_51_42_28'
+
+# --- Ardougne: Hero, level 80 -----------------------------------------------------------------
+
+[[spawn]]
+npc = 'hero'
+coords = '0_41_51_23_32'
+
+[[spawn]]
+npc = 'hero'
+coords = '0_41_51_20_36'

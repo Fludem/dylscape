@@ -1,0 +1,15 @@
+# Musa Point general store (2905, 3149) -- the only Karamja shop wired so far. Draynor has no
+# general store in OSRS, so `generalshop5` staffs this one instead.
+
+[[spawn]]
+npc = 'generalshopkeeper5'
+coords = '0_45_49_25_13'
+
+[[spawn]]
+npc = 'generalassistant5'
+coords = '0_45_49_27_13'
+
+# Davon's Amulet Store, Brimhaven (2803, 3152).
+[[spawn]]
+npc = 'davon'
+coords = '0_43_49_51_16'

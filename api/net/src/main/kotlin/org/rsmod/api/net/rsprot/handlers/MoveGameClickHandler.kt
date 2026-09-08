@@ -28,6 +28,13 @@ constructor(
             return
         }
         val dest = CoordGrid(message.x, message.z, player.level)
+        // Debug noclip: click anywhere and teleport straight there, ignoring walls and pathing.
+        if (player.noClip) {
+            player.clearPendingAction(eventBus)
+            player.resetFaceEntity()
+            player.protectedTelejump(collision, dest)
+            return
+        }
         val speed =
             when (message.keyCombination) {
                 1 -> player.ctrlMoveSpeed()

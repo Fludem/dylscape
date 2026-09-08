@@ -58,6 +58,10 @@ constructor(
         val opEnabled =
             InterfaceEvents.isEnabled(player.ui, componentType, comsub, buttonOp.toIfEvent())
         if (!opEnabled) {
+            logger.debug {
+                "[Dropped] If3Button op not enabled: $message " +
+                    "(component=$componentType, comsub=$comsub, op=$buttonOp)"
+            }
             return
         }
 
@@ -78,6 +82,12 @@ constructor(
             }
             logger.debug { "[Modal] If3Button: $message (event=$event)" }
             protectedAccess.launchLenient(player) { eventBus.publish(this, event) }
+            return
+        }
+
+        logger.debug {
+            "[Dropped] If3Button interface is not open server-side: $message " +
+                "(interface=$interfaceType, component=$componentType)"
         }
     }
 

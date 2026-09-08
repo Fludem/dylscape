@@ -1,0 +1,64 @@
+# Varrock's shopkeepers, at their OSRS spawn tiles.
+#
+# Two of the wired npcs are deliberately absent. `aubury_3op` is the post-Rune Mysteries Aubury
+# whose third op teleports to the essence mine -- there is no mine to teleport to, so the pre-quest
+# `aubury_2op` is the one that stands in the shop. `thessalia_league` is the Leagues variant.
+# Both stay bound in `ShopAssignments` so they trade if something ever spawns them.
+
+# Aubury's Rune Shop (3250, 3403).
+[[spawn]]
+npc = 'aubury_2op'
+coords = '0_50_53_50_11'
+
+# Zaff's Superior Staffs (3203, 3434).
+[[spawn]]
+npc = 'zaff'
+coords = '0_50_53_3_42'
+
+# Lowe's Archery Emporium (3233, 3423).
+[[spawn]]
+npc = 'lowe'
+coords = '0_50_53_33_31'
+
+# Horvik's Armour Shop (3230, 3437).
+[[spawn]]
+npc = 'horvik_the_armourer'
+coords = '0_50_53_30_45'
+
+# Thessalia's Fine Clothes (3206, 3416).
+[[spawn]]
+npc = 'thessalia_normal'
+coords = '0_50_53_6_24'
+
+# Varrock Swordshop (3206, 3400), assistant offset east off the keeper's tile.
+[[spawn]]
+npc = 'swordshop1'
+coords = '0_50_53_6_8'
+
+[[spawn]]
+npc = 'swordshop2'
+coords = '0_50_53_8_8'
+
+# Varrock general store (3217, 3415), assistant offset east.
+[[spawn]]
+npc = 'generalshopkeeper2'
+coords = '0_50_53_17_23'
+
+[[spawn]]
+npc = 'generalassistant2'
+coords = '0_50_53_19_23'
+
+# Peksa's Helmet Shop (3075, 3430), over in Barbarian Village east of the city.
+[[spawn]]
+npc = 'peksa'
+coords = '0_48_53_3_38'
+
+# Champions' Guild, south-west of Varrock. Valaine (3192, 3359) and Scavvo (3192, 3354) both trade
+# on the guild's first floor, so these two are the only spawns here that are not on level 0.
+[[spawn]]
+npc = 'valaine'
+coords = '1_49_52_56_31'
+
+[[spawn]]
+npc = 'scavvo'
+coords = '1_49_52_56_26'

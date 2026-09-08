@@ -1,0 +1,19 @@
+# Border Guards flanking the Al Kharid toll gate, at their OSRS spawn points: the `borderguard1`
+# pair on the Lumbridge side (x=3267) and the `borderguard2` pair on the Al Kharid side (x=3268),
+# one north and one south of the two-tile gate.
+
+[[spawn]]
+npc = 'borderguard1'
+coords = '0_51_50_3_26'
+
+[[spawn]]
+npc = 'borderguard1'
+coords = '0_51_50_3_29'
+
+[[spawn]]
+npc = 'borderguard2'
+coords = '0_51_50_4_26'
+
+[[spawn]]
+npc = 'borderguard2'
+coords = '0_51_50_4_29'

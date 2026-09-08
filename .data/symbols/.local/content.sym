@@ -1,0 +1,29 @@
+# Content groups authored by this server, kept out of the upstream `content.sym`
+# so rebases never conflict. `SymbolModule.shallowSymbolDirectories` merges
+# `.data/symbols/` and `.data/symbols/.local/`, so entries here are additive.
+#
+# Ids start at 1000 deliberately. `NameLoader` only detects duplicate ids *within
+# a single file*, so an id we share with a future upstream entry would silently
+# alias two different groups. Upstream is at 47; 1000 leaves no realistic overlap.
+1000	mining_pickaxe
+1001	mining_rock
+1002	firemaking_logs
+1003	prayer_bones
+1004	prayer_ashes
+1005	prayer_altar
+1006	smithing_anvil
+1007	smithing_furnace
+1008	smithing_bar
+1009	fishing_spot
+1010	cooking_raw
+1011	cooking_range
+1012	cooking_fire
+1013	thieving_coin_pouch
+1014	hunter_trap_creature
+1015	hunter_trap_npc
+1016	hunter_trap_armed
+1017	hunter_trap_sprung
+1018	hunter_trap_obj
+1019	hunter_young_tree
+1020	hunter_roped_tree
+1021	hunter_deadfall_boulder

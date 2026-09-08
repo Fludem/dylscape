@@ -1,0 +1,22 @@
+# Falador's four specialist shops, at their OSRS spawn tiles. The general store staff are in
+# `asgarnia.toml` with the rest of the general stores.
+
+# Cassie's Shield Shop (2976, 3384).
+[[spawn]]
+npc = 'cassie'
+coords = '0_46_52_32_56'
+
+# Flynn's Mace Market (2950, 3387).
+[[spawn]]
+npc = 'flynn'
+coords = '0_46_52_6_59'
+
+# Herquin's Gems (2945, 3334).
+[[spawn]]
+npc = 'herquin'
+coords = '0_46_52_1_6'
+
+# Wayne's Chains (2972, 3313), just outside the south gate.
+[[spawn]]
+npc = 'wayne'
+coords = '0_46_51_28_49'

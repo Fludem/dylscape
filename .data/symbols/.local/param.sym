@@ -1,0 +1,29 @@
+# Params authored by this server. See `.local/content.sym` for why these live in
+# `.local/` rather than the upstream symbol files.
+#
+# Id allocation: vanilla params occupy 0..~1935 and grow upward; RSMod's own params
+# occupy 65386..65534 and grow *downward*. Ours start at 50000 and grow upward, in
+# the middle of that gap, so neither side can reach us. Duplicate ids are only
+# detected within a single file, so staying out of both bands is what keeps a
+# future upstream param from silently aliasing one of ours.
+50000	mining_pickaxe_success_rates
+50001	firemaking_rate_low
+50002	firemaking_rate_high
+50003	firemaking_burn_ticks
+50004	prayer_offer_xp_percent
+50005	prayer_offer_keep_percent
+50006	cooking_burnt
+50007	cooking_stop_burn_fire
+50008	cooking_stop_burn_range
+50009	cooking_range_only
+50010	cooking_name
+50011	hunter_trap_kind
+50012	hunter_rate_low
+50013	hunter_rate_high
+50014	hunter_creature_respawn
+50015	hunter_loc_trapping
+50016	hunter_loc_trapping_dirs
+50017	hunter_loc_full
+50018	hunter_secondary_product
+50019	hunter_secondary_count
+50020	hunter_trap_return

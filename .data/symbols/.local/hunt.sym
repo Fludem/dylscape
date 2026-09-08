@@ -1,0 +1,13 @@
+# Hunt modes authored by this server. See `content.sym` in this directory for the
+# id-allocation reasoning: `NameLoader` only detects duplicate ids *within* a single
+# file, so an id shared with a future upstream entry would silently alias two modes.
+# Upstream `hunt.sym` is at 22; 1000 leaves no realistic overlap.
+#
+# One mode per trap kind rather than one shared mode, because `checkNpc { category = }`
+# does not work: `NpcHuntProcessor.huntNpc` compares `check.npc` (an npc id) against
+# `npc.type.category`, so a category-keyed mode matches nothing. Each mode therefore
+# names a single trap npc id via `checkNpc { npc = }`.
+1000	hunter_snare_hunt
+1001	hunter_boxtrap_hunt
+1002	hunter_nettrap_hunt
+1003	hunter_deadfall_hunt

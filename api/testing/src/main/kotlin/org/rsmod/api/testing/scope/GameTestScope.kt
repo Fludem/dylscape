@@ -15,6 +15,7 @@ import net.rsprot.protocol.game.incoming.locs.OpLoc
 import net.rsprot.protocol.game.incoming.misc.user.MoveGameClick
 import net.rsprot.protocol.game.incoming.npcs.OpNpc
 import net.rsprot.protocol.game.incoming.resumed.ResumePCountDialog
+import net.rsprot.protocol.game.incoming.resumed.ResumePauseButton
 import net.rsprot.protocol.game.outgoing.misc.player.MessageGame
 import net.rsprot.protocol.util.CombinedId
 import org.junit.jupiter.api.Assertions
@@ -33,6 +34,7 @@ import org.rsmod.api.net.rsprot.handlers.MoveGameClickHandler
 import org.rsmod.api.net.rsprot.handlers.OpLocHandler
 import org.rsmod.api.net.rsprot.handlers.OpNpcHandler
 import org.rsmod.api.net.rsprot.handlers.ResumePCountDialogHandler
+import org.rsmod.api.net.rsprot.handlers.ResumePauseButtonHandler
 import org.rsmod.api.npc.apPlayer2
 import org.rsmod.api.npc.hit.modifier.NpcHitModifier
 import org.rsmod.api.npc.hit.modifier.StandardNpcHitModifier
@@ -204,6 +206,7 @@ constructor(
     private val ifButtonDHandler: IfButtonDHandler,
     private val gameClickHandler: MoveGameClickHandler,
     private val resumePCountDialog: ResumePCountDialogHandler,
+    private val resumePauseButton: ResumePauseButtonHandler,
     private val opLocHandler: OpLocHandler,
     private val opNpcHandler: OpNpcHandler,
     private val aiPlayerInteractions: AiPlayerInteractions,
@@ -477,6 +480,19 @@ constructor(
     public fun Player.resumeCountDialog(count: Int) {
         val message = ResumePCountDialog(count)
         captureClient.queue(resumePCountDialog, message)
+    }
+
+    /**
+     * Presses the pause button on [type], the way any suspended dialogue - a chat option, a
+     * `mesbox`, the make-menu - is answered.
+     *
+     * [sub] is the subcomponent the client re-targets the press at; `-1` for a component that has
+     * no subcomponents of its own.
+     */
+    public fun Player.resumePauseButton(type: ComponentType, sub: Int = -1) {
+        val combinedId = CombinedId(type.interfaceId, type.component)
+        val message = ResumePauseButton(combinedId, sub)
+        captureClient.queue(resumePauseButton, message)
     }
 
     public fun Player.moveGameClick(dest: CoordGrid, keyCombination: Int = 0) {

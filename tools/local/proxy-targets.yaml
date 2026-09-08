@@ -1,0 +1,7 @@
+# Import via the RSProx GUI, or copy to ~/.rsprox/proxy-targets.yaml
+config:
+  - name: RS Mod (local)
+    jav_config_url: http://127.0.0.1:8080/jav_config.ws
+    modulus: af2869038c4b8a03f4dc0505e8c990793ef937c4970321e382fbb862a3c2d9917c761495e7186bb68fbef5e56c4d2175cf84d62fcdfdf5688accdf365eb8f82767f994acc2c4f2e7a4c2ce79e23126e21f56d977e8fbb1e1580e25d77dc89463e5537e4fb7d73c9fc0acb6c7cfd986a8054fda2684f2bc5e2ac87c1b7f43d889
+    revision: "233"
+    game_server_port: 43595

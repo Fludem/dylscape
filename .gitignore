@@ -47,3 +47,8 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Local dev stack ###
+# Per-machine IDE state, and the runtime logs `tools/local/dev.sh` writes.
+.idea/workspace.xml
+tools/local/logs/

@@ -1,0 +1,50 @@
+# General stores across Asgarnia. Each town's keeper/assistant pair opens the matching
+# `generalshopN` inv, so the town a store belongs to is decided here, by where its staff stand.
+
+# Falador general store (2958, 3387).
+[[spawn]]
+npc = 'generalshopkeeper3'
+coords = '0_46_52_14_59'
+
+[[spawn]]
+npc = 'generalassistant3'
+coords = '0_46_52_14_60'
+
+# Edgeville general store (3080, 3510), assistant offset east.
+[[spawn]]
+npc = 'generalshopkeeper6'
+coords = '0_48_54_8_53'
+
+[[spawn]]
+npc = 'generalassistant6'
+coords = '0_48_54_10_53'
+
+# Rimmington general store (2949, 3215), assistant offset east.
+[[spawn]]
+npc = 'generalshopkeeper7'
+coords = '0_46_50_5_15'
+
+[[spawn]]
+npc = 'generalassistant7'
+coords = '0_46_50_7_15'
+
+# Rimmington's other shop: Rommik's Crafty Supplies (2949, 3205).
+[[spawn]]
+npc = 'rommik'
+coords = '0_46_50_5_5'
+
+# Nurmof's Pickaxe Shop (2998, 9844) -- underground, in the Dwarven Mine, which is why the
+# mapsquare z is 153 rather than a surface value.
+[[spawn]]
+npc = 'nurmof'
+coords = '0_46_153_54_52'
+
+# Jatix's Herblore Shop, Taverley (2899, 3429).
+[[spawn]]
+npc = 'jatix'
+coords = '0_45_53_19_38'
+
+# Gaius' Two Handed Shop, Taverley (2885, 3450).
+[[spawn]]
+npc = 'gaius'
+coords = '0_45_53_5_58'

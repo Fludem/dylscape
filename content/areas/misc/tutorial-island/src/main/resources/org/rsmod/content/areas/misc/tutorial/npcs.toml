@@ -1,0 +1,38 @@
+# Tutorial Island instructor spawns.
+#
+# APPROXIMATE COORDINATES — verify in a running client and adjust. The cache holds no npc spawns
+# (they are server-authored), so these tiles are a best-effort placement within mapsquare 48_48,
+# the classic island. The tutorial's progression does not depend on them; only where each
+# instructor physically stands does. `npc` values are the rev 233 cache symbol names.
+
+[[spawn]]
+npc = 'newbie_basics_instructor'
+coords = '0_48_48_22_36'
+
+[[spawn]]
+npc = 'newbie_survival_instructor'
+coords = '0_48_48_24_44'
+
+[[spawn]]
+npc = 'newbie_cook_instructor'
+coords = '0_48_48_16_43'
+
+[[spawn]]
+npc = 'newbie_quest_instructor'
+coords = '0_48_48_16_39'
+
+[[spawn]]
+npc = 'newbie_mining_instructor'
+coords = '0_48_48_20_25'
+
+[[spawn]]
+npc = 'newbie_combat_instructor'
+coords = '0_48_48_28_22'
+
+[[spawn]]
+npc = 'newbie_account_instructor'
+coords = '0_48_48_40_30'
+
+[[spawn]]
+npc = 'newbie_magic_instructor'
+coords = '0_48_48_37_34'

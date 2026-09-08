@@ -1,0 +1,13 @@
+# Controller vars authored by this server. See `content.sym` for the id-allocation
+# reasoning. Upstream `varcon.sym` occupies 0-2.
+#
+# The full state of one laid trap. `Controller.vars` is an int-keyed map, so these are
+# server-side only and cost nothing to add.
+1000	hunter_trap_owner
+1001	hunter_trap_kind
+1002	hunter_trap_state
+1003	hunter_trap_creature
+1004	hunter_trap_stage_tick
+1005	hunter_trap_npc_uid
+1006	hunter_trap_loc
+1007	hunter_trap_abandoned

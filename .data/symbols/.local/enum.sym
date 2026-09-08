@@ -1,0 +1,18 @@
+# Enums authored by this server. Id allocation follows the same reasoning as
+# `.local/param.sym`: vanilla enums run 0..~4956 upward, RSMod's own run
+# 65476..65534 downward, ours start at 50000 upward.
+50000	copper_tin_rock_pickaxes
+50001	clay_rock_pickaxes
+50002	iron_rock_pickaxes
+50003	silver_rock_pickaxes
+50004	coal_rock_pickaxes
+50005	gold_rock_pickaxes
+50006	gem_rock_pickaxes
+50007	mithril_rock_pickaxes
+50008	adamantite_rock_pickaxes
+50009	runite_rock_pickaxes
+50010	amethyst_rock_pickaxes
+50011	hunter_boxtrap_dirs_chinchompa
+50012	hunter_boxtrap_dirs_chinchompa_big
+50013	hunter_boxtrap_dirs_chinchompa_black
+50014	hunter_boxtrap_dirs_ferret

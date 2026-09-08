@@ -10,6 +10,7 @@ import org.rsmod.api.player.ui.ifOpenOverlay
 import org.rsmod.api.player.vars.enumVarBit
 import org.rsmod.api.player.vars.resyncVar
 import org.rsmod.content.interfaces.journal.tab.configs.journal_components
+import org.rsmod.content.interfaces.journal.tab.configs.journal_interfaces
 import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Player
 
@@ -20,6 +21,7 @@ internal fun Player.openJournalTab(tab: SideJournalTab, eventBus: EventBus) =
         SideJournalTab.Summary -> openSummaryTab(eventBus)
         SideJournalTab.Quests -> openQuestTab(eventBus)
         SideJournalTab.Tasks -> openTaskTab(eventBus)
+        SideJournalTab.Leagues -> openLeagueTab(eventBus)
     }
 
 internal fun Player.openSummaryTab(eventBus: EventBus) {
@@ -55,11 +57,16 @@ internal fun Player.openTaskTab(eventBus: EventBus) {
     ifOpenOverlay(interfaces.area_task, journal_components.tab_container, eventBus)
 }
 
+internal fun Player.openLeagueTab(eventBus: EventBus) {
+    ifOpenOverlay(journal_interfaces.league_side_panel, journal_components.tab_container, eventBus)
+}
+
 internal fun Player.prepareJournalTab(tab: SideJournalTab) =
     when (tab) {
         SideJournalTab.Summary -> prepareSummaryTab()
         SideJournalTab.Quests -> prepareQuestTab()
         SideJournalTab.Tasks -> {}
+        SideJournalTab.Leagues -> {}
     }
 
 internal fun Player.prepareSummaryTab() {
@@ -86,6 +93,7 @@ internal fun Player.closeJournalTab(tab: SideJournalTab, eventBus: EventBus) =
         SideJournalTab.Summary -> ifCloseSub(interfaces.account_summary_sidepanel, eventBus)
         SideJournalTab.Quests -> ifCloseSub(interfaces.questlist, eventBus)
         SideJournalTab.Tasks -> ifCloseSub(interfaces.area_task, eventBus)
+        SideJournalTab.Leagues -> ifCloseSub(journal_interfaces.league_side_panel, eventBus)
     }
 
 internal fun Player.switchJournalTab(open: SideJournalTab, eventBus: EventBus) {

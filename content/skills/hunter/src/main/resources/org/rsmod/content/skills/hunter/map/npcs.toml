@@ -1,0 +1,110 @@
+# Huntable creatures, placed in their real OSRS hunting grounds.
+#
+# Coords are `level_mapsquareX_mapsquareZ_localX_localZ`, i.e. `abs / 64` and `abs % 64`.
+#
+# ---------------------------------------------------------------------------------------------
+# UNVERIFIED: these tiles are the real OSRS hunting areas by absolute coordinate, but they have
+# not been walked in-game on this server. Before trusting them, `::tele` to each ground and check
+# with `::mypos` that the creatures are standing on open, reachable ground rather than inside
+# scenery or off the edge of a built region. This is the same check that had to be done for the
+# Tutorial Island instructor tiles.
+#
+# Remember: nothing here exists until `./gradlew packCache` runs with the server stopped. The
+# boot-time config sync applies the npc *edits* (wander ranges, hunt modes, catch params) but
+# never map resources.
+# ---------------------------------------------------------------------------------------------
+#
+# Bird snaring is spread across all four biomes so the 1-11 stretch is not stuck in one place.
+# Box trapping is the Piscatoris chinchompas plus the ferrets that share the ground.
+# Net trapping needs `hunting_sapling_up_*` young trees, and deadfall needs
+# `hunting_deadfall_boulder`, both of which are *map scenery* rather than anything placed here --
+# if a ground turns out to be bare, the creatures below have nothing to be caught in.
+
+# --- Feldip Hills (jungle): crimson swifts, the very first thing a new hunter catches ---
+[[spawn]]
+npc = 'hunting_bird_jungle'
+coords = '0_40_45_10_45'
+[[spawn]]
+npc = 'hunting_bird_jungle'
+coords = '0_40_45_13_46'
+[[spawn]]
+npc = 'hunting_bird_jungle'
+coords = '0_40_45_11_49'
+[[spawn]]
+npc = 'hunting_bird_jungle'
+coords = '0_40_45_15_43'
+
+# --- Uzer / Kharidian desert: golden warblers and orange salamanders ---
+[[spawn]]
+npc = 'hunting_bird_desert'
+coords = '0_53_49_33_24'
+[[spawn]]
+npc = 'hunting_bird_desert'
+coords = '0_53_49_36_27'
+[[spawn]]
+npc = 'hunting_bird_desert'
+coords = '0_53_49_30_22'
+[[spawn]]
+npc = 'salamander_orange'
+coords = '0_53_49_28_24'
+[[spawn]]
+npc = 'salamander_orange'
+coords = '0_53_49_26_27'
+
+# --- Piscatoris Hunter Area: copper longtails, chinchompas, ferrets, wild/prickly kebbits ---
+[[spawn]]
+npc = 'hunting_bird_woodland'
+coords = '0_36_55_36_50'
+[[spawn]]
+npc = 'hunting_bird_woodland'
+coords = '0_36_55_39_53'
+[[spawn]]
+npc = 'hunting_bird_woodland'
+coords = '0_36_55_33_47'
+[[spawn]]
+npc = 'hunting_chinchompa'
+coords = '0_36_56_48_16'
+[[spawn]]
+npc = 'hunting_chinchompa'
+coords = '0_36_56_51_19'
+[[spawn]]
+npc = 'hunting_chinchompa'
+coords = '0_36_56_45_13'
+[[spawn]]
+npc = 'hunting_ferret'
+coords = '0_36_56_42_18'
+[[spawn]]
+npc = 'huntingbeast_claws'
+coords = '0_36_55_30_60'
+[[spawn]]
+npc = 'huntingbeast_claws'
+coords = '0_36_55_27_57'
+[[spawn]]
+npc = 'huntingbeast_spiky'
+coords = '0_36_56_34_4'
+
+# --- Rellekka polar hunter area: cerulean twitches and sabre-toothed kebbits ---
+[[spawn]]
+npc = 'hunting_bird_polar'
+coords = '0_42_58_38_63'
+[[spawn]]
+npc = 'hunting_bird_polar'
+coords = '0_42_58_41_60'
+[[spawn]]
+npc = 'huntingbeast_sabreteeth'
+coords = '0_42_59_52_4'
+[[spawn]]
+npc = 'huntingbeast_sabreteeth'
+coords = '0_42_59_49_7'
+
+# --- Canifis swamp: swamp lizards ---
+[[spawn]]
+npc = 'salamander_green'
+coords = '0_55_53_15_63'
+[[spawn]]
+npc = 'salamander_green'
+coords = '0_55_53_18_60'
+
+# Carnivorous and black chinchompas, red and black salamanders, and the barb-tailed kebbit are all
+# fully configured but deliberately unspawned: they belong in the Wilderness and Isafdar, which is
+# a separate pass. Adding them later is a toml-only change.

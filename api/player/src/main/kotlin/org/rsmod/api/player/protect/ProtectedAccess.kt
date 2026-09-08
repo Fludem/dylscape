@@ -63,6 +63,7 @@ import org.rsmod.api.player.output.ClientScripts.chatDefaultRestoreInput
 import org.rsmod.api.player.output.ClientScripts.mesLayerMode14
 import org.rsmod.api.player.output.ClientScripts.mesLayerMode7
 import org.rsmod.api.player.output.ClientScripts.mesLayerMode9
+import org.rsmod.api.player.output.MiscOutput
 import org.rsmod.api.player.output.UpdateInventory.resendSlot
 import org.rsmod.api.player.output.clearMapFlag
 import org.rsmod.api.player.output.mes
@@ -901,6 +902,21 @@ public class ProtectedAccess(
 
     public fun faceEntitySquare(target: PathingEntity) {
         player.facePathingEntitySquare(target)
+    }
+
+    /** Draws the floating hint arrow above [npc]. @see [MiscOutput.hintArrowNpc] */
+    public fun hintArrow(npc: Npc) {
+        MiscOutput.hintArrowNpc(player, npc)
+    }
+
+    /** Draws the hint arrow over [coords]. @see [MiscOutput.hintArrowTile] */
+    public fun hintArrow(coords: CoordGrid, height: Int = 0) {
+        MiscOutput.hintArrowTile(player, coords, height)
+    }
+
+    /** Clears any hint arrow currently shown. @see [MiscOutput.resetHintArrow] */
+    public fun resetHintArrow() {
+        MiscOutput.resetHintArrow(player)
     }
 
     public fun stopAction() {

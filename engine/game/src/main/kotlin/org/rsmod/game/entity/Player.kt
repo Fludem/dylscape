@@ -174,6 +174,14 @@ public class Player(
     public var runWeight: Int = 0
 
     /**
+     * Debug-only "noclip" toggle. While `true`, the map-click handlers teleport the player straight
+     * to the clicked tile instead of routing to it, letting an admin move through walls and locked
+     * doors (e.g. to survey Tutorial Island tiles). Transient: it is never persisted and resets to
+     * `false` on every login.
+     */
+    public var noClip: Boolean = false
+
+    /**
      * The player's current mod level.
      *
      * Checking if a player has access to permissions from other mod levels should be done through

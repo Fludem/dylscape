@@ -1,0 +1,26 @@
+# Kandarin: Catherby's three shops and Yanille's two.
+
+# Hickton's Archery Emporium, Catherby (2824, 3443).
+[[spawn]]
+npc = 'hickton'
+coords = '0_44_53_8_51'
+
+# Harry's Fishing Shop, Catherby (2833, 3444).
+[[spawn]]
+npc = 'harry'
+coords = '0_44_53_17_51'
+
+# Candle Shop, Catherby (2799, 3440).
+[[spawn]]
+npc = 'candle_maker'
+coords = '0_43_53_47_48'
+
+# Aleck's Hunter Emporium, Yanille (2567, 3083). The cache never uses the name "Aleck".
+[[spawn]]
+npc = 'hunting_shop_owner_yanille'
+coords = '0_40_48_7_11'
+
+# Frenita's Cookery Shop, Yanille (2567, 3100).
+[[spawn]]
+npc = 'frenita'
+coords = '0_40_48_7_29'

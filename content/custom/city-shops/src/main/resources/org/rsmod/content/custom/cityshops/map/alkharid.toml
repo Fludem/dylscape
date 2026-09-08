@@ -1,0 +1,39 @@
+# Al Kharid's shopkeepers, at their OSRS spawn tiles.
+#
+# `gem_trader` is the only one outdoors -- his stall sits on the street south of the palace, which
+# is why he is in mapsquare 51_50 while the rest of the town is 51_49.
+
+# Zeke's Superior Scimitars (3288, 3190).
+[[spawn]]
+npc = 'zeke'
+coords = '0_51_49_24_54'
+
+# Ranael's Super Skirt Store (3316, 3163).
+[[spawn]]
+npc = 'ranael'
+coords = '0_51_49_52_27'
+
+# Louie Legs' Leg Wear (3317, 3175).
+[[spawn]]
+npc = 'louie_legs'
+coords = '0_51_49_53_39'
+
+# Dommik's Crafting Store (3321, 3194).
+[[spawn]]
+npc = 'dommik'
+coords = '0_51_49_57_58'
+
+# Gem trader's stall (3287, 3212).
+[[spawn]]
+npc = 'gem_trader'
+coords = '0_51_50_23_13'
+
+# Al Kharid general store (3315, 3182). The assistant is offset a tile east so the pair does not
+# stack on one square -- the wiki marks the shop, not each member of staff.
+[[spawn]]
+npc = 'generalshopkeeper4'
+coords = '0_51_49_51_45'
+
+[[spawn]]
+npc = 'generalassistant4'
+coords = '0_51_49_52_46'

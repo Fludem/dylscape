@@ -1,0 +1,29 @@
+# Port Sarim. The town has no general store in OSRS -- these five shops are all of it.
+#
+# The cache also carries `sarim_`-prefixed copies of Wydin, Gerrant, Grum and Betty. The plain
+# types are the ones wired here; `ShopAssignmentsTest` checks they carry `Trade` on op3.
+
+# Wydin's Food Store (3013, 3207).
+[[spawn]]
+npc = 'wydin'
+coords = '0_47_50_5_7'
+
+# Gerrant's Fishy Business (3013, 3226).
+[[spawn]]
+npc = 'gerrant'
+coords = '0_47_50_5_26'
+
+# Grum's Gold Exchange (3014, 3247).
+[[spawn]]
+npc = 'grum'
+coords = '0_47_50_6_46'
+
+# Brian's Battleaxe Bazaar (3027, 3249).
+[[spawn]]
+npc = 'brian'
+coords = '0_47_50_19_50'
+
+# Betty's Magic Emporium (3013, 3259).
+[[spawn]]
+npc = 'betty'
+coords = '0_47_50_5_60'

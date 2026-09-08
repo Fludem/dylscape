@@ -2,19 +2,12 @@ package org.rsmod.content.other.commands
 
 import com.github.michaelbull.logging.InlineLogger
 import jakarta.inject.Inject
-import kotlin.math.max
 import kotlin.math.min
-import org.rsmod.annotations.InternalApi
 import org.rsmod.api.invtx.invAdd
 import org.rsmod.api.invtx.invClear
 import org.rsmod.api.player.output.MiscOutput
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
-import org.rsmod.api.player.stat.PlayerSkillXP
-import org.rsmod.api.player.stat.stat
-import org.rsmod.api.player.stat.statAdvance
-import org.rsmod.api.player.stat.statSub
-import org.rsmod.api.player.ui.PlayerInterfaceUpdates
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.player.vars.resyncVar
 import org.rsmod.api.repo.loc.LocRepository
@@ -32,13 +25,11 @@ import org.rsmod.game.loc.LocAngle
 import org.rsmod.game.loc.LocEntity
 import org.rsmod.game.loc.LocInfo
 import org.rsmod.game.loc.LocShape
-import org.rsmod.game.stat.PlayerSkillXPTable
 import org.rsmod.game.type.loc.LocTypeList
 import org.rsmod.game.type.npc.NpcTypeList
 import org.rsmod.game.type.obj.ObjTypeList
 import org.rsmod.game.type.seq.SeqTypeList
 import org.rsmod.game.type.spot.SpotanimTypeList
-import org.rsmod.game.type.stat.StatType
 import org.rsmod.game.type.stat.StatTypeList
 import org.rsmod.game.type.varbit.VarBitTypeList
 import org.rsmod.game.type.varp.VarpTypeList
@@ -51,7 +42,6 @@ import org.rsmod.objtx.TransactionResult
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 import org.rsmod.routefinder.loc.LocLayerConstants
-import org.simmetrics.metrics.StringMetrics
 
 class AdminCommands
 @Inject
@@ -72,8 +62,6 @@ constructor(
     private val update: GameUpdate,
 ) : PluginScript() {
     private val logger = InlineLogger()
-
-    private val levenshteinMetric = StringMetrics.levenshtein()
 
     override fun ScriptContext.startup() {
         onCommand("master", "Max out all stats", ::master)
@@ -319,34 +307,10 @@ constructor(
             player.mes("Set varbit '${type.internalName}' to value: ${player.vars[type]}")
         }
 
-    @OptIn(InternalApi::class)
     private fun Player.setStatLevels(level: Int) {
-        val xp = PlayerSkillXPTable.getXPFromLevel(level)
         for (stat in statTypes.values) {
-            val baseLevel = statMap.getBaseLevel(stat)
-            val targetLevel = max(stat.minLevel, level)
-            if (baseLevel > targetLevel) {
-                statRevert(stat, targetLevel, xp)
-                continue
-            }
-            val xpDelta = xp - statMap.getXP(stat)
-            statMap.setCurrentLevel(stat, targetLevel.toByte())
-            statAdvance(stat, xpDelta.toDouble(), rate = 1.0)
+            setStatLevel(stat, level)
         }
-    }
-
-    // There is, by design, no helper function to decrease stat xp, as xp reduction is not a
-    // standard operation in normal gameplay.
-    @OptIn(InternalApi::class)
-    private fun Player.statRevert(stat: StatType, targetLevel: Int, targetXp: Int) {
-        statMap.setCurrentLevel(stat, statMap.getBaseLevel(stat))
-        val levelDelta = stat(stat) - targetLevel
-        require(levelDelta > 0) { "This function can only be used to reduce stat levels." }
-        statMap.setXP(stat, targetXp)
-        statMap.setBaseLevel(stat, targetLevel.toByte())
-        statSub(stat, constant = levelDelta, percent = 0)
-        appearance.combatLevel = PlayerSkillXP.calculateCombatLevel(this)
-        PlayerInterfaceUpdates.updateCombatLevel(this)
     }
 
     private fun reboot(cheat: Cheat) {
@@ -366,45 +330,4 @@ constructor(
                 MiscOutput.updateRebootTimer(p, cycles)
             }
         }
-
-    private fun resolveArgTypeId(arg: String, names: Map<String, Int>): Int? {
-        val argAsInt = arg.toIntOrNull()
-        if (argAsInt != null) {
-            return argAsInt
-        }
-        val sanitized = arg.replace("-", "_")
-        return names[sanitized]
-    }
-
-    private fun resolveTypeName(name: String, names: Map<String, Int>): String =
-        when {
-            name in names -> name
-            name.toIntOrNull() != null -> name
-            else -> findClosestNameMatch(name, names.keys) ?: name
-        }
-
-    private fun List<String>.asTypeNameAndNumber(defaultNumber: Number): Pair<String, String> =
-        if (size > 1 && last().toLongOrNull() != null) {
-            dropLast(1).joinToString("_") to last()
-        } else {
-            joinToString("_") to defaultNumber.toString()
-        }
-
-    private fun List<String>.asTypeName(): String = joinToString("_")
-
-    private fun findClosestNameMatch(input: String, names: Iterable<String>): String? {
-        val normalizedInput = input.replace("_", " ")
-
-        var bestMatchScore = 0.0f
-        var bestMatchName: String? = null
-        for (name in names) {
-            val score = levenshteinMetric.compare(normalizedInput, name.replace("_", " "))
-            if (score > bestMatchScore) {
-                bestMatchScore = score
-                bestMatchName = name
-            }
-        }
-
-        return if (bestMatchScore >= 0.5) bestMatchName else null
-    }
 }
