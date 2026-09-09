@@ -248,6 +248,25 @@ Traps that cost a cycle each:
 - Gradle reports success having run nothing when a task is up to date — confirm with
   `--rerun-tasks`.
 
+Three more the Herblore build added:
+
+- **`ObjType.id` throws before the reference loader has run.** `find()` returns a `HashedObjType`
+  whose `internalId` is null, and `CacheType.id` is `internalId ?: error(...)`. So an
+  `associateBy { it.obj.id }` inside an `ObjReferences` subclass, or in its `init`, crashes the boot
+  rather than failing a test. Anything keyed by id goes behind `by lazy` -- which is why
+  `Consumables.rows` and `Potions.rows` both are. A plain `object` first touched from a
+  `PluginScript.startup()` is safe, because the loader has finished by then.
+- **Varbits assert their width on write; they do not truncate.** `stamina_duration` is five bits, so
+  `vars[varbits.stamina_duration] = 200` throws `Varbit overflow ... outside the range 0-31`. Check
+  the `bits=` range in the type before deciding what unit to store, or the first drink crashes the
+  handler. (This is the loud cousin of the silent masking in the varbit memory note.)
+- **Two modules can want the same obj, and a cache-wide filter is how they collide.** The `potion`
+  group looked safe to fill by filtering the cache for "has a `Drink` op and a `(1)`-`(4)` name" --
+  except the ale kegs are named `Keg of beer (4)` and `ConsumableEditor` had already claimed all
+  forty for `food`. An obj carries exactly one group and the edit is additive once packed, so that
+  filter would have permanently broken drinking them. Derive a tag set from your own authored table,
+  never from a cache sweep, and assert the two tables are disjoint.
+
 More in `docs/quirks.md`.
 
 ## 9. Finish

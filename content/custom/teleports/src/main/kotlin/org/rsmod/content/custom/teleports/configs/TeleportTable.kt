@@ -78,6 +78,12 @@ internal object TeleportTable {
             entry("barrows", "Barrows", CoordGrid(3565, 3314, 0)), // spell
             entry("tzhaar", "TzHaar City", CoordGrid(2450, 5165, 0)),
             entry("waterbirth", "Waterbirth Island", CoordGrid(2546, 3756, 0)), // spell
+            // The Waterbirth antechamber, one tile east of the ladder down into the kings' lair.
+            // The surface row above only reaches the island; between it and here lies a four-level,
+            // 34-ladder dungeon that is not bound yet, so without this row the three kings stand in
+            // a room nobody can reach. This lands at the *entrance*, not inside -- the player still
+            // climbs down the same ladder they would on the real route.
+            entry("dagannoth_kings", "Dagannoth Kings", CoordGrid(1912, 4367, 0)),
             entry("ape_atoll", "Ape Atoll", CoordGrid(2797, 2798, 0)), // spell
             entry("kalphite_lair", "Kalphite Lair", CoordGrid(3227, 3108, 0)),
             // The God Wars entrance itself is a boulder crevice; Trollheim is the vetted spell

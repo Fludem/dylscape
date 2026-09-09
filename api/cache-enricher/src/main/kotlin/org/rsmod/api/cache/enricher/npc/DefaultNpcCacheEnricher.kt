@@ -120,6 +120,11 @@ constructor(
                 "stab" -> categories.attacktype_stab
                 "slash" -> categories.attacktype_slash
                 "crush" -> categories.attacktype_crush
+                // The other two thirds of the domain. An npc tagged either of these attacks
+                // through the ap path instead of walking into melee range; see `NpcAttackStyle`.
+                // It also needs `proj_travel` and `proj_type`, or the driver declines to fire.
+                "ranged" -> categories.attacktype_ranged
+                "magic" -> categories.attacktype_magic
                 else -> null
             }
         if (category != null) {

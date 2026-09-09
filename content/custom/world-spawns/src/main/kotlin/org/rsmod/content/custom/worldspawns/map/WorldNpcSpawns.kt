@@ -9,7 +9,7 @@ import org.rsmod.api.type.builders.map.npc.MapNpcSpawnBuilder
  * **This does not run at boot.** `onPackMapTask` is invoked only by the Gradle `packCache` task,
  * and only with the server stopped, so the tomls beside this file are inert until the packer runs.
  *
- * The 33 tomls are generated. Fix a bad spawn in the generator, not here.
+ * The 32 tomls are generated. Fix a bad spawn in the generator, not here.
  */
 object WorldNpcSpawns : MapNpcSpawnBuilder() {
     override fun onPackMapTask() {
@@ -26,7 +26,6 @@ object WorldNpcSpawns : MapNpcSpawnBuilder() {
         resourceFile<WorldNpcSpawns>("area_wilderness.toml")
         resourceFile<WorldNpcSpawns>("entity_npc.toml")
         resourceFile<WorldNpcSpawns>("minigame_barbarian_assault.toml")
-        resourceFile<WorldNpcSpawns>("minigame_barrows_brothers.toml")
         resourceFile<WorldNpcSpawns>("minigame_blast_furnace.toml")
         resourceFile<WorldNpcSpawns>("minigame_bounty_hunter.toml")
         resourceFile<WorldNpcSpawns>("minigame_castle_wars.toml")

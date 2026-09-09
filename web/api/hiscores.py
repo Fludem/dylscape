@@ -55,18 +55,26 @@ class Handler(BaseHTTPRequestHandler):
         if STATIC_ROOT:
             self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
-        # A HEAD must send the same headers and no body. Without this the base class answers 501,
-        # which any uptime check would read as the site being down.
         if not self.head_only:
             self.wfile.write(body)
 
+    # Set per request, never left set. HTTP/1.1 keep-alive reuses one handler instance for every
+    # request on a connection, so a flag left True by a HEAD would suppress the body of the next
+    # GET on that same connection - and Caddy pools upstream connections, so that is not a rare
+    # case. Both entry points assign it rather than only one setting it.
     head_only = False
 
     def do_HEAD(self) -> None:  # noqa: N802
+        """Same headers, no body. Without this the base class answers 501, which an uptime check
+        would read as the site being down."""
         self.head_only = True
-        self.do_GET()
+        self._dispatch()
 
     def do_GET(self) -> None:  # noqa: N802
+        self.head_only = False
+        self._dispatch()
+
+    def _dispatch(self) -> None:
         url = urlparse(self.path)
         query = parse_qs(url.query)
         route = url.path.rstrip("/") or "/"

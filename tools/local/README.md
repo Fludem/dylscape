@@ -140,6 +140,17 @@ module loaded.
   opens completely empty — which is why every shop needs its contents written out.
   **Known gap: none of these shopkeepers actually spawn** (see the npc-spawn gotcha
   below). The stock and op wiring are correct and tested; the npcs are not in the world.
+- `content/custom/barrows` — the Barrows minigame: dig a mound with a spade, search a sarcophagus to
+  raise its brother, and loot the chest at the centre of the crypt. **The tunnels are not in this
+  cache.** A whole-map scan finds no barrows door, ladder, chest or rockslide placed anywhere, and
+  level 0 of mapsquare 55_151 - where OSRS puts the maze - has no locs and not one walkable tile.
+  What does exist is level 3: one connected crypt complex holding all six sarcophagi and all six
+  staircases, which serves as the tunnels here, so the reward chest is spawned by us at its centre.
+  The brothers are already statted in the cache (levels, bonuses, attack speed); what
+  `BarrowsNpcEditor` adds is `attack_melee`, ranged defence, an attack type, attack animations and
+  the aggression they otherwise lack. Ahrim and Karil have hand-rolled ranged and magic attacks
+  because `NvPCombat` only ever builds a melee one. `api/cache/.../BarrowsDump.kt` re-prints all of
+  it against the installed cache.
 - `content/skills/mining` — the full ore ladder (clay through amethyst plus runite),
   the pickaxe ladder, rock depletion and fixed-timer respawn. Gem rocks are
   deliberately absent: they roll a weighted gem table rather than one fixed product.

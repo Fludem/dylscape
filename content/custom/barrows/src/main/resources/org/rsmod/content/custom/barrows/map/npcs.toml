@@ -1,0 +1,90 @@
+# Barrows npc spawns. Coords are level_mapSquareX_mapSquareZ_localX_localZ.
+#
+# These moved here out of `world-spawns`' generated `minigame_barrows_brothers.toml`, which was
+# wrong for this cache in two ways: it put all 34 crypt monsters on level 0 of mapsquare 55_151,
+# where there is not one walkable tile, and it put the Strange Old Man on 0_55_51_45_24 - which is
+# Ahrim's dig spot, so he stood on the mound and blocked it.
+#
+# The brothers themselves are not here. They are raised from their sarcophagi by the minigame, not
+# parked in the crypt.
+
+# Wanders the mounds. Three tiles clear of Ahrim's dig spot at (3565, 3288).
+[[spawn]]
+npc = 'barrows_oldman'
+coords = '0_55_51_48_26'
+
+# The crypt bestiary, on level 3 where the crypts actually are. Every tile below was chosen from
+# `BarrowsDump.render the barrows underground square` as having a clear 2x2 footprint - giant rats
+# and giant spiders are size 2 - and being at least five tiles from any sarcophagus, staircase or
+# the chest, so nothing spawns on top of a fixture. `BarrowsMapTest` re-checks all of that.
+[[spawn]]
+npc = 'barrows_bloodworm'
+coords = '3_55_151_15_4'
+
+[[spawn]]
+npc = 'barrows_rat'
+coords = '3_55_151_32_9'
+
+[[spawn]]
+npc = 'barrows_giantrat'
+coords = '3_55_151_44_9'
+
+[[spawn]]
+npc = 'barrows_spider'
+coords = '3_55_151_57_14'
+
+[[spawn]]
+npc = 'barrows_giantspider'
+coords = '3_55_151_15_15'
+
+[[spawn]]
+npc = 'barrows_skeleton_armed'
+coords = '3_55_151_4_17'
+
+[[spawn]]
+npc = 'barrows_bloodworm'
+coords = '3_55_151_15_26'
+
+[[spawn]]
+npc = 'barrows_rat'
+coords = '3_55_151_27_26'
+
+[[spawn]]
+npc = 'barrows_giantrat'
+coords = '3_55_151_58_27'
+
+[[spawn]]
+npc = 'barrows_spider'
+coords = '3_55_151_4_30'
+
+[[spawn]]
+npc = 'barrows_giantspider'
+coords = '3_55_151_45_32'
+
+[[spawn]]
+npc = 'barrows_skeleton_armed'
+coords = '3_55_151_23_41'
+
+[[spawn]]
+npc = 'barrows_bloodworm'
+coords = '3_55_151_4_43'
+
+[[spawn]]
+npc = 'barrows_rat'
+coords = '3_55_151_35_44'
+
+[[spawn]]
+npc = 'barrows_giantrat'
+coords = '3_55_151_52_50'
+
+[[spawn]]
+npc = 'barrows_spider'
+coords = '3_55_151_16_57'
+
+[[spawn]]
+npc = 'barrows_giantspider'
+coords = '3_55_151_32_57'
+
+[[spawn]]
+npc = 'barrows_skeleton_armed'
+coords = '3_55_151_42_57'

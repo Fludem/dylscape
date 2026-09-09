@@ -110,6 +110,11 @@ REBUILT_AREAS = [
 # and three minigames RuneScape has and OSRS does not.
 EXCLUDED_GROUPS = {
     "activity_event",
+    # Barrows is owned by `content/custom/barrows`, which spawns its own. Void's data is unusable
+    # here: this cache puts the crypts on level 3 of mapsquare 55_151 and leaves level 0 - where
+    # void's 2011 map has the tunnels, and where all 34 of its crypt monsters sit - without a
+    # single walkable tile. It also parks the Strange Old Man on Ahrim's dig spot.
+    "minigame_barrows_brothers",
     "minigame_fist_of_guthix",
     "minigame_soul_wars",
     "minigame_vinesweeper",

@@ -32,4 +32,10 @@ object BaseCategories : CategoryReferences() {
     val attacktype_stab = find("attacktype_stab")
     val attacktype_slash = find("attacktype_slash")
     val attacktype_crush = find("attacktype_crush")
+
+    // The other two thirds of OSRS's npc `attacktype` domain. Upstream authored only the melee
+    // three because `NvPCombat` could only build a melee attack; these are what let an npc say it
+    // shoots or casts. Their ids live in `.data/symbols/.local/category.sym`.
+    val attacktype_ranged = find("attacktype_ranged")
+    val attacktype_magic = find("attacktype_magic")
 }

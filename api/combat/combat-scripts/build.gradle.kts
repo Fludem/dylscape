@@ -19,6 +19,9 @@ dependencies {
     implementation(projects.api.player)
     implementation(projects.api.playerOutput)
     implementation(projects.api.random)
+    // `WorldRepository.projAnim` for npc-source projectiles: the ranged and magic attacks read
+    // their hit delay back off the projectile rather than assuming melee's one tick.
+    implementation(projects.api.repo)
     implementation(projects.api.script)
     implementation(projects.api.scriptAdvanced)
     implementation(projects.api.specials)

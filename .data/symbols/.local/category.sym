@@ -1,0 +1,15 @@
+# Categories authored by this server. See `.local/content.sym` for why these live
+# in `.local/` rather than the upstream symbol files.
+#
+# Id allocation: vanilla categories occupy 1..1915 and grow upward; RSMod's own
+# three occupy 65532..65534 and grow *downward*. Ours start at 50000 in the middle
+# of that gap, so neither side can reach us. Duplicate ids are only detected within
+# a single file, so staying out of both bands is what keeps a future upstream
+# category from silently aliasing one of ours.
+#
+# These two extend `params.npc_attack_type` past the three melee types. OSRS's own
+# npc `attacktype` field has exactly this five-value domain; upstream only ever
+# authored the melee three because `NvPCombat` was melee-only and nothing could
+# have read the other two.
+50000	attacktype_ranged
+50001	attacktype_magic
