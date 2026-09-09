@@ -41,6 +41,31 @@ class ThievingConfigTest {
             }
         }
 
+    /**
+     * The other direction of the same rule, and the one that actually bites.
+     *
+     * The ladder used to be a hand-typed list of internal names, so `al_kharid_man` -- a plain
+     * `Man` carrying `Pickpocket` on op3 like every other -- silently did nothing when clicked, and
+     * so did the twenty-odd other `Man`/`Woman`/`Guard` types the list happened to omit. A cache
+     * the server ships is not a thing to remember by hand: if a type wears a ladder name and the op
+     * the script binds, it belongs in the table.
+     */
+    @Test
+    fun GameTestState.`every ladder-named npc carrying the op is registered`() = runBasicGameTest {
+        val registered = ThievingTargets.all.keys.map { it.id }.toSet()
+        val missing =
+            cacheTypes.npcs.values
+                .filter { it.name in LADDER_NAMES }
+                .filter { it.op.getOrNull(PICKPOCKET_OP_SLOT - 1) == "Pickpocket" }
+                .filter { it.id !in registered }
+                .map { "${it.id} '${it.name}' (${it.internalName}) ops=${it.op.toList()}" }
+        assertTrue(missing.isEmpty()) {
+            "These npcs are pickpocketable in the cache but not on the ladder, so clicking " +
+                "Pickpocket on them does nothing:\n" +
+                missing.joinToString("\n")
+        }
+    }
+
     @Test
     fun GameTestState.`every coin pouch is stackable and pays a sane range`() = runBasicGameTest {
         for ((npc, target) in ThievingTargets.all) {
@@ -148,6 +173,30 @@ class ThievingConfigTest {
     private companion object {
         /** Decoded by `ThievingOpsDump`; `Pickpocketing` registers `onOpNpc3` to match. */
         const val PICKPOCKET_OP_SLOT = 3
+
+        /**
+         * The display names that make an npc a rung of the ladder rather than its own content.
+         * Anything else that carries `Pickpocket` -- H.A.M. members, cave goblins, bandits,
+         * TzHaar-Hur, elves, vampyres, Varlamore's citizens -- drops its own loot and is not this
+         * module's to bind. See `ThievingTargetNpcs`.
+         */
+        val LADDER_NAMES =
+            setOf(
+                "Man",
+                "Woman",
+                "Drunken man",
+                "Farmer",
+                "Warrior",
+                "Al Kharid warrior",
+                "Rogue",
+                "Master Farmer",
+                "Guard",
+                "Head Guard",
+                "Knight of Ardougne",
+                "Watchman",
+                "Paladin",
+                "Hero",
+            )
 
         /** Likewise; `StallThieving` registers `onOpLoc2`. */
         const val STEAL_OP_SLOT = 2

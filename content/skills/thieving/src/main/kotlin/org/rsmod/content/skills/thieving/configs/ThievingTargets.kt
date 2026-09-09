@@ -11,6 +11,27 @@ private typealias npcs = ThievingTargetNpcs
 /**
  * Every npc that can be pickpocketed, and what it is worth.
  *
+ * ### How the lists were chosen
+ *
+ * Not by hand. `ThievingOpsDump` decodes every npc in the cache; a type belongs here when its
+ * **display name** is one of the ladder's names (`Man`, `Woman`, `Drunken man`, `Farmer`,
+ * `Warrior`, `Al Kharid warrior`, `Rogue`, `Master Farmer`, `Guard`, `Head Guard`, `Knight of
+ * Ardougne`, `Watchman`, `Paladin`, `Hero`) *and* it carries `Pickpocket` on op3.
+ * `ThievingConfigTest` asserts that rule in both directions, so a target the cache offers can no
+ * longer be missed the way `al_kharid_man` was — the ladder used to list four of the cache's
+ * eighteen `Man` types and quietly skip the rest, `al_kharid_man` among them.
+ *
+ * Deliberately outside the rule, and therefore outside this table:
+ * - `thug` (525) and the west-Ardougne placeholders `knight_of_ardougne_west` (4267) /
+ *   `paladin_west` (4262) carry no `Pickpocket` op at all. Their real, op-carrying twins are the
+ *   `_vis` types, which *are* listed.
+ * - `dttd_ham_guard_*_postquest` (4522-4526) put `Pickpocket` on **op1**, not op3, so `onOpNpc3`
+ *   would never fire for them. They are post-quest H.A.M. content that nothing spawns yet.
+ * - Everything with its own loot table rather than a coin pouch: H.A.M. members, cave goblins,
+ *   bandits, Menaphite thugs, Tai Bwo Wannai villagers, TzHaar-Hur, Prifddinas elves, Darkmeyer
+ *   vampyres, gnomes, priests and Varlamore's `Citizen` / `Tourist` / `Salvager` / `Wealthy
+ *   citizen` families. Those are separate content, not extra rungs of this ladder.
+ *
  * ### Why these are not a content group
  *
  * `contentGroup` is a single field on the type, and upstream's `GenericPersonConfig` already tags
@@ -31,40 +52,233 @@ private typealias npcs = ThievingTargetNpcs
  *
  * `Pickpocket` sits on **op3** for every npc here, decoded from the cache rather than assumed
  * (`ThievingOpsDump`). Note that is op3 and not op2: `man` reads `[Talk-to, Attack, Pickpocket]`
- * while `farmer1` reads `[null, Attack, Pickpocket]`, so the slot is stable even where the earlier
- * options are not.
- *
- * Deliberately excluded after the dump: `thug` (525) carries no `Pickpocket` op at all, and
- * `knight_of_ardougne_west` (4267) and `paladin_west` (4262) are nameless placeholders with an
- * entirely null op array. Adding them would mean editing ops onto npcs the cache never intended to
- * be robbed.
+ * while `farmer1` reads `[null, Attack, Pickpocket]` and `al_kharid_man` reads `[null, Attack,
+ * Pickpocket]` too, so the slot is stable even where the earlier options are not.
  */
 object ThievingTargetNpcs : NpcReferences() {
-    val man = find("man")
-    val man2 = find("man2")
-    val man3 = find("man3")
-    val man_indoor = find("man_indoor")
-    val woman = find("woman")
-    val woman2 = find("woman2")
-    val woman3 = find("woman3")
-    val farmer1 = find("farmer1")
-    val farmer2 = find("farmer2")
-    val farmer3 = find("farmer3")
-    val farmer4 = find("farmer4")
-    val warrior_woman = find("warrior_woman")
-    val rogue = find("rogue")
-    val master_farmer_1 = find("master_farmer_1")
-    val master_farmer_2 = find("master_farmer_2")
-    val master_farmer_1_f = find("master_farmer_1_f")
-    val master_farmer_2_f = find("master_farmer_2_f")
-    val guard1 = find("guard1")
-    val guard1_f = find("guard1_f")
-    val knight_of_ardougne = find("knight_of_ardougne")
-    val knight_of_ardougne2 = find("knight_of_ardougne2")
-    val yanille_watchman = find("yanille_watchman")
-    val paladin = find("paladin")
-    val paladin2 = find("paladin2")
-    val hero = find("hero")
+    /** Level-1 fodder: every `Man`, `Woman` and `Drunken man` in the cache. */
+    val citizens: List<NpcType> =
+        refs(
+            "varrock_man1",
+            "varrock_woman1",
+            "man",
+            "man2",
+            "man3",
+            "man4",
+            "man4_for_musa_point",
+            "woman",
+            "woman2",
+            "woman3",
+            "al_kharid_man",
+            "falador_man1",
+            "falador_man2",
+            "falador_man3",
+            "falador_woman2",
+            "ardougnian_male1",
+            "ardougnian_female1",
+            "karamja_man",
+            "death_man_indoors1",
+            "man_indoor",
+            "zeah_man",
+            "zeah_man2",
+            "zeah_man3",
+            "zeah_woman",
+            "zeah_woman2",
+            "zeah_woman3",
+            "zeah_woman_outside",
+            "shayzien_woman_1",
+            "shayzien_woman_2",
+            "shayzien_man_1",
+            "shayzien_man_2",
+        )
+
+    /** Level-10 `Farmer`s, including the Varlamore and Kastori sets. */
+    val farmers: List<NpcType> =
+        refs(
+            "farmer1",
+            "farmer2",
+            "farmer3",
+            "farmer1_f",
+            "farmer2_f",
+            "farmer3_f",
+            "farmer4",
+            "varlamore_farmer_m_1",
+            "varlamore_farmer_m_2",
+            "varlamore_farmer_m_3",
+            "varlamore_farmer_m_4",
+            "varlamore_farmer_f_1",
+            "varlamore_farmer_f_2",
+            "varlamore_farmer_f_3",
+            "varlamore_farmer_f_4",
+            "kastori_farmer_m_1",
+            "kastori_farmer_m_2",
+            "kastori_farmer_f_1",
+            "kastori_farmer_f_2",
+            "tal_teklan_farmer",
+        )
+
+    /** `Warrior`, `Warrior woman` and the `Al Kharid warrior` that shares their rung. */
+    val warriors: List<NpcType> =
+        refs(
+            "warrior_woman",
+            "al_kharid_warrior",
+            "warrior_woman_variant01",
+            "warrior_woman_variant02",
+            "warrior_man",
+            "warrior_man_variant01",
+            "warrior_man_variant02",
+        )
+
+    /** The lone `Rogue`. */
+    val rogues: List<NpcType> = refs("rogue")
+
+    /** `Master Farmer`s. Their real seed table is not this module's to own; see below. */
+    val masterFarmers: List<NpcType> =
+        refs(
+            "master_farmer_1",
+            "master_farmer_2",
+            "master_farmer_1_f",
+            "master_farmer_2_f",
+            "varlamore_master_farmer_m_1",
+            "varlamore_master_farmer_m_2",
+            "varlamore_master_farmer_m_3",
+            "varlamore_master_farmer_m_4",
+            "varlamore_master_farmer_f_1",
+            "varlamore_master_farmer_f_2",
+            "varlamore_master_farmer_f_3",
+            "varlamore_master_farmer_f_4",
+            "kastori_master_farmer_m_1",
+            "kastori_master_farmer_m_2",
+            "kastori_master_farmer_f_1",
+            "kastori_master_farmer_f_2",
+        )
+
+    /** `Guard` and Kourend's `Head Guard`, which is the same rung wearing a bigger model. */
+    val guards: List<NpcType> =
+        refs(
+            "hos_town_guard_01",
+            "hos_town_guard_02",
+            "hos_town_guard_03",
+            "hos_town_guard_04",
+            "jail_guard_1",
+            "jail_guard_2",
+            "jail_guard_3",
+            "jail_guard_4",
+            "jail_guard_5",
+            "fai_varrock_guard",
+            "fai_varrock_guard_captain",
+            "guard1",
+            "fai_falador_guard1",
+            "fai_falador_guard2",
+            "fai_falador_guard3",
+            "fai_falador_guard4",
+            "fai_falador_guard5",
+            "fai_falador_guard6",
+            "falador_doric_area_guard",
+            "ardougne_guard",
+            "kourend_guard_m1",
+            "kourend_guard_m1_big",
+            "kourend_guard_m2",
+            "kourend_guard_m2_big",
+            "kourend_guard_m3",
+            "kourend_guard_m3_big",
+            "kourend_guard_m4",
+            "kourend_guard_m4_big",
+            "kourend_guard_f1",
+            "kourend_guard_f1_big",
+            "kourend_guard_f2",
+            "kourend_guard_f2_big",
+            "kourend_guard_f3",
+            "kourend_guard_f3_big",
+            "kourend_guard_f4",
+            "kourend_guard_f4_big",
+            "fai_varrock_guard02",
+            "fai_varrock_guard02_variant01",
+            "fai_varrock_guard02_variant02",
+            "fai_varrock_guard02_f",
+            "fai_varrock_guard02_f_variant01",
+            "fai_varrock_guard02_f_variant02",
+            "fai_varrock_guard_captain02",
+            "guard1_variant01",
+            "guard1_f",
+            "guard1_f_variant01",
+            "ardougne_guard_variant01",
+            "ardougne_guard_f",
+            "ardougne_guard_f_variant01",
+            "fai_falador_guard1_variant01",
+            "fai_falador_guard1_f",
+            "fai_falador_guard1_variant02",
+            "fai_falador_guard2_f",
+            "fai_falador_guard3_f",
+            "fai_falador_guard4_f",
+            "varlamore_guard_m_1",
+            "varlamore_guard_m_2",
+            "varlamore_guard_m_3",
+            "varlamore_guard_m_4",
+            "varlamore_guard_m_5",
+            "varlamore_guard_f_1",
+            "varlamore_guard_f_2",
+            "varlamore_guard_f_3",
+            "varlamore_guard_f_4",
+            "varlamore_guard_f_5",
+            "aldarin_guard_m_1",
+            "aldarin_guard_m_2",
+            "aldarin_guard_m_3",
+            "aldarin_guard_m_4",
+            "aldarin_guard_m_5",
+            "aldarin_guard_f_1",
+            "aldarin_guard_f_2",
+            "aldarin_guard_f_3",
+            "aldarin_guard_f_4",
+            "aldarin_guard_f_5",
+            "auburnvale_guard_m_1",
+            "auburnvale_guard_m_2",
+            "auburnvale_guard_m_3",
+            "auburnvale_guard_m_4",
+            "auburnvale_guard_f_1",
+            "auburnvale_guard_f_2",
+            "auburnvale_guard_f_3",
+            "auburnvale_guard_f_4",
+            "tlati_guard_m_1",
+            "tlati_guard_m_2",
+            "tlati_guard_m_3",
+            "tlati_guard_m_4",
+            "tlati_guard_f_1",
+            "tlati_guard_f_2",
+            "tlati_guard_f_3",
+            "tlati_guard_f_4",
+        )
+
+    /** `Knight of Ardougne`, including the `_vis` twins of the op-less west placeholders. */
+    val knights: List<NpcType> =
+        refs(
+            "knight_of_ardougne",
+            "knight_of_ardougne2",
+            "knight_of_ardougne_west_vis",
+            "knight_of_ardougne_f_west_vis",
+            "knight_of_ardougne_f",
+        )
+
+    /** The Yanille `Watchman`. */
+    val watchmen: List<NpcType> = refs("yanille_watchman")
+
+    /** `Paladin`, likewise including the `_vis` twins. */
+    val paladins: List<NpcType> =
+        refs(
+            "paladin",
+            "paladin2",
+            "paladin_west_vis",
+            "paladin_west_f_vis",
+            "paladin_variant01",
+            "paladin_variant02",
+            "paladin_f",
+            "paladin_f_variant01",
+        )
+
+    /** `Hero`. */
+    val heroes: List<NpcType> = refs("hero", "hero_variant01", "hero_f")
+
+    private fun refs(vararg internal: String): List<NpcType> = internal.map { find(it) }
 }
 
 /**
@@ -89,15 +303,7 @@ data class PickpocketTarget(
 object ThievingTargets {
     val all: Map<NpcType, PickpocketTarget> = buildMap {
         tier(
-            listOf(
-                npcs.man,
-                npcs.man2,
-                npcs.man3,
-                npcs.man_indoor,
-                npcs.woman,
-                npcs.woman2,
-                npcs.woman3,
-            ),
+            npcs.citizens,
             level = 1,
             xp = 8.0,
             pouch = pouches.pouch_citizen,
@@ -105,7 +311,7 @@ object ThievingTargets {
             damage = 1..1,
         )
         tier(
-            listOf(npcs.farmer1, npcs.farmer2, npcs.farmer3, npcs.farmer4),
+            npcs.farmers,
             level = 10,
             xp = 14.5,
             pouch = pouches.pouch_farmer,
@@ -113,7 +319,7 @@ object ThievingTargets {
             damage = 1..1,
         )
         tier(
-            listOf(npcs.warrior_woman),
+            npcs.warriors,
             level = 25,
             xp = 26.0,
             pouch = pouches.pouch_warrior,
@@ -121,7 +327,7 @@ object ThievingTargets {
             damage = 1..2,
         )
         tier(
-            listOf(npcs.rogue),
+            npcs.rogues,
             level = 32,
             xp = 35.5,
             pouch = pouches.pouch_rogue,
@@ -131,12 +337,7 @@ object ThievingTargets {
         // Master farmers pay seeds in OSRS. Seeds are a table this module has no business owning,
         // so they pay a fat purse instead and stay on the ladder for the level range they cover.
         tier(
-            listOf(
-                npcs.master_farmer_1,
-                npcs.master_farmer_2,
-                npcs.master_farmer_1_f,
-                npcs.master_farmer_2_f,
-            ),
+            npcs.masterFarmers,
             level = 38,
             xp = 43.0,
             pouch = pouches.pouch_farmer,
@@ -144,7 +345,7 @@ object ThievingTargets {
             damage = 2..3,
         )
         tier(
-            listOf(npcs.guard1, npcs.guard1_f),
+            npcs.guards,
             level = 40,
             xp = 46.8,
             pouch = pouches.pouch_guard,
@@ -152,7 +353,7 @@ object ThievingTargets {
             damage = 2..2,
         )
         tier(
-            listOf(npcs.knight_of_ardougne, npcs.knight_of_ardougne2),
+            npcs.knights,
             level = 55,
             xp = 84.3,
             pouch = pouches.pouch_knight,
@@ -160,7 +361,7 @@ object ThievingTargets {
             damage = 2..3,
         )
         tier(
-            listOf(npcs.yanille_watchman),
+            npcs.watchmen,
             level = 65,
             xp = 137.5,
             pouch = pouches.pouch_watchman,
@@ -168,7 +369,7 @@ object ThievingTargets {
             damage = 2..3,
         )
         tier(
-            listOf(npcs.paladin, npcs.paladin2),
+            npcs.paladins,
             level = 70,
             xp = 151.75,
             pouch = pouches.pouch_paladin,
@@ -176,7 +377,7 @@ object ThievingTargets {
             damage = 3..3,
         )
         tier(
-            listOf(npcs.hero),
+            npcs.heroes,
             level = 80,
             xp = 273.3,
             pouch = pouches.pouch_hero,

@@ -16,16 +16,31 @@ import org.rsmod.api.testing.GameTestState
  * them being stackable, and that is a cache fact rather than a design choice.
  */
 class ThievingOpsDump {
+    /**
+     * Enumerated from the cache by **display name**, not from a hand-typed list of internal names.
+     *
+     * A list of internal names is what the thieving ladder used to be, and it is how
+     * `al_kharid_man` -- an ordinary `Man` wearing `Pickpocket` on op3 -- ended up unclickable
+     * along with most of its siblings. Asking the cache which types wear a ladder name is the only
+     * way to see all of them, and it also surfaces the ones whose op sits in an unexpected slot.
+     */
     @Test
     fun GameTestState.`dump pickpocket target ops`() = runBasicGameTest {
-        for (name in TARGET_NPCS) {
-            val npc = cacheTypes.npcs.values.firstOrNull { it.internalName == name }
-            if (npc == null) {
-                println("NPC $name -> MISSING")
-                continue
-            }
-            println("NPC ${npc.id} sym=$name name='${npc.name}' ops=${npc.op.toList()}")
+        val targets = cacheTypes.npcs.values.filter { it.name in LADDER_NAMES }.sortedBy { it.id }
+        for (npc in targets) {
+            val slot = npc.op.indexOf("Pickpocket")
+            val marker =
+                when (slot) {
+                    2 -> ""
+                    -1 -> "  <-- no Pickpocket op; not a target"
+                    else -> "  <-- Pickpocket is op${slot + 1}, so onOpNpc3 would never fire"
+                }
+            println(
+                "NPC ${npc.id} sym=${npc.internalName} name='${npc.name}' " +
+                    "ops=${npc.op.toList()}$marker"
+            )
         }
+        println("TOTAL_LADDER_NAMED=${targets.size}")
     }
 
     @Test
@@ -72,37 +87,27 @@ class ThievingOpsDump {
     }
 
     private companion object {
-        /** The pickpocket ladder, lowest tier first. */
-        val TARGET_NPCS =
-            listOf(
-                "man",
-                "man2",
-                "man3",
-                "man_indoor",
-                "woman",
-                "woman2",
-                "woman3",
-                "farmer1",
-                "farmer2",
-                "farmer3",
-                "farmer4",
-                "warrior_woman",
-                "thug",
-                "rogue",
-                "master_farmer_1",
-                "master_farmer_2",
-                "master_farmer_1_f",
-                "master_farmer_2_f",
-                "guard1",
-                "guard1_f",
-                "knight_of_ardougne",
-                "knight_of_ardougne2",
-                "knight_of_ardougne_west",
-                "yanille_watchman",
-                "paladin",
-                "paladin2",
-                "paladin_west",
-                "hero",
+        /**
+         * The display names that make an npc a rung of the ladder. Kept in step with
+         * `ThievingTargetNpcs`, which registers exactly the types wearing one of these and carrying
+         * `Pickpocket` on op3.
+         */
+        val LADDER_NAMES =
+            setOf(
+                "Man",
+                "Woman",
+                "Drunken man",
+                "Farmer",
+                "Warrior",
+                "Al Kharid warrior",
+                "Rogue",
+                "Master Farmer",
+                "Guard",
+                "Head Guard",
+                "Knight of Ardougne",
+                "Watchman",
+                "Paladin",
+                "Hero",
             )
 
         val STALL_LOCS =

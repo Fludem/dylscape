@@ -1,11 +1,13 @@
 package org.rsmod.content.skills.thieving.scripts
 
 import jakarta.inject.Inject
+import kotlin.math.max
 import kotlin.math.min
 import org.rsmod.api.config.refs.stats
 import org.rsmod.api.config.refs.synths
 import org.rsmod.api.npc.isValidTarget
 import org.rsmod.api.player.protect.ProtectedAccess
+import org.rsmod.api.player.stat.baseHitpointsLvl
 import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.player.stat.thievingLvl
 import org.rsmod.api.script.onOpNpc3
@@ -76,7 +78,7 @@ constructor(private val xpMods: XpModifiers, private val invisibleLvls: Invisibl
         // two layers keeping an AFK session safe. This is the outer one: park the player somewhere
         // they can come back to rather than at one hitpoint. The inner one is the damage clamp in
         // `stun`, which makes a stun physically incapable of landing a killing blow.
-        if (player.hitpoints <= STOP_HITPOINTS) {
+        if (player.hitpoints <= player.stopHitpoints()) {
             mes("You are too badly hurt to carry on thieving.")
             soundSynth(synths.pillory_wrong)
             return
@@ -182,10 +184,26 @@ constructor(private val xpMods: XpModifiers, private val invisibleLvls: Invisibl
         const val PICKPOCKET_DELAY = 3
 
         /**
-         * The health floor an unattended session parks at. The damage clamp already makes a stun
-         * unable to kill, but on its own that would leave a returning player sitting at one
-         * hitpoint; stopping here leaves them somewhere safe.
+         * The share of the player's own hitpoints bar an unattended session parks at. The damage
+         * clamp already makes a stun unable to kill, but on its own that would leave a returning
+         * player sitting at one hitpoint; stopping here leaves them somewhere safe.
+         *
+         * It has to be a fraction rather than a flat number. A flat ten is a fifth of a maxed bar
+         * but the *whole* bar of a fresh level-3 account, so it refused every attempt that account
+         * ever made before a single roll was taken.
          */
-        const val STOP_HITPOINTS = 10
+        const val STOP_HITPOINTS_PERCENT = 20
+
+        /**
+         * Floor for [STOP_HITPOINTS_PERCENT], so the smallest bars still stop above one hitpoint.
+         */
+        const val MIN_STOP_HITPOINTS = 2
+
+        /**
+         * Read off [baseHitpointsLvl] rather than the current level: a boost should not move the
+         * floor, and neither should the damage already taken this session.
+         */
+        fun Player.stopHitpoints(): Int =
+            max(MIN_STOP_HITPOINTS, baseHitpointsLvl * STOP_HITPOINTS_PERCENT / 100)
     }
 }

@@ -94,6 +94,30 @@ class PickpocketingTest {
             assertContains(player.inv, ThievingObjs.pouch_citizen)
         }
 
+    /**
+     * The health floor is a share of the player's own bar, not a flat number.
+     *
+     * A fresh account has ten hitpoints, which a flat floor of ten refused outright: every
+     * pickpocket on a new character answered "You are too badly hurt to carry on thieving." before
+     * a single roll was taken. `startThieving` hides this by handing out fifty hitpoints, so the
+     * level-3 bar is set explicitly here.
+     */
+    @Test
+    fun GameTestState.`a fresh account at full health can pickpocket`() =
+        runGameTest(Pickpocketing::class) {
+            val man = spawnMan()
+            startThieving(level = 1)
+            player.stats[stats.hitpoints] = 10
+            random.next = 0
+
+            player.opNpc3(man)
+            advance(ticks = 1)
+            assertMessageNotSent("You are too badly hurt to carry on thieving.")
+
+            advance(ticks = PICKPOCKET_DELAY)
+            assertContains(player.inv, ThievingObjs.pouch_citizen)
+        }
+
     /** The hard half of the death guard: a stun can never be the killing blow. */
     @Test
     fun GameTestState.`a stun can never kill`() =
