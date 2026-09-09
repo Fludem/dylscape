@@ -21,10 +21,11 @@ import org.rsmod.map.CoordGrid
  *   withhold from a player who skipped the chain. Al Kharid is `0.0` on purpose - the wiki says its
  *   experience is "more evenly spread throughout the course, unlike other Agility courses", and its
  *   eight obstacles already sum to the full 216.
- * @param markChance the chance, as `1 in markChance`, that a lap spawns a Mark of grace. Rolled
- *   once when the player clears the first obstacle, so the mark is on the roof ahead of them for
- *   the rest of the lap - which is how the live game does it.
- * @param markTiles the tiles a Mark of grace may spawn on. Must all be reachable during a lap.
+ * @param markChance the chance, as `1 in markChance`, that a lap spawns a Mark of grace *on top of*
+ *   [MARKS_PER_LAP]. Rolled once when the player clears the first obstacle, so the marks are on the
+ *   roof ahead of them for the rest of the lap - which is how the live game does it.
+ * @param markTiles the tiles a Mark of grace may spawn on. Must all be reachable during a lap, and
+ *   there must be enough of them to give every mark of a lap its own tile.
  * @param obstacles the chain, in the order a lap runs them.
  */
 public class RooftopCourse(
@@ -40,7 +41,9 @@ public class RooftopCourse(
         require(lapXp >= 0.0) { "$name: lap xp cannot be negative, was $lapXp" }
         require(markChance >= 1) { "$name: mark chance must be at least 1, was $markChance" }
         require(obstacles.size >= 2) { "$name: a course needs at least two obstacles" }
-        require(markTiles.isNotEmpty()) { "$name: needs at least one mark tile" }
+        require(markTiles.size > MARKS_PER_LAP) {
+            "$name: needs more than $MARKS_PER_LAP mark tiles, has ${markTiles.size}"
+        }
 
         val duplicate = obstacles.groupBy { it.loc.id }.filterValues { it.size > 1 }.keys
         require(duplicate.isEmpty()) { "$name: obstacle loc used twice: $duplicate" }
@@ -55,4 +58,14 @@ public class RooftopCourse(
 
     val finish: Obstacle
         get() = obstacles.last()
+
+    public companion object {
+        /**
+         * Marks of grace every lap pays out, before [markChance] rolls for one more.
+         *
+         * The live game gives roughly one mark every few laps; this server pays a handful per lap
+         * instead, so the graceful set is a weekend of Agility rather than a grind.
+         */
+        public const val MARKS_PER_LAP: Int = 5
+    }
 }

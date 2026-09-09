@@ -7,6 +7,13 @@ import org.rsmod.api.type.refs.varp.VarpReferences
 typealias varps = BaseVarps
 
 object BaseVarps : VarpReferences() {
+    /**
+     * The player's current slayer task, as a `slayer_task` dbtable id - the same id space npcs
+     * carry in their `slayer_task` param. Combat needs it to tell whether a monster is on task,
+     * which is what every black mask and slayer helm bonus keys off.
+     */
+    val slayer_target = find("slayer_target")
+
     /*
      * These "generic" temporary-state varps are used across multiple interfaces to track temporary
      * state. Unlike varps tied to a specific piece of content with child varbits, these are more

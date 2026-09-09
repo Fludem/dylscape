@@ -8,7 +8,9 @@ import org.junit.jupiter.api.parallel.ExecutionMode
 import org.rsmod.api.config.refs.stats
 import org.rsmod.api.testing.GameTestState
 import org.rsmod.api.testing.scope.GameTestScope
+import org.rsmod.content.skills.thieving.configs.MasterFarmerSeeds
 import org.rsmod.content.skills.thieving.configs.ThievingObjs
+import org.rsmod.content.skills.thieving.configs.ThievingSeeds
 import org.rsmod.game.entity.Npc
 import org.rsmod.game.type.npc.UnpackedNpcType
 import org.rsmod.map.CoordGrid
@@ -137,6 +139,52 @@ class PickpocketingTest {
             assertMessageSent("You are too badly hurt to carry on thieving.")
             advance(ticks = PICKPOCKET_PERIOD)
             assertEquals(1, player.stats[stats.hitpoints])
+        }
+
+    /**
+     * The master farmer is the one rung that pays loot rather than a purse.
+     *
+     * `SequenceRandom.of` hands back the queued value untouched, so a zero on the table roll lands
+     * on the first row of [MasterFarmerSeeds] — potato seeds — and the quantity roll after it is
+     * multiplied by the module's 5x loot rate.
+     */
+    @Test
+    fun GameTestState.`a master farmer pays seeds rather than a pouch`() =
+        runGameTest(Pickpocketing::class) {
+            val farmer = spawnTarget("master_farmer_1")
+            startThieving(level = 38)
+            random.next = 0 // Success.
+            random.then = 0 // The first row of the seed table.
+            random.then = 1 // One seed, before the loot multiplier.
+
+            player.opNpc3(farmer)
+            advance(ticks = 1)
+            advance(ticks = PICKPOCKET_DELAY)
+
+            assertEquals(5, player.inv.count(ThievingSeeds.potato_seed)) {
+                "A master farmer paid no seeds."
+            }
+            assertEquals(0, player.inv.count(ThievingObjs.pouch_farmer)) {
+                "A master farmer still pays the farmer's coin pouch."
+            }
+        }
+
+    /**
+     * The cost of paying loot instead of a purse: a rolled seed needs a slot of its own, so unlike
+     * every other rung the master farmer's session ends when the bag fills. It has to say so rather
+     * than silently stopping.
+     */
+    @Test
+    fun GameTestState.`a full inventory stops a master farmer session with a message`() =
+        runGameTest(Pickpocketing::class) {
+            val farmer = spawnTarget("master_farmer_1")
+            startThieving(level = 38)
+            player.fillInv()
+            random.next = 0
+
+            player.opNpc3(farmer)
+            advance(ticks = 1)
+            assertMessageSent("Your inventory is too full to hold any more seeds.")
         }
 
     @Test

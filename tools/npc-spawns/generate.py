@@ -40,10 +40,19 @@ DEDUPE_RADIUS = 3
 # caught -- the general stores `city-shops` does not staff (Port Khazard, the combat training camp,
 # Zanaris' fairy shop) have no existing spawn within any radius.
 DEDUPE_FAMILY_RADIUS = 6
+#
+# The slayer masters are the same bug a second time. Void bridges Turael, Mazchna and Duradel onto
+# the `wgs_heroes_*` types, which are *While Guthix Sleeps* scene actors with no ops at all, so all
+# three stood in Burthorpe, Canifis and Shilo as unclickable statues. `content/skills/slayer` now
+# spawns the real `slayer_master_*` types on those exact tiles; without a family here a regen would
+# put a statue back on top of each of them.
 DEDUPE_FAMILIES = {
     "general_store_staff": re.compile(
         r"^(fortis_shop_general_\d+|generalshopkeeper\d*|generalassistant\d*)$"
-    )
+    ),
+    "slayer_master": re.compile(
+        r"^(slayer_master_\w+|wgs_slayer_master_\w+|wgs_heroes_(tureal|mazchna|duradel))$"
+    ),
 }
 
 
@@ -119,6 +128,19 @@ EXCLUDED_GROUPS = {
     "minigame_soul_wars",
     "minigame_vinesweeper",
     "skill_dungeoneering",
+}
+
+# Individual npcs a content module places itself, by symbol name. Same reasoning as the Barrows
+# entry above, but these live inside groups that are otherwise fine, so the whole group cannot be
+# dropped. A module that runs its own `NpcEditor` for an npc should own where it stands too --
+# otherwise void's coordinates and the module's fight design drift apart silently.
+EXCLUDED_NAMES = {
+    # `content/custom/dagannoth-kings` places these. Void parks all three within six tiles of each
+    # other in the middle of the lair, so every pull is all three at once with no way to isolate
+    # one; the module spreads them to the north, south and east edges instead.
+    "dagcave_melee_boss",
+    "dagcave_magic_boss",
+    "dagcave_ranged_boss",
 }
 
 
@@ -396,6 +418,9 @@ def main():
             if name is None:
                 stats["unresolved"] += 1
                 unresolved[void_name] += 1
+                continue
+            if name in EXCLUDED_NAMES:
+                stats["excluded-name"] += 1
                 continue
             square = (x // 64, y // 64)
             if square not in in_cache:

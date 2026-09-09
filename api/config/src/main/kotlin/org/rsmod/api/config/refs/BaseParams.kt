@@ -102,6 +102,14 @@ object BaseParams : ParamReferences() {
     val freeze_resistance: ParamInt = find("freeze_resistance")
     val slayer_experience: ParamInt = find("slayer_experience")
     val slayer_levelrequire: ParamInt = find("slayer_levelrequire")
+    // Vanilla param 50: the npc's slayer task, as a `slayer_task` dbtable id. Named in
+    // `.data/symbols/.local/param.sym`, which explains why a vanilla param is declared there.
+    //
+    // Note the two above it are dead ends, despite reading like the obvious things to use: no npc
+    // type in the cache carries `slayer_experience` (bar a handful the enricher injects) and none
+    // at all carries `slayer_levelrequire`. The level requirement is per *task*, in
+    // `slayer_task:min_stat_requirement_all`, not per npc.
+    val slayer_task: ParamInt = find("slayer_task")
     val magic_defence_uses_defence_level: ParamBool = find("magic_defence_uses_defence_level")
     val spell_worn_req_message: ParamStr = find("spell_worn_req_message")
     val elemental_weakness_type: ParamInt = find("elemental_weakness_type")

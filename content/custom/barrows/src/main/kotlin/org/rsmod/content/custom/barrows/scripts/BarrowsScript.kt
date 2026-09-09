@@ -101,9 +101,14 @@ constructor(
      * A spade dig. Only means anything while standing on one of the six mounds; everywhere else it
      * falls through to the same refusal the rest of the world gives, so this binding costs nothing
      * to players digging elsewhere.
+     *
+     * "On a mound" is the whole plateau, not its centre tile - see [BarrowsMap.moundTops]. A single
+     * tile per mound is what OSRS's own dig spots are *not*, and it reads as the feature being
+     * broken: every dig on the hill refuses, with the refusal giving no clue that a specific tile
+     * exists.
      */
     private suspend fun ProtectedAccess.digMound() {
-        val brother = BarrowsMap.mounds.entries.firstOrNull { it.value == player.coords }?.key
+        val brother = BarrowsMap.moundAt(player.coords)
         if (brother == null) {
             mes("You find nothing but earth.")
             return

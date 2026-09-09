@@ -5,7 +5,7 @@ import org.rsmod.api.config.refs.synths
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onOpHeld2
-import org.rsmod.content.skills.thieving.configs.PickpocketTarget
+import org.rsmod.content.skills.thieving.configs.PickpocketLoot
 import org.rsmod.content.skills.thieving.configs.ThievingContent
 import org.rsmod.content.skills.thieving.configs.ThievingObjs
 import org.rsmod.content.skills.thieving.configs.ThievingRates
@@ -84,13 +84,15 @@ class CoinPouches @Inject constructor() : PluginScript() {
         /**
          * Maps a pouch back to the rung that pays it.
          *
-         * Two rungs share the farmer pouch, so this takes the richest match rather than the first —
-         * a master farmer's purse should not shrink because ordinary farmers drop the same pouch.
+         * Takes the richest match rather than the first. Nothing shares a pouch today — the master
+         * farmer used to share the farmer's, and pays seeds now — but a ladder where two rungs did
+         * should pay the higher one's range rather than whichever happened to be iterated first.
          */
         private fun coinRangeFor(pouch: ObjType): IntRange? =
             ThievingTargets.all.values
+                .mapNotNull { it.loot as? PickpocketLoot.Pouch }
                 .filter { it.pouch.id == pouch.id }
-                .maxByOrNull(PickpocketTarget::level)
+                .maxByOrNull { it.coins.last }
                 ?.coins
     }
 }

@@ -29,8 +29,37 @@ object BarrowsMap {
     const val CRYPT_LEVEL: Int = 3
 
     /**
-     * Where you dig. The mounds are bare terrain - no loc is placed on any of them - so entry is a
-     * spade dig on a coordinate, the way OSRS does it, and not an op on a staircase.
+     * The diggable top of each mound.
+     *
+     * The mounds are bare terrain - no loc is placed on any of them, and the `barrows_short_grass_*`
+     * scenery that covers them is generic dressing used all over the world, so neither is a marker
+     * we can test against. What *does* mark a mound is the terrain height: the `m55_51` height bytes
+     * put each mound top on a plateau eight to seventeen units above the surrounding grass, and a
+     * flood fill from each peak down to `peak - 4` gives the six blobs boxed here. `BarrowsMapTest`
+     * re-derives nothing, but it does check the boxes are disjoint and that each [mounds] tile sits
+     * inside its own.
+     *
+     * Boxing the plateau rather than testing one tile is the whole point: a single coordinate means
+     * a player standing anywhere else on the hill gets "You find nothing but earth" and no hint that
+     * they are two tiles from the entrance.
+     */
+    val moundTops: Map<Brother, MoundTop> =
+        mapOf(
+            Brother.Ahrim to MoundTop(3563..3568, 3287..3291),
+            Brother.Dharok to MoundTop(3573..3577, 3296..3300),
+            Brother.Guthan to MoundTop(3576..3580, 3280..3286),
+            Brother.Karil to MoundTop(3564..3568, 3273..3278),
+            Brother.Torag to MoundTop(3552..3555, 3281..3285),
+            Brother.Verac to MoundTop(3554..3560, 3295..3301),
+        )
+
+    /** Which mound, if any, [coords] is standing on. */
+    fun moundAt(coords: CoordGrid): Brother? =
+        moundTops.entries.firstOrNull { coords in it.value }?.key
+
+    /**
+     * The peak of each mound: where a dig sends you *back* to when you climb out of its crypt, and
+     * the tile the walkability check cares about. Digging works anywhere in [moundTops].
      */
     val mounds: Map<Brother, CoordGrid> =
         mapOf(
@@ -102,4 +131,13 @@ object BarrowsMap {
                 cryptEntrances.values +
                 sarcophagi.values +
                 listOf(chest, chestAmbushSpawn)
+
+    /** A rectangle of surface tiles. Levels above 0 are never part of a mound. */
+    data class MoundTop(val x: IntRange, val z: IntRange) {
+        val tiles: List<CoordGrid>
+            get() = x.flatMap { tileX -> z.map { tileZ -> CoordGrid(tileX, tileZ, 0) } }
+
+        operator fun contains(coords: CoordGrid): Boolean =
+            coords.level == 0 && coords.x in x && coords.z in z
+    }
 }

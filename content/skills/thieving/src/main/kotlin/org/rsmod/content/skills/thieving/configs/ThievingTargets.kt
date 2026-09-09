@@ -132,7 +132,7 @@ object ThievingTargetNpcs : NpcReferences() {
     /** The lone `Rogue`. */
     val rogues: List<NpcType> = refs("rogue")
 
-    /** `Master Farmer`s. Their real seed table is not this module's to own; see below. */
+    /** `Master Farmer`s. They pay seeds rather than a coin pouch; see [MasterFarmerSeeds]. */
     val masterFarmers: List<NpcType> =
         refs(
             "master_farmer_1",
@@ -282,17 +282,36 @@ object ThievingTargetNpcs : NpcReferences() {
 }
 
 /**
+ * What one successful pickpocket pays.
+ *
+ * Two shapes rather than one because the master farmer genuinely is a different kind of target: the
+ * rest of the ladder pays a stackable purse whose only content is coins, and he pays a seed off his
+ * own table. Modelling that as a nullable extra field on [PickpocketTarget] would leave every
+ * pouch-only consumer -- the inventory-space check, the auto-open, `CoinPouches.coinRangeFor` --
+ * reading a pouch he does not drop.
+ */
+sealed interface PickpocketLoot {
+    /**
+     * The ladder's default. [coins] is the real OSRS range for the tier; [ThievingRates.LOOT_RATE]
+     * is applied when the pouch is opened.
+     */
+    data class Pouch(val pouch: ObjType, val coins: IntRange) : PickpocketLoot
+
+    /** Master farmers. See [MasterFarmerSeeds]. */
+    data object Seeds : PickpocketLoot
+}
+
+/**
  * One rung of the pickpocket ladder.
  *
- * [baseXp] and [coins] are the real OSRS values; [ThievingRates.XP_RATE] and
+ * [baseXp] and the values inside [loot] are the real OSRS numbers; [ThievingRates.XP_RATE] and
  * [ThievingRates.LOOT_RATE] are applied when they are paid out, so this table stays directly
  * comparable to the wiki.
  */
 data class PickpocketTarget(
     val level: Int,
     val baseXp: Double,
-    val pouch: ObjType,
-    val coins: IntRange,
+    val loot: PickpocketLoot,
     val stunDamage: IntRange,
     val stunTicks: Int,
 ) {
@@ -306,82 +325,65 @@ object ThievingTargets {
             npcs.citizens,
             level = 1,
             xp = 8.0,
-            pouch = pouches.pouch_citizen,
-            coins = 1..3,
+            loot = purse(pouches.pouch_citizen, coins = 1..3),
             damage = 1..1,
         )
         tier(
             npcs.farmers,
             level = 10,
             xp = 14.5,
-            pouch = pouches.pouch_farmer,
-            coins = 5..9,
+            loot = purse(pouches.pouch_farmer, coins = 5..9),
             damage = 1..1,
         )
         tier(
             npcs.warriors,
             level = 25,
             xp = 26.0,
-            pouch = pouches.pouch_warrior,
-            coins = 12..18,
+            loot = purse(pouches.pouch_warrior, coins = 12..18),
             damage = 1..2,
         )
         tier(
             npcs.rogues,
             level = 32,
             xp = 35.5,
-            pouch = pouches.pouch_rogue,
-            coins = 18..25,
+            loot = purse(pouches.pouch_rogue, coins = 18..25),
             damage = 1..2,
         )
-        // Master farmers pay seeds in OSRS. Seeds are a table this module has no business owning,
-        // so they pay a fat purse instead and stay on the ladder for the level range they cover.
-        tier(
-            npcs.masterFarmers,
-            level = 38,
-            xp = 43.0,
-            pouch = pouches.pouch_farmer,
-            coins = 20..30,
-            damage = 2..3,
-        )
+        // The one rung that pays loot rather than a purse; see `MasterFarmerSeeds`.
+        tier(npcs.masterFarmers, level = 38, xp = 43.0, loot = PickpocketLoot.Seeds, damage = 2..3)
         tier(
             npcs.guards,
             level = 40,
             xp = 46.8,
-            pouch = pouches.pouch_guard,
-            coins = 20..30,
+            loot = purse(pouches.pouch_guard, coins = 20..30),
             damage = 2..2,
         )
         tier(
             npcs.knights,
             level = 55,
             xp = 84.3,
-            pouch = pouches.pouch_knight,
-            coins = 35..50,
+            loot = purse(pouches.pouch_knight, coins = 35..50),
             damage = 2..3,
         )
         tier(
             npcs.watchmen,
             level = 65,
             xp = 137.5,
-            pouch = pouches.pouch_watchman,
-            coins = 45..60,
+            loot = purse(pouches.pouch_watchman, coins = 45..60),
             damage = 2..3,
         )
         tier(
             npcs.paladins,
             level = 70,
             xp = 151.75,
-            pouch = pouches.pouch_paladin,
-            coins = 60..80,
+            loot = purse(pouches.pouch_paladin, coins = 60..80),
             damage = 3..3,
         )
         tier(
             npcs.heroes,
             level = 80,
             xp = 273.3,
-            pouch = pouches.pouch_hero,
-            coins = 150..200,
+            loot = purse(pouches.pouch_hero, coins = 150..200),
             damage = 3..4,
         )
     }
@@ -393,16 +395,19 @@ object ThievingTargets {
         targets: List<NpcType>,
         level: Int,
         xp: Double,
-        pouch: ObjType,
-        coins: IntRange,
+        loot: PickpocketLoot,
         damage: IntRange,
         stunTicks: Int = DEFAULT_STUN_TICKS,
     ) {
-        val target = PickpocketTarget(level, xp, pouch, coins, damage, stunTicks)
+        val target = PickpocketTarget(level, xp, loot, damage, stunTicks)
         for (npc in targets) {
             put(npc, target)
         }
     }
+
+    /** Shorthand for the pouch rungs, which are every rung but the master farmer. */
+    private fun purse(pouch: ObjType, coins: IntRange): PickpocketLoot =
+        PickpocketLoot.Pouch(pouch, coins)
 
     /**
      * How long a caught thief is frozen for. OSRS stuns for five ticks on most targets; this is

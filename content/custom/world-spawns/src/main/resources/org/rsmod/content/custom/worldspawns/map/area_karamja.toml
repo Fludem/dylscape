@@ -2750,10 +2750,6 @@ npc = 'zqskeleton_unarmed'  # void: undead_one_shilo_village_6
 coords = '0_44_46_57_7'
 
 [[spawn]]
-npc = 'wgs_heroes_duradel'  # void: duradel_shilo_village
-coords = '1_44_46_53_38'
-
-[[spawn]]
 npc = 'sailing_transport_trader_stan_crew_man1_base'  # void: trader_crewmember_grey
 coords = '0_46_47_57_25'
 

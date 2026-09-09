@@ -1,5 +1,6 @@
 plugins {
     id("base-conventions")
+    id("integration-test-suite")
 }
 
 kotlin {
@@ -16,4 +17,7 @@ dependencies {
     implementation(projects.engine.events)
     implementation(projects.engine.game)
     implementation(projects.engine.plugin)
+    integrationImplementation(projects.api.config)
+    integrationImplementation(projects.api.player)
+    integrationImplementation(projects.engine.game)
 }

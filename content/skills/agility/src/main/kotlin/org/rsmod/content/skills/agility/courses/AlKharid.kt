@@ -9,7 +9,10 @@ import org.rsmod.content.skills.agility.configs.AgilitySeqs
 import org.rsmod.map.CoordGrid
 
 /**
- * Al Kharid, the level 20 course.
+ * Al Kharid, the level 10 course.
+ *
+ * The wiki puts this at level 20; it is halved here to sit above [Draynor], which is open from
+ * level 1 on this server.
  *
  * The only course that spends time below level 3: the zip line drops onto a level 1 roof, the
  * tropical tree keeps you there, and the roof top beams take you back up to 3 for the last
@@ -27,7 +30,7 @@ public object AlKharid {
     val course: RooftopCourse =
         RooftopCourse(
             name = "Al Kharid",
-            level = 20,
+            level = 10,
             lapXp = 0.0,
             markChance = 5,
             markTiles =

@@ -95,6 +95,44 @@ class BarrowsMapTest {
             }
         }
 
+    @Test
+    fun GameTestState.`each mound centre is inside its own mound top`() = runBasicGameTest {
+        for ((brother, mound) in BarrowsMap.mounds) {
+            val top = checkNotNull(BarrowsMap.moundTops[brother])
+            assertTrue(mound in top, "$brother mound $mound is outside its mound top $top")
+            assertEquals(brother, BarrowsMap.moundAt(mound), "$mound resolves to the wrong mound")
+        }
+    }
+
+    /**
+     * Two overlapping boxes would make one mound unreachable: [BarrowsMap.moundAt] takes the first
+     * match and map iteration order would decide which brother a shared tile digs into.
+     */
+    @Test
+    fun GameTestState.`no two mound tops overlap`() = runBasicGameTest {
+        val owner = HashMap<CoordGrid, Brother>()
+        for ((brother, top) in BarrowsMap.moundTops) {
+            for (tile in top.tiles) {
+                val existing = owner.put(tile, brother)
+                assertEquals(null, existing, "$tile is in both $existing and $brother")
+            }
+        }
+    }
+
+    /**
+     * A blocked tile inside a mound top is a tile a player cannot dig from, which is harmless, but
+     * it would also mean the box has strayed off the plateau and onto scenery.
+     */
+    @Test
+    fun GameTestState.`every mound top tile is walkable surface`() =
+        runInjectedGameTest(BarrowsCollisionDeps::class) { deps ->
+            val blocked = CollisionFlag.BLOCK_WALK or CollisionFlag.BLOCK_PLAYERS
+            for ((brother, top) in BarrowsMap.moundTops) {
+                val stuck = top.tiles.filter { deps.collision[it] and blocked != 0 }
+                assertTrue(stuck.isEmpty(), "$brother mound top has unwalkable tiles: $stuck")
+            }
+        }
+
     /**
      * The tunnel level the plan originally assumed. Kept as a test so the assumption cannot creep
      * back: if a future cache ever ships the tunnels, this fails and tells somebody to revisit

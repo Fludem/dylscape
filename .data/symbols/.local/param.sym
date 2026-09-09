@@ -27,3 +27,18 @@
 50018	hunter_secondary_product
 50019	hunter_secondary_count
 50020	hunter_trap_return
+
+# Vanilla param 50, named here rather than built here.
+#
+# This is the one entry in this file that is NOT ours, and it deliberately sits outside the 50000
+# band the header describes. Param 50 is a genuine Jagex param that `param.sym` dumps without a
+# name, so `find()` cannot reach it; naming it in `.local/` is the only way to get a typed handle.
+# The header's id-band rule guards against *accidentally* aliasing an upstream id -- here the alias
+# onto 50 is the entire point, and `.local/` is merged over `symbols/`, so this resolves to the
+# vanilla type rather than minting anything.
+#
+# It is the npc -> slayer task mapping, and it is what the whole Slayer skill hangs on: 2119 npc
+# types carry it and its values are `slayer_task:id` in dbtable 113 (abyssal demon 42, kurask 45,
+# gargoyle 46, dark beast 66, smoke devil 95). Declared INT with default 0 in the cache, so an npc
+# that is nobody's task reads 0 for free.
+50	slayer_task

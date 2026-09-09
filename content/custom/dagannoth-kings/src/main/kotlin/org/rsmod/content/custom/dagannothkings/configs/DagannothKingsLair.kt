@@ -14,14 +14,25 @@ import org.rsmod.map.CoordGrid
  */
 public object DagannothKingsLair {
     /**
-     * Where the three kings stand. Set by `world-spawns`, not by this module; mirrored for tests.
+     * Where the three kings stand, spread to the far edges of the room.
+     *
+     * These are the south-west tile of each king's 3x3 footprint, and they are the same coordinates
+     * `map/npcs.toml` packs -- `DagannothKingsLairTest` holds the two in step.
+     *
+     * Void's original data, which `world-spawns` used to carry, put all three within six tiles of
+     * each other in the middle of the lair. Authentic, but it meant every pull was all three at
+     * once with no way to isolate one. North, south and east instead, all far enough from the west
+     * ladder that arriving does not immediately aggro anything.
      */
     public val spawns: Map<DagannothKing, CoordGrid> =
         mapOf(
-            DagannothKing.Supreme to CoordGrid(2906, 4448, 0),
-            DagannothKing.Prime to CoordGrid(2911, 4451, 0),
-            DagannothKing.Rex to CoordGrid(2913, 4445, 0),
+            DagannothKing.Rex to CoordGrid(2913, 4458, 0),
+            DagannothKing.Prime to CoordGrid(2913, 4439, 0),
+            DagannothKing.Supreme to CoordGrid(2925, 4448, 0),
         )
+
+    /** Every king is 3x3, so a spawn tile is only usable if its whole footprint is. */
+    public const val KING_SIZE: Int = 3
 
     /**
      * The lair side of the ladder. The ladder tile itself is blocked, so this is one east of it.

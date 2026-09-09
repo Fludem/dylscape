@@ -7,6 +7,8 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.fastutil)
+    implementation(libs.guice)
     implementation(projects.api.config)
     implementation(projects.api.npc)
     implementation(projects.api.player)

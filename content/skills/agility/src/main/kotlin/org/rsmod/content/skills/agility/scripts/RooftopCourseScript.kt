@@ -64,7 +64,7 @@ constructor(
 
         val lapComplete = progress.clear(player, position)
         if (position.isFirst) {
-            rollMarkOfGrace(course)
+            spawnMarksOfGrace(course)
         }
         if (lapComplete) {
             statAdvance(stats.agility, course.lapXp * xpMods.get(player, stats.agility))
@@ -95,24 +95,35 @@ constructor(
     }
 
     /**
-     * Rolls for a Mark of grace at the start of a lap.
+     * Spawns this lap's Marks of grace, at the start of the lap.
      *
-     * The mark is spawned **private to this player** - `ObjRepository.add` takes a `receiver`,
-     * which is how the live game shows one person a mark on a roof that nobody else can see. It is
-     * placed ahead of them rather than handed over, so it still has to be picked up during the lap.
+     * Every lap pays [RooftopCourse.MARKS_PER_LAP] of them, and [RooftopCourse.markChance] rolls
+     * for one more on top - so a lap is never a dry run, which is the whole point of the rate here.
+     *
+     * Each mark gets its own tile: two objs of the same type on one tile would merge into a single
+     * stack, and a stack of five reads as one pickup rather than a roof strewn with marks. Tiles
+     * are drawn without replacement from the course's list, which [RooftopCourse] guarantees is
+     * longer than a lap's worth of marks.
+     *
+     * The marks are spawned **private to this player** - `ObjRepository.add` takes a `receiver`,
+     * which is how the live game shows one person a mark on a roof that nobody else can see. They
+     * are placed ahead of the player rather than handed over, so they still have to be picked up
+     * during the lap.
      */
-    private fun ProtectedAccess.rollMarkOfGrace(course: RooftopCourse) {
-        if (!random.randomBoolean(course.markChance)) {
-            return
+    private fun ProtectedAccess.spawnMarksOfGrace(course: RooftopCourse) {
+        val bonus = if (random.randomBoolean(course.markChance)) 1 else 0
+        val marks = (RooftopCourse.MARKS_PER_LAP + bonus).coerceAtMost(course.markTiles.size)
+        val remaining = course.markTiles.toMutableList()
+        repeat(marks) {
+            val tile = remaining.removeAt(random.of(remaining.size))
+            objRepo.add(
+                coords = tile,
+                type = AgilityObjs.mark_of_grace,
+                count = 1,
+                duration = MARK_DURATION,
+                receiver = player,
+            )
         }
-        val tile = random.pick(course.markTiles)
-        objRepo.add(
-            coords = tile,
-            type = AgilityObjs.mark_of_grace,
-            count = 1,
-            duration = MARK_DURATION,
-            receiver = player,
-        )
     }
 
     private companion object {

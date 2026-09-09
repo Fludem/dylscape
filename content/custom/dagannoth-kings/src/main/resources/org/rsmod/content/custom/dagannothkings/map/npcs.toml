@@ -1,0 +1,28 @@
+# The three kings, spread to the far edges of the lair.
+#
+# They were originally spawned by `world-spawns` from void's 2011 data, which parks all three
+# within six tiles of each other in the middle of the room. That is authentic, but it means every
+# pull is all three at once, with no way to isolate the one you want. These coordinates put them
+# at the north, south and east extremes instead, and keep them clear of the west entrance so
+# arriving does not immediately aggro anything.
+#
+# `DagannothKingsLairTest` checks every tile of each king's 3x3 footprint against the real
+# collision map, so a coordinate that lands in the wall fails the build rather than the fight.
+#
+# Spawns only reach the cache through `./gradlew packCache` with the server stopped, or the live
+# server's own first-boot pack. A normal boot will not move them.
+
+# Dagannoth Rex -- north. Melee, so the shortest hunt range of the three.
+[[spawn]]
+npc = 'dagcave_melee_boss'
+coords = '0_45_69_33_42'
+
+# Dagannoth Prime -- south. Casts.
+[[spawn]]
+npc = 'dagcave_magic_boss'
+coords = '0_45_69_33_23'
+
+# Dagannoth Supreme -- east, the furthest from the ladder. Shoots.
+[[spawn]]
+npc = 'dagcave_ranged_boss'
+coords = '0_45_69_45_32'

@@ -9,7 +9,10 @@ import org.rsmod.content.skills.agility.configs.AgilitySeqs
 import org.rsmod.map.CoordGrid
 
 /**
- * Draynor Village, the level 10 course.
+ * Draynor Village, the entry course, usable from level 1.
+ *
+ * The wiki puts this at level 10; here it is the first thing a new account can train, so it is open
+ * from the start.
  *
  * Obstacle tiles come from the cache: every `l{x}_{z}` mapsquare was decoded and every
  * `rooftops_draynor_*` placement read off it (`tools/agility/DumpLocPlacements.java`). Destinations
@@ -30,7 +33,7 @@ public object Draynor {
     val course: RooftopCourse =
         RooftopCourse(
             name = "Draynor Village",
-            level = 10,
+            level = 1,
             lapXp = 75.0,
             markChance = 5,
             markTiles =

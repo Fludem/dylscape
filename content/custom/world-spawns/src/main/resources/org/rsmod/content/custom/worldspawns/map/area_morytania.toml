@@ -826,10 +826,6 @@ npc = 'canafis_woman12'  # void: liliya
 coords = '1_54_54_23_42'
 
 [[spawn]]
-npc = 'wgs_heroes_mazchna'  # void: mazchna_canifis
-coords = '0_54_54_55_53'
-
-[[spawn]]
 npc = 'ghoul'
 coords = '0_53_54_31_5'
 

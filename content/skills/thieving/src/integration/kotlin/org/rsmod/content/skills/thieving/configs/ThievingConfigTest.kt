@@ -1,5 +1,6 @@
 package org.rsmod.content.skills.thieving.configs
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -69,7 +70,11 @@ class ThievingConfigTest {
     @Test
     fun GameTestState.`every coin pouch is stackable and pays a sane range`() = runBasicGameTest {
         for ((npc, target) in ThievingTargets.all) {
-            val pouch = cacheTypes.objs[target.pouch.id]
+            val loot = target.loot
+            if (loot !is PickpocketLoot.Pouch) {
+                continue
+            }
+            val pouch = cacheTypes.objs[loot.pouch.id]
             assertNotNull(pouch) { "'${npc.internalName}' pays an unresolvable pouch." }
             checkNotNull(pouch)
 
@@ -81,12 +86,104 @@ class ThievingConfigTest {
 
             // `GameRandom.of` throws on a non-positive bound, and it would throw inside a
             // protected-access coroutine, which force-disconnects the player.
-            assertTrue(target.coins.first >= 1 && target.coins.first <= target.coins.last) {
-                "'${npc.internalName}' has a nonsensical coin range ${target.coins}."
+            assertTrue(loot.coins.first >= 1 && loot.coins.first <= loot.coins.last) {
+                "'${npc.internalName}' has a nonsensical coin range ${loot.coins}."
             }
+        }
+    }
+
+    @Test
+    fun GameTestState.`every target has a sane stun`() = runBasicGameTest {
+        for ((npc, target) in ThievingTargets.all) {
             assertTrue(target.stunDamage.first >= 1) {
                 "'${npc.internalName}' has a nonsensical damage range ${target.stunDamage}."
             }
+        }
+    }
+
+    /**
+     * The master farmer's table is forty seeds typed off the wiki, which is exactly the kind of
+     * data that is wrong in small ways, and every way it can be wrong is caught here rather than by
+     * a player finding a seed that does not exist.
+     *
+     * Stackability is the one that would not look like a bug: a non-stacking seed turns a 5x haul
+     * into five inventory slots and ends the session in a handful of pickpockets.
+     */
+    @Test
+    fun GameTestState.`every master farmer seed is a real stackable seed`() = runBasicGameTest {
+        assertTrue(MasterFarmerSeeds.slots.isNotEmpty()) { "The seed table is empty." }
+
+        val seen = mutableSetOf<Int>()
+        for (slot in MasterFarmerSeeds.slots) {
+            val obj = cacheTypes.objs[slot.seed.id]
+            assertNotNull(obj) { "Seed '${slot.seed.internalName}' is not in the cache." }
+            checkNotNull(obj)
+
+            assertTrue(obj.stackable) {
+                "Seed '${obj.internalName}' is not stackable, so a 5x roll would cost five slots."
+            }
+            assertTrue(seen.add(slot.seed.id)) {
+                "Seed '${obj.internalName}' is listed twice, which silently doubles its odds."
+            }
+
+            // `GameRandom.of` throws on a non-positive bound, and it would throw inside a
+            // protected-access coroutine, which force-disconnects the player.
+            assertTrue(slot.quantity.first >= 1 && slot.quantity.first <= slot.quantity.last) {
+                "'${obj.internalName}' has a nonsensical quantity ${slot.quantity}."
+            }
+            assertTrue(slot.worstOneIn >= 1.0 && slot.bestOneIn >= 1.0) {
+                "'${obj.internalName}' has a rarity below one in one."
+            }
+
+            // The wiki prints the ranges best-first; typing them the other way round would make
+            // high Farming quietly worse than low.
+            assertTrue(slot.bestOneIn <= slot.worstOneIn) {
+                "'${obj.internalName}' gets rarer as Farming rises: ${slot.worstOneIn} -> " +
+                    "${slot.bestOneIn}."
+            }
+        }
+    }
+
+    /**
+     * The claim the flat table rests on: OSRS pays exactly one seed per successful pickpocket, and
+     * the wiki's five groups are presentation rather than five independent rolls. If the published
+     * rarities did not sum to one, that reading would be wrong and the table would need a
+     * nothing-slot.
+     */
+    @Test
+    fun GameTestState.`the seed rarities sum to one roll`() = runBasicGameTest {
+        for (farmingLvl in intArrayOf(1, 85, 99)) {
+            val total = MasterFarmerSeeds.slots.sumOf { 1.0 / it.oneIn(farmingLvl) }
+            assertTrue(total > 0.98 && total < 1.02) {
+                "At Farming $farmingLvl the seed rarities sum to $total, not ~1. Either a rarity " +
+                    "is mistyped or this is not a single-roll table after all."
+            }
+        }
+    }
+
+    /** The four scaling rows, pinned at both published endpoints and in between. */
+    @Test
+    fun GameTestState.`herb seed odds improve with farming and then stop`() = runBasicGameTest {
+        val ranarr = MasterFarmerSeeds.slots.first { it.seed.id == ThievingSeeds.ranarr_seed.id }
+
+        assertEquals(555.83, ranarr.oneIn(1), 0.01) { "Farming 1 is not the worst published rate." }
+        assertEquals(268.75, ranarr.oneIn(85), 0.01) {
+            "Farming 85 is not the best published rate."
+        }
+        assertEquals(268.75, ranarr.oneIn(99), 0.01) {
+            "The rate keeps improving past 85, which the wiki says it does not."
+        }
+        assertTrue(ranarr.oneIn(43) < ranarr.oneIn(1) && ranarr.oneIn(43) > ranarr.oneIn(85)) {
+            "Farming 43 sits outside its two endpoints: ${ranarr.oneIn(43)}."
+        }
+
+        // A flat row must ignore the level entirely.
+        val torstol = MasterFarmerSeeds.slots.first { it.seed.id == ThievingSeeds.torstol_seed.id }
+        val toadflax =
+            MasterFarmerSeeds.slots.first { it.seed.id == ThievingSeeds.toadflax_seed.id }
+        assertTrue(torstol.oneIn(99) < torstol.oneIn(1)) { "Torstol should scale with Farming." }
+        assertEquals(toadflax.oneIn(1), toadflax.oneIn(99), 0.0) {
+            "Toadflax is not a scaling row and must not move with Farming."
         }
     }
 

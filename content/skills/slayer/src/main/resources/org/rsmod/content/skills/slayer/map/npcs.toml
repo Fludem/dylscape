@@ -1,0 +1,56 @@
+# Slayer masters.
+#
+# Vannaka (Edgeville dungeon) and Chaeldar (Zanaris) are deliberately absent: they are already in
+# `world-spawns` with their real npc types and work as they are.
+#
+# The three below reuse the exact tiles the `wgs_heroes_*` actors stood on, which are the vanilla
+# spawn tiles -- only the type changes, from an op-less quest actor to the master that can actually
+# be talked to.
+
+# Turael, Burthorpe (2931, 3536).
+[[spawn]]
+npc = 'slayer_master_1_tureal'
+coords = '0_45_55_51_16'
+
+# Mazchna, Canifis (3511, 3509).
+[[spawn]]
+npc = 'slayer_master_2_mazchna'
+coords = '0_54_54_55_53'
+
+# Duradel, Shilo Village, upstairs (2869, 2982).
+[[spawn]]
+npc = 'slayer_master_5_duradel'
+coords = '1_44_46_53_38'
+
+# Nieve, Gnome Stronghold (2432, 3422), by the Stronghold Slayer Cave. She had no spawn at all --
+# this tile is from her vanilla position rather than from an existing entry, so it is the one here
+# the walkability test is actually earning its keep on.
+[[spawn]]
+npc = 'slayer_master_nieve'
+coords = '0_38_53_0_30'
+
+# --- Edgeville slayer hub -------------------------------------------------------------------
+#
+# A deliberate divergence from OSRS: three masters also stand in the open ground north of
+# Edgeville bank, at (3090, 3505), (3092, 3505) and (3094, 3505). This is a convenience for a
+# private server, not a vanilla placement.
+#
+# Turael, Chaeldar and Duradel cover the bottom, middle and top of the ladder, so any account can
+# get a task at the hub. Vannaka is not among them because he already stands in Edgeville dungeon,
+# directly below. Mazchna and Nieve keep to Canifis and the Stronghold.
+#
+# These are *additional* spawns, not moves -- each of the three still stands in their home town.
+# The whole row z=3505 reads walkable from the collision map, clear of the bank building and of
+# the general store counter.
+
+[[spawn]]
+npc = 'slayer_master_1_tureal'
+coords = '0_48_54_18_49'
+
+[[spawn]]
+npc = 'slayer_master_4'
+coords = '0_48_54_20_49'
+
+[[spawn]]
+npc = 'slayer_master_5_duradel'
+coords = '0_48_54_22_49'

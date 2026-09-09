@@ -1,6 +1,7 @@
 package org.rsmod.content.custom.dagannothkings
 
 import jakarta.inject.Inject
+import kotlin.math.abs
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -26,17 +27,46 @@ class DagannothLairDeps @Inject constructor(val collision: CollisionFlagMap)
 @Execution(ExecutionMode.SAME_THREAD)
 class DagannothKingsLairTest {
     @Test
-    fun GameTestState.`every king stands on open floor`() =
+    fun GameTestState.`every king has a clear three by three footprint`() =
         runInjectedGameTest(DagannothLairDeps::class) { deps ->
+            // Checking only the spawn tile is not enough: these are size-3 npcs, so a coordinate
+            // near the wall passes a single-tile check and then fails to place at all.
             for ((king, coords) in DagannothKingsLair.spawns) {
-                val flags = deps.collision[coords.x, coords.z, coords.level]
-                assertEquals(
-                    0,
-                    flags and BLOCKS_STANDING,
-                    "${king.displayName} spawns on a blocked tile: $coords (flags $flags).",
-                )
+                for (dx in 0 until DagannothKingsLair.KING_SIZE) {
+                    for (dz in 0 until DagannothKingsLair.KING_SIZE) {
+                        val x = coords.x + dx
+                        val z = coords.z + dz
+                        val flags = deps.collision[x, z, coords.level]
+                        assertEquals(
+                            0,
+                            flags and BLOCKS_STANDING,
+                            "${king.displayName} overlaps a blocked tile at ($x, $z): flags $flags.",
+                        )
+                    }
+                }
             }
         }
+
+    @Test
+    fun GameTestState.`the kings are spread out and clear of the entrance`() = runBasicGameTest {
+        // The whole point of moving them off void's coordinates. If a future edit drags them back
+        // together, or parks one on top of the ladder, the fight stops being separable.
+        val arrival = DagannothKingsLair.lairArrival
+        for ((king, coords) in DagannothKingsLair.spawns) {
+            val fromEntrance = chebyshev(coords, arrival)
+            assertTrue(
+                fromEntrance >= MIN_ENTRANCE_DISTANCE,
+                "${king.displayName} is $fromEntrance tiles from the ladder; it would aggro on arrival.",
+            )
+        }
+        for ((a, b) in DagannothKingsLair.spawns.entries.pairs()) {
+            val apart = chebyshev(a.value, b.value)
+            assertTrue(
+                apart >= MIN_SEPARATION,
+                "${a.key.displayName} and ${b.key.displayName} are only $apart tiles apart.",
+            )
+        }
+    }
 
     @Test
     fun GameTestState.`both arrival tiles are standable and on level zero`() =
@@ -104,7 +134,20 @@ class DagannothKingsLairTest {
             )
         }
 
+    private fun chebyshev(a: CoordGrid, b: CoordGrid): Int = maxOf(abs(a.x - b.x), abs(a.z - b.z))
+
+    private fun <T> Collection<T>.pairs(): List<Pair<T, T>> =
+        toList().let { list ->
+            list.indices.flatMap { i -> (i + 1 until list.size).map { j -> list[i] to list[j] } }
+        }
+
     private companion object {
+        /** Rex hunts 10 tiles and the other two 12, so this clears the widest of them. */
+        const val MIN_ENTRANCE_DISTANCE = 13
+
+        /** Far enough that fighting one does not automatically drag in the next. */
+        const val MIN_SEPARATION = 12
+
         /** Stricter than a walk check: a ladder or a rock on the tile counts as unusable. */
         const val BLOCKS_STANDING =
             CollisionFlag.BLOCK_WALK or

@@ -1,7 +1,9 @@
 package org.rsmod.api.combat
 
+import it.unimi.dsi.fastutil.ints.IntSet
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.CombatAttack
+import org.rsmod.api.combat.commons.slayer.SlayerRequirementRegistry
 import org.rsmod.api.combat.manager.PlayerAttackManager
 import org.rsmod.api.combat.manager.RangedAmmoManager
 import org.rsmod.api.combat.player.activateMagicSpecial
@@ -14,10 +16,14 @@ import org.rsmod.api.config.constants
 import org.rsmod.api.config.refs.categories
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.npc.isValidTarget
+import org.rsmod.api.player.front
+import org.rsmod.api.player.hat
 import org.rsmod.api.player.lefthand
+import org.rsmod.api.player.output.ChatType
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.quiver
 import org.rsmod.api.player.righthand
+import org.rsmod.api.player.stat.slayerLvl
 import org.rsmod.api.specials.SpecialAttackRegistry
 import org.rsmod.api.specials.SpecialAttackType
 import org.rsmod.api.specials.energy.SpecialAttackEnergy
@@ -26,6 +32,7 @@ import org.rsmod.api.spells.attack.attack
 import org.rsmod.api.weapons.WeaponRegistry
 import org.rsmod.api.weapons.attack
 import org.rsmod.game.entity.Npc
+import org.rsmod.game.entity.Player
 import org.rsmod.game.interact.InteractionOp
 import org.rsmod.game.type.obj.ObjTypeList
 
@@ -40,6 +47,7 @@ constructor(
     private val manager: PlayerAttackManager,
     private val ammunition: RangedAmmoManager,
     private val spellsReg: SpellAttackRegistry,
+    private val slayerRequirements: SlayerRequirementRegistry,
 ) {
     suspend fun attack(access: ProtectedAccess, target: Npc, attack: CombatAttack.PlayerAttack) {
         when (attack) {
@@ -309,6 +317,34 @@ constructor(
             return false
         }
 
-        return true
+        return meetsSlayerRequirement(npc)
     }
+
+    /**
+     * Slayer's level and equipment gates.
+     *
+     * The registry is empty unless the slayer content module populated it, and an empty registry
+     * lets everything through - so this is inert rather than hostile when slayer is not installed.
+     */
+    private fun ProtectedAccess.meetsSlayerRequirement(npc: Npc): Boolean {
+        val requirement = slayerRequirements.get(npc.visType) ?: return true
+
+        if (player.slayerLvl < requirement.level) {
+            mes(
+                "You need a Slayer level of ${requirement.level} to harm this monster.",
+                ChatType.Engine,
+            )
+            return false
+        }
+
+        if (requirement.gear.isEmpty() || player.wearsAnyOf(requirement.gear)) {
+            return true
+        }
+        mes(requirement.gearMessage, ChatType.Engine)
+        return false
+    }
+
+    /** True if any worn slot that protective slayer gear occupies holds one of [objs]. */
+    private fun Player.wearsAnyOf(objs: IntSet): Boolean =
+        listOf(hat, lefthand, front).any { it != null && it.id in objs }
 }

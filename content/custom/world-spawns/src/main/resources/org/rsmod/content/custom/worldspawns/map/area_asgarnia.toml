@@ -114,10 +114,6 @@ npc = 'kaqemeex'
 coords = '0_45_54_45_30'
 
 [[spawn]]
-npc = 'wgs_heroes_tureal'  # void: turael
-coords = '0_45_55_51_16'
-
-[[spawn]]
 npc = 'dream_unferth'  # void: unferth
 coords = '0_45_55_40_39'
 
@@ -1220,18 +1216,6 @@ coords = '0_46_52_44_14'
 [[spawn]]
 npc = 'wgs_silif'  # void: silif_falador
 coords = '0_46_52_45_13'
-
-[[spawn]]
-npc = 'wgs_heroes_tureal'  # void: turael_falador
-coords = '0_46_52_52_11'
-
-[[spawn]]
-npc = 'wgs_heroes_mazchna'  # void: mazchna_falador
-coords = '0_46_52_51_11'
-
-[[spawn]]
-npc = 'wgs_heroes_duradel'  # void: duradel_falador
-coords = '0_46_52_50_11'
 
 [[spawn]]
 npc = 'wgs_sloane'  # void: sloane_falador

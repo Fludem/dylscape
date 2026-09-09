@@ -4118,18 +4118,6 @@ npc = 'jb_baby_dagganoth'  # void: dagannoth_fledgeling
 coords = '1_28_68_59_38'
 
 [[spawn]]
-npc = 'dagcave_ranged_boss'  # void: dagannoth_supreme
-coords = '0_45_69_26_32'
-
-[[spawn]]
-npc = 'dagcave_magic_boss'  # void: dagannoth_prime
-coords = '0_45_69_31_35'
-
-[[spawn]]
-npc = 'dagcave_melee_boss'  # void: dagannoth_rex
-coords = '0_45_69_33_29'
-
-[[spawn]]
 npc = 'dungeon_dagganoth_magic_monster'  # void: wallasalki_1
 coords = '1_28_68_5_25'
 

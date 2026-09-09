@@ -8,6 +8,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.fastutil)
     implementation(libs.guice)
     implementation(projects.api.areaChecker)
     implementation(projects.api.combat.combatCommons)

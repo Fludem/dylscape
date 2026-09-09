@@ -1,38 +1,52 @@
 package org.rsmod.content.skills.agility
 
+import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.testing.GameTestState
 import org.rsmod.api.testing.scope.GameTestScope
+import org.rsmod.content.skills.agility.configs.AgilityObjs
+import org.rsmod.content.skills.agility.courses.AlKharid
 import org.rsmod.content.skills.agility.courses.Draynor
 import org.rsmod.content.skills.agility.scripts.RooftopCourseScript
 import org.rsmod.game.loc.BoundLocInfo
 
+class AgilityObjDeps @Inject constructor(val objRepo: ObjRepository)
+
 @Execution(ExecutionMode.SAME_THREAD)
 class RooftopCourseScriptTest {
+    /**
+     * Draynor is open from level 1 and so can never refuse, which makes Al Kharid the lowest course
+     * that has a level to be under.
+     */
     @Test
     fun GameTestState.`an obstacle refuses below the course level`() =
         runGameTest(RooftopCourseScript::class) {
-            val wall = placeFirstObstacle()
-            player.setAgility(level = 9)
+            val course = AlKharid.course
+            val obstacle = course.start
+            val coords = obstacle.dest.translateZ(2)
+            val placed = placeMapLoc(coords, locTypes[obstacle.loc])
+            player.teleport(coords.translateX(-1))
+            player.setAgility(level = course.level - 1)
 
-            player.opLoc1(wall)
+            player.opLoc1(placed)
             advance(ticks = 1)
 
             // The message buffer clears every tick, so this has to be asserted on the tick the
             // refusal lands, not after the obstacle's own duration.
-            assertMessageSent("You need an Agility level of 10 to use this course.")
+            assertMessageSent("You need an Agility level of ${course.level} to use this course.")
         }
 
     @Test
     fun GameTestState.`clearing an obstacle pays its experience and moves the player`() =
         runGameTest(RooftopCourseScript::class) {
             val wall = placeFirstObstacle()
-            player.setAgility(level = 10)
+            player.setAgility(level = Draynor.course.level)
             val startXp = player.statMap.getXP(stats.agility)
 
             player.opLoc1(wall)
@@ -94,6 +108,37 @@ class RooftopCourseScriptTest {
             val obstaclesOnly = course.obstacles.drop(1).sumOf { it.xp }
             assertEquals(obstaclesOnly.toInt(), gained.toInt()) {
                 "An out-of-order lap paid $gained; the completion bonus should not apply."
+            }
+        }
+
+    /**
+     * The marks are spawned on the first obstacle of the lap, so one click is a whole lap's worth
+     * of them. They are also spawned one per tile: a second mark on an occupied tile would merge
+     * into a stack of two and the roof would show a single pickup instead of five.
+     */
+    @Test
+    fun GameTestState.`clearing the first obstacle spawns a lap of marks of grace`() =
+        runInjectedGameTest(AgilityObjDeps::class, null, RooftopCourseScript::class) { deps ->
+            val course = Draynor.course
+            val wall = placeFirstObstacle()
+            player.setAgility(level = 99)
+
+            player.opLoc1(wall)
+            advance(ticks = course.start.ticks + 1)
+
+            val perTile =
+                course.markTiles.map { tile ->
+                    deps.objRepo
+                        .findAll(tile)
+                        .filter { it.type == AgilityObjs.mark_of_grace.id }
+                        .sumOf { it.count }
+                }
+            assertTrue(perTile.sum() >= RooftopCourse.MARKS_PER_LAP) {
+                "A lap spawned ${perTile.sum()} marks, expected at least " +
+                    "${RooftopCourse.MARKS_PER_LAP}."
+            }
+            assertTrue(perTile.all { it <= 1 }) {
+                "Marks stacked on a tile instead of taking one each: $perTile"
             }
         }
 

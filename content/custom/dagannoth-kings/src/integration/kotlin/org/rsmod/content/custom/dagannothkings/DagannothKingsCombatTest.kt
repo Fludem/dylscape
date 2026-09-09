@@ -20,7 +20,6 @@ import org.rsmod.api.hit.plugin.PlayerHitScript
 import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.testing.GameTestState
 import org.rsmod.api.testing.scope.GameTestScope
-import org.rsmod.content.custom.dagannothkings.configs.DagannothKingsLair
 import org.rsmod.content.custom.dagannothkings.configs.dk_npcs
 import org.rsmod.game.entity.npc.NpcMode
 import org.rsmod.map.CoordGrid
@@ -54,7 +53,7 @@ class DagannothCombatDeps @Inject constructor(val attackStyles: AttackStyles)
 class DagannothKingsCombatTest {
     @Test
     fun GameTestState.`rex lands his bite shortly after engaging`() = combatTest {
-        val rex = spawnKing(dk_npcs.melee.id, MELEE_TILE, offset = 1)
+        val rex = spawnKing(dk_npcs.melee.id, FIGHT_TILE, offset = 1)
         val before = player.hitpoints
 
         forceMaxHit()
@@ -69,7 +68,7 @@ class DagannothKingsCombatTest {
 
     @Test
     fun GameTestState.`supreme fires from range and the hit waits for the arrow`() = combatTest {
-        val supreme = spawnKing(dk_npcs.supreme.id, RANGED_TILE, offset = SHOOTING_DISTANCE)
+        val supreme = spawnKing(dk_npcs.supreme.id, FIGHT_TILE, offset = SHOOTING_DISTANCE)
         val before = player.hitpoints
 
         forceMaxHit()
@@ -86,7 +85,7 @@ class DagannothKingsCombatTest {
 
     @Test
     fun GameTestState.`prime casts from range and the hit waits for the spell`() = combatTest {
-        val prime = spawnKing(dk_npcs.magic.id, MAGIC_TILE, offset = SHOOTING_DISTANCE)
+        val prime = spawnKing(dk_npcs.magic.id, FIGHT_TILE, offset = SHOOTING_DISTANCE)
         val before = player.hitpoints
 
         forceMaxHit()
@@ -104,7 +103,7 @@ class DagannothKingsCombatTest {
         // `attackRange = 10` plus the ap path is what keeps them out there. If either regressed
         // they would walk into melee and swing a ranged animation at point-blank range.
         for (id in listOf(dk_npcs.supreme.id, dk_npcs.magic.id)) {
-            val king = spawnKing(id, RANGED_TILE, offset = SHOOTING_DISTANCE)
+            val king = spawnKing(id, FIGHT_TILE, offset = SHOOTING_DISTANCE)
             val startCoords = king.coords
 
             forceMaxHit()
@@ -126,7 +125,7 @@ class DagannothKingsCombatTest {
             // through `combatDefaultRetaliateOp`, so a king struck first walked into melee range
             // and swung its ranged attack animation there like a punch. Queue the retaliation the
             // way the hit processor does, then check which mode it answers in.
-            val supreme = spawnKing(dk_npcs.supreme.id, RANGED_TILE, offset = SHOOTING_DISTANCE)
+            val supreme = spawnKing(dk_npcs.supreme.id, FIGHT_TILE, offset = SHOOTING_DISTANCE)
 
             supreme.queueCombatRetaliate(player)
             advance(2)
@@ -142,7 +141,7 @@ class DagannothKingsCombatTest {
     fun GameTestState.`no king hits for more than its live maximum`() = combatTest {
         for (id in listOf(dk_npcs.melee.id, dk_npcs.supreme.id, dk_npcs.magic.id)) {
             player.stats[stats.hitpoints] = FULL_HEALTH
-            val king = spawnKing(id, MELEE_TILE, offset = 1)
+            val king = spawnKing(id, FIGHT_TILE, offset = 1)
 
             forceMaxHit()
             king.opPlayer2(player)
@@ -197,9 +196,15 @@ class DagannothKingsCombatTest {
     }
 
     private companion object {
-        val MELEE_TILE: CoordGrid = DagannothKingsLair.spawns.getValue(DagannothKing.Rex)
-        val RANGED_TILE: CoordGrid = DagannothKingsLair.spawns.getValue(DagannothKing.Supreme)
-        val MAGIC_TILE: CoordGrid = DagannothKingsLair.spawns.getValue(DagannothKing.Prime)
+        /**
+         * Open floor near the middle of the lair, with room to the east for a 3x3 king at any of
+         * the offsets below.
+         *
+         * Deliberately not one of the real spawn tiles: those sit at the room's edges now, so
+         * placing a second 3x3 npc five tiles further out would land it in the wall. What these
+         * tests exercise is the driver, not the geometry -- `DagannothKingsLairTest` owns that.
+         */
+        val FIGHT_TILE: CoordGrid = CoordGrid(2910, 4448, 0)
 
         const val SHOOTING_DISTANCE = 5
 

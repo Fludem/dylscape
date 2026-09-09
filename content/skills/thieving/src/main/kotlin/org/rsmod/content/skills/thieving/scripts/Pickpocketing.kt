@@ -8,11 +8,14 @@ import org.rsmod.api.config.refs.synths
 import org.rsmod.api.npc.isValidTarget
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.baseHitpointsLvl
+import org.rsmod.api.player.stat.farmingLvl
 import org.rsmod.api.player.stat.hitpoints
 import org.rsmod.api.player.stat.thievingLvl
 import org.rsmod.api.script.onOpNpc3
 import org.rsmod.api.stats.levelmod.InvisibleLevels
 import org.rsmod.api.stats.xpmod.XpModifiers
+import org.rsmod.content.skills.thieving.configs.MasterFarmerSeeds
+import org.rsmod.content.skills.thieving.configs.PickpocketLoot
 import org.rsmod.content.skills.thieving.configs.PickpocketTarget
 import org.rsmod.content.skills.thieving.configs.ThievingRates
 import org.rsmod.content.skills.thieving.configs.ThievingSeqs
@@ -37,7 +40,8 @@ import org.rsmod.plugin.scripts.ScriptContext
  * so one click keeps stealing indefinitely rather than stopping 28 items later. That is the whole
  * point of the pouch layer, and it is vanilla behaviour rather than something invented here — the
  * cache even ships the destroy note "You may simply open the pouch instead to continue
- * pickpocketing".
+ * pickpocketing". The master farmer is the one exception: he pays seeds off [MasterFarmerSeeds],
+ * which stack too but come in forty different kinds, so his session does end when the bag fills.
  *
  * **A failure does not end the action.** In OSRS being caught stuns you and you have to click
  * again. Here the stun still lands — animation, graphic, damage and a few ticks frozen — but the
@@ -88,9 +92,13 @@ constructor(private val xpMods: XpModifiers, private val invisibleLvls: Invisibl
             return
         }
 
-        // Pouches stack, so this only trips when the bag is genuinely full of something else.
-        if (inv.isFull() && invTotal(inv, target.pouch) <= 0) {
-            mes("Your inventory is too full to hold any more coin pouches.")
+        if (!hasRoomFor(target.loot)) {
+            val holding =
+                when (target.loot) {
+                    is PickpocketLoot.Pouch -> "coin pouches"
+                    PickpocketLoot.Seeds -> "seeds"
+                }
+            mes("Your inventory is too full to hold any more $holding.")
             soundSynth(synths.pillory_wrong)
             return
         }
@@ -117,17 +125,52 @@ constructor(private val xpMods: XpModifiers, private val invisibleLvls: Invisibl
         opNpc3(npc)
     }
 
+    /**
+     * A pouch stacks, so a full bag still has room for one as long as the stack is already there. A
+     * seed is not known until it is rolled, so that branch asks for a genuinely free slot rather
+     * than rolling first and risking loot with nowhere to go — conservative by a slot, and the only
+     * version that cannot silently drop a torstol seed.
+     */
+    private fun ProtectedAccess.hasRoomFor(loot: PickpocketLoot): Boolean =
+        when (loot) {
+            is PickpocketLoot.Pouch -> !inv.isFull() || invTotal(inv, loot.pouch) > 0
+            PickpocketLoot.Seeds -> !inv.isFull()
+        }
+
     private fun ProtectedAccess.award(npc: Npc, target: PickpocketTarget) {
-        invAdd(inv, target.pouch)
+        val stolen =
+            when (val loot = target.loot) {
+                is PickpocketLoot.Pouch -> {
+                    invAdd(inv, loot.pouch)
+                    loot.pouch
+                }
+                PickpocketLoot.Seeds -> awardSeed()
+            }
         statAdvance(
             stats.thieving,
             target.baseXp * ThievingRates.XP_RATE * xpMods.get(player, stats.thieving),
         )
         spam("You pick the ${npc.name}'s pocket.")
-        publish(Pickpocketed(player, npc, target.pouch))
+        publish(Pickpocketed(player, npc, stolen))
 
         // Keeps the session from ever stalling on a full stack; see `CoinPouches.AUTO_OPEN_AT`.
-        autoOpenPouchesIfFull(target.pouch)
+        if (target.loot is PickpocketLoot.Pouch) {
+            autoOpenPouchesIfFull(target.loot.pouch)
+        }
+    }
+
+    /**
+     * Rolls the master farmer's table and pays the seed.
+     *
+     * The Farming level goes in because four rows of that table move with it; see
+     * [MasterFarmerSeeds]. Seeds stack, so the multiplied quantity costs the same single slot the
+     * space check above reserved.
+     */
+    private fun ProtectedAccess.awardSeed(): ObjType {
+        val slot = MasterFarmerSeeds.roll(random, player.farmingLvl)
+        val count = random.of(slot.quantity) * ThievingRates.LOOT_RATE
+        invAdd(inv, slot.seed, count = count)
+        return slot.seed
     }
 
     /**
@@ -173,7 +216,8 @@ constructor(private val xpMods: XpModifiers, private val invisibleLvls: Invisibl
         resetAnim()
     }
 
-    data class Pickpocketed(val player: Player, val npc: Npc, val pouch: ObjType) : UnboundEvent
+    /** [loot] is the pouch the target paid, or the seed rolled off the master farmer table. */
+    data class Pickpocketed(val player: Player, val npc: Npc, val loot: ObjType) : UnboundEvent
 
     private companion object {
         /**
