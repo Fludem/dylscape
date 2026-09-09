@@ -272,6 +272,26 @@ public class Player(
     public var skillAnimDelay: Int = -1
     public var refaceDelay: Int = -1
 
+    /**
+     * Map clock tick before which the next food cannot be eaten.
+     *
+     * Deliberately separate from [actionDelay]: in the live game eating is never gated by a
+     * weapon's attack cooldown, it *pushes* the next attack back instead. Sharing one field would
+     * make food unusable in the middle of a fight, which is the only place it matters.
+     *
+     * Transient on purpose - three ticks is not worth persisting across a login.
+     */
+    public var foodDelay: Int = -1
+
+    /**
+     * Map clock tick before which the next combo food cannot be eaten.
+     *
+     * Karambwans and their kin run on their own clock, which is what lets them be eaten in the same
+     * tick as an ordinary food. Eating anything sets both clocks; eating a combo food sets and
+     * checks only this one.
+     */
+    public var comboFoodDelay: Int = -1
+
     public var lootDropDuration: Int? = null
 
     public val appearance: Appearance = Appearance()

@@ -217,6 +217,8 @@ public class ProtectedAccess(
     public var actionDelay: Int by player::actionDelay
     public var skillAnimDelay: Int by player::skillAnimDelay
     public var refaceDelay: Int by player::refaceDelay
+    public var foodDelay: Int by player::foodDelay
+    public var comboFoodDelay: Int by player::comboFoodDelay
 
     private var opHeldCallCount = 0
 
