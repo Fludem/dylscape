@@ -58,28 +58,12 @@ npc = 'kebab_seller'  # void: karim
 coords = '0_51_49_8_46'
 
 [[spawn]]
-npc = 'dommik'
-coords = '0_51_49_57_58'
-
-[[spawn]]
-npc = 'louie_legs'
-coords = '0_51_49_52_39'
-
-[[spawn]]
-npc = 'ranael'
-coords = '0_51_49_52_28'
-
-[[spawn]]
 npc = 'fortis_shop_general_1'  # void: shopkeeper_al_kharid
 coords = '0_51_49_52_48'
 
 [[spawn]]
 npc = 'generalassistant1'  # void: shop_assistant_al_kharid
 coords = '0_51_49_52_46'
-
-[[spawn]]
-npc = 'zeke'
-coords = '0_51_49_24_54'
 
 [[spawn]]
 npc = 'banker1'  # void: banker_al_kharid
@@ -164,10 +148,6 @@ coords = '0_51_50_40_11'
 [[spawn]]
 npc = 'pilot_al_kharid_base'  # void: captain_dalbur
 coords = '0_51_50_20_12'
-
-[[spawn]]
-npc = 'gem_trader'
-coords = '0_51_50_24_12'
 
 [[spawn]]
 npc = 'silk_trader'

@@ -218,10 +218,6 @@ npc = 'brimhavencartdriver'  # void: hajedy_brimhaven
 coords = '0_43_50_27_11'
 
 [[spawn]]
-npc = 'davon'  # void: davon_brimhaven
-coords = '0_43_49_51_16'
-
-[[spawn]]
 npc = 'jungle_spider'  # void: jungle_spider_hazelmeres_island
 coords = '0_43_50_15_4'
 

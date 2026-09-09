@@ -5754,10 +5754,6 @@ npc = 'banker1'  # void: banker_4
 coords = '0_43_53_59_51'
 
 [[spawn]]
-npc = 'candle_maker'
-coords = '0_43_53_47_46'
-
-[[spawn]]
 npc = 'arhein'
 coords = '0_43_53_51_38'
 
@@ -5816,14 +5812,6 @@ coords = '0_44_53_2_51'
 [[spawn]]
 npc = 'woman'  # void: woman_2
 coords = '0_44_53_1_55'
-
-[[spawn]]
-npc = 'harry'
-coords = '0_44_53_20_55'
-
-[[spawn]]
-npc = 'hickton'
-coords = '0_44_53_5_50'
 
 [[spawn]]
 npc = 'caleb_fitzharmon_1op'  # void: caleb
@@ -13738,10 +13726,6 @@ npc = 'aluft_gnome_mage_2'  # void: professor_imblewyn
 coords = '0_40_48_30_20'
 
 [[spawn]]
-npc = 'hunting_shop_owner_yanille'  # void: aleck
-coords = '0_40_48_8_10'
-
-[[spawn]]
 npc = 'hunting_weapon_designer'  # void: leon
 coords = '0_40_48_7_13'
 
@@ -13756,10 +13740,6 @@ coords = '2_39_48_48_40'
 [[spawn]]
 npc = 'wizard'  # void: wizard_yanille_3
 coords = '2_39_48_53_40'
-
-[[spawn]]
-npc = 'frenita'
-coords = '0_40_48_6_26'
 
 [[spawn]]
 npc = 'imp'

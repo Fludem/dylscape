@@ -326,10 +326,6 @@ npc = 'dwarf_normal'  # void: dwarf_dwarven_mine
 coords = '0_46_153_49_36'
 
 [[spawn]]
-npc = 'nurmof'
-coords = '0_46_153_52_52'
-
-[[spawn]]
 npc = 'boot_the_dwarf'  # void: boot_dwarven_mine
 coords = '0_46_153_41_20'
 
@@ -1136,22 +1132,6 @@ coords = '0_47_51_15_27'
 [[spawn]]
 npc = 'zep_assist_craft'  # void: assistant_brock_falador
 coords = '0_45_51_45_39'
-
-[[spawn]]
-npc = 'cassie'
-coords = '0_46_52_35_55'
-
-[[spawn]]
-npc = 'flynn'
-coords = '0_46_52_7_58'
-
-[[spawn]]
-npc = 'wayne'
-coords = '0_46_51_29_48'
-
-[[spawn]]
-npc = 'herquin'
-coords = '0_46_52_0_6'
 
 [[spawn]]
 npc = 'grim_sylas'  # void: sylas_falador
@@ -2114,22 +2094,6 @@ npc = 'farming_gardener_spirit_tree_1'  # void: frizzy_skernip
 coords = '0_47_50_52_56'
 
 [[spawn]]
-npc = 'grum'
-coords = '0_47_50_5_48'
-
-[[spawn]]
-npc = 'wydin'
-coords = '0_47_50_6_4'
-
-[[spawn]]
-npc = 'gerrant'
-coords = '0_47_50_5_25'
-
-[[spawn]]
-npc = 'brian'  # void: brian_port_sarim
-coords = '0_47_50_17_49'
-
-[[spawn]]
 npc = 'sarim_betty'  # void: betty_port_sarim
 coords = '0_47_50_4_59'
 
@@ -2420,10 +2384,6 @@ coords = '0_45_50_61_36'
 [[spawn]]
 npc = 'myarm_leprechaun'  # void: tool_leprechaun_rimmington
 coords = '0_45_50_59_19'
-
-[[spawn]]
-npc = 'rommik'
-coords = '0_46_50_5_5'
 
 [[spawn]]
 npc = 'brian'  # void: brian_rimmington
@@ -2966,10 +2926,6 @@ npc = 'eadgar_druid_washing'  # void: tegid
 coords = '0_45_53_33_26'
 
 [[spawn]]
-npc = 'gaius'
-coords = '0_45_53_5_58'
-
-[[spawn]]
 npc = 'death_woman_outdoors1'  # void: hygd
 coords = '0_45_55_46_16'
 
@@ -3036,10 +2992,6 @@ coords = '0_45_53_35_54'
 [[spawn]]
 npc = 'druid'  # void: druid_grey
 coords = '1_45_53_18_40'
-
-[[spawn]]
-npc = 'jatix'
-coords = '0_45_53_19_37'
 
 [[spawn]]
 npc = 'druid'  # void: druid_ponytail_sickle

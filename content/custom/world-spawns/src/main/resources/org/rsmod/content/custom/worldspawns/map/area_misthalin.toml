@@ -182,10 +182,6 @@ npc = 'sos_barb_visible'  # void: litara_barbarian_village
 coords = '0_48_53_11_31'
 
 [[spawn]]
-npc = 'peksa'  # void: peksa_barbarian_village
-coords = '0_48_53_4_37'
-
-[[spawn]]
 npc = 'student1'  # void: student_barbarian_village
 coords = '0_48_53_9_63'
 
@@ -3514,66 +3510,6 @@ npc = 'aide_tutor_mining'  # void: mining_tutor_lumbridge_swamp_mine
 coords = '0_49_77_43_34'
 
 [[spawn]]
-npc = 'newbie_combat_instructor'  # void: combat_instructor
-coords = '0_48_148_34_37'
-
-[[spawn]]
-npc = 'newbie_mining_instructor'  # void: mining_instructor
-coords = '0_48_148_9_32'
-
-[[spawn]]
-npc = 'rat_boss_giant_rat'  # void: giant_rat_tutorial_island
-coords = '0_48_148_26_47'
-
-[[spawn]]
-npc = 'rat_boss_giant_rat'  # void: giant_rat_tutorial_island
-coords = '0_48_148_27_42'
-
-[[spawn]]
-npc = 'rat_boss_giant_rat'  # void: giant_rat_tutorial_island
-coords = '0_48_148_28_45'
-
-[[spawn]]
-npc = 'rat_boss_giant_rat'  # void: giant_rat_tutorial_island
-coords = '0_48_148_28_49'
-
-[[spawn]]
-npc = 'rat_boss_giant_rat'  # void: giant_rat_tutorial_island
-coords = '0_48_148_30_41'
-
-[[spawn]]
-npc = 'rat_boss_giant_rat'  # void: giant_rat_tutorial_island
-coords = '0_48_148_31_46'
-
-[[spawn]]
-npc = 'rat_boss_giant_rat'  # void: giant_rat_tutorial_island
-coords = '0_48_148_31_49'
-
-[[spawn]]
-npc = 'rat_boss_giant_rat'  # void: giant_rat_tutorial_island
-coords = '0_48_148_32_40'
-
-[[spawn]]
-npc = 'rat_boss_giant_rat'  # void: giant_rat_tutorial_island
-coords = '0_48_148_33_42'
-
-[[spawn]]
-npc = 'rat_boss_giant_rat'  # void: giant_rat_tutorial_island
-coords = '0_48_148_33_46'
-
-[[spawn]]
-npc = 'rat_boss_giant_rat'  # void: giant_rat_tutorial_island
-coords = '0_48_148_35_44'
-
-[[spawn]]
-npc = 'rat_boss_giant_rat'  # void: giant_rat_tutorial_island
-coords = '0_48_148_35_49'
-
-[[spawn]]
-npc = 'rat_boss_giant_rat'  # void: giant_rat_tutorial_island
-coords = '0_48_148_37_46'
-
-[[spawn]]
 npc = 'rabbit_1'  # void: rabbit_air_rune_temple
 coords = '0_44_75_7_27'
 
@@ -4146,54 +4082,6 @@ npc = 'banker1'  # void: banker_2
 coords = '0_49_53_12_56'
 
 [[spawn]]
-npc = 'banker1'  # void: banker
-coords = '0_49_53_44_52'
-
-[[spawn]]
-npc = 'banker1'  # void: banker
-coords = '0_49_53_44_48'
-
-[[spawn]]
-npc = 'banker1'  # void: banker
-coords = '0_49_53_44_44'
-
-[[spawn]]
-npc = 'banker1'  # void: banker_2
-coords = '0_49_53_44_50'
-
-[[spawn]]
-npc = 'banker1'  # void: banker_2
-coords = '0_49_53_44_46'
-
-[[spawn]]
-npc = 'banker1'  # void: banker_2
-coords = '0_49_53_44_41'
-
-[[spawn]]
-npc = 'banker1'  # void: banker
-coords = '0_49_53_55_51'
-
-[[spawn]]
-npc = 'banker1'  # void: banker
-coords = '0_49_53_55_47'
-
-[[spawn]]
-npc = 'banker1'  # void: banker
-coords = '0_49_53_55_43'
-
-[[spawn]]
-npc = 'banker1'  # void: banker_2
-coords = '0_49_53_55_53'
-
-[[spawn]]
-npc = 'banker1'  # void: banker_2
-coords = '0_49_53_55_49'
-
-[[spawn]]
-npc = 'banker1'  # void: banker_2
-coords = '0_49_53_55_45'
-
-[[spawn]]
 npc = 'banker1'  # void: banker_3
 coords = '0_49_54_27_34'
 
@@ -4304,10 +4192,6 @@ coords = '0_50_53_4_27'
 [[spawn]]
 npc = 'bim_aubury'  # void: aubury
 coords = '0_50_53_53_10'
-
-[[spawn]]
-npc = 'thessalia_normal'  # void: thessalia
-coords = '0_50_53_4_25'
 
 [[spawn]]
 npc = 'baraek'
@@ -4680,26 +4564,6 @@ coords = '0_51_54_14_46'
 [[spawn]]
 npc = 'zep_assist_varr'  # void: assistant_serf
 coords = '0_51_54_34_27'
-
-[[spawn]]
-npc = 'valaine'
-coords = '1_49_52_57_33'
-
-[[spawn]]
-npc = 'scavvo'
-coords = '1_49_52_55_23'
-
-[[spawn]]
-npc = 'zaff'
-coords = '0_50_53_3_41'
-
-[[spawn]]
-npc = 'horvik_the_armourer'  # void: horvik
-coords = '0_50_53_29_46'
-
-[[spawn]]
-npc = 'lowe'
-coords = '0_50_53_32_31'
 
 [[spawn]]
 npc = 'surok_rat'  # void: rat_burgiss
@@ -5828,3 +5692,23 @@ coords = '0_37_69_11_43'
 [[spawn]]
 npc = 'fairy2_advisor'  # void: fairy_very_wise
 coords = '0_38_68_21_43'
+
+[[spawn]]
+npc = 'banker1'  # rebuilt: varrock_west_bank
+coords = '0_49_53_51_44'
+
+[[spawn]]
+npc = 'banker1'  # rebuilt: varrock_west_bank
+coords = '0_49_53_51_46'
+
+[[spawn]]
+npc = 'banker1'  # rebuilt: varrock_west_bank
+coords = '0_49_53_51_48'
+
+[[spawn]]
+npc = 'banker1'  # rebuilt: varrock_west_bank
+coords = '0_49_53_51_50'
+
+[[spawn]]
+npc = 'banker1'  # rebuilt: varrock_west_bank
+coords = '0_49_53_51_52'

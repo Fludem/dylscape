@@ -26,6 +26,25 @@ SPAWN_RE = re.compile(r'\{\s*id\s*=\s*"([^"]+)"([^}]*)\}')
 FIELD_RE = re.compile(r'(\w+)\s*=\s*("?)([^,"}]+)\2')
 DEDUPE_RADIUS = 3
 
+# Ops that mean "stands at a post and serves whoever walks up". Everything in this revision's
+# cache wanders five tiles by default, which is how bankers end up strolling around the lobby
+# instead of standing behind the counter, so anything wearing one of these is pinned.
+COUNTER_OPS = {
+    "assignment",
+    "bank",
+    "claim-tokens",
+    "collect",
+    "exchange",
+    "glider",
+    "heal",
+    "pay-fare",
+    "quick-travel",
+    "repairs",
+    "rewards",
+    "trade",
+    "travel",
+}
+
 # A mapsquare this densely authored already (upstream's Lumbridge set) is left alone: void
 # would place its own crowd of men, goblins and guards a tile or two off ours and the town
 # would read as doubled. Sparse builders (thieving's ladder, the city shops, the toll gate)
@@ -35,6 +54,24 @@ DENSE_SQUARE = 30
 # Tutorial Island and the empty sea around it. Void has a 2011 tutorial with a different
 # script, and the island here is authored to match live OSRS beat for beat.
 RESERVED_SQUARES = {(x, z) for x in (47, 48, 49) for z in (47, 48)}
+
+# Void's world is a 2011 RuneScape map, and a few buildings were rebuilt between that and this
+# revision's cache. Varrock West Bank is the one you can see: RS lines its counters along the
+# side walls of the room, OSRS runs a single counter down the middle, so void's twelve bankers
+# land in the public lobby and out on the street rather than behind a booth. Every void spawn of
+# `npc` inside `box` (inclusive, absolute coords) is dropped and `place` is spawned instead.
+REBUILT_AREAS = [
+    {
+        "group": "area_misthalin",
+        "why": "varrock_west_bank",
+        "npc": "banker1",
+        "level": 0,
+        "box": (3179, 3432, 3192, 3448),
+        # One tile east of each `fai_varrock_bankbooth` at x=3186, which is the only column of
+        # the staff side left free: x=3187 carries a `bankwall_corner_end` on every odd row.
+        "place": [(3187, 3436), (3187, 3438), (3187, 3440), (3187, 3442), (3187, 3444)],
+    }
+]
 
 # Void groups that describe content this server has no business standing up permanently:
 # seasonal holiday events and random events that should be summoned, not parked in a field,
@@ -49,16 +86,16 @@ EXCLUDED_GROUPS = {
 
 
 def read_npc_types(path):
-    """id -> display name, for every npc in the rev-233 cache."""
+    """id -> (display name, ops), from `DumpNpcTypes.java`."""
     types = {}
     for line in path.read_text().splitlines():
         parts = line.split("\t")
-        if len(parts) < 2:
+        if len(parts) < 6:
             continue
-        name = parts[1]
-        if name in ("null", ""):
+        display = parts[1]
+        if display in ("null", ""):
             continue
-        types[int(parts[0])] = name
+        types[int(parts[0])] = (display, [op for op in parts[5].split("|") if op])
     return types
 
 
@@ -87,7 +124,7 @@ class Bridge:
     def __init__(self, npc_types, symbols):
         self.symbols = symbols
         self.by_display = collections.defaultdict(list)
-        for npc_id, display in npc_types.items():
+        for npc_id, (display, _) in npc_types.items():
             if npc_id in symbols:
                 self.by_display[normalise(display)].append(npc_id)
         for ids in self.by_display.values():
@@ -146,11 +183,22 @@ def coord_string(x, y, level):
 
 
 def read_existing(repo, symbols):
-    """Spawns already authored in the repo, as (name, level, x, y)."""
+    """Spawns already authored in the repo, as (name, level, x, y).
+
+    Every `[[spawn]]` toml under `content/` counts, not just the ones called `npcs.toml`.
+    Matching on that one filename used to be the rule, and it missed `city-shops`, whose spawn
+    files are named after their city (`alkharid.toml`, `falador.toml`, ...) -- so all 31 of its
+    shopkeepers fell through the dedupe below and got a second copy generated on top of them.
+    The gem trader is the one you can see, because he is the only shop npc standing outdoors.
+
+    The generator's own output is skipped, or a rerun would dedupe against the previous run.
+    """
     names = {name: num for num, name in symbols.items()}
     existing = []
-    for toml in (repo / "content").rglob("npcs.toml"):
-        if "/build/" in str(toml):
+    for toml in (repo / "content").rglob("*.toml"):
+        if "/build/" in str(toml) or "/worldspawns/" in str(toml):
+            continue
+        if "[[spawn]]" not in toml.read_text():
             continue
         name = None
         for line in toml.read_text().splitlines():
@@ -165,6 +213,39 @@ def read_existing(repo, symbols):
                 name = None
     return existing
 
+
+WANDER_TEMPLATE = """package org.rsmod.content.custom.worldspawns.configs
+
+import org.rsmod.api.type.editors.npc.NpcEditor
+import org.rsmod.api.type.refs.npc.NpcReferences
+import org.rsmod.game.type.npc.NpcType
+
+/**
+ * The npcs void keeps on their spawn tile, generated by `tools/npc-spawns/generate.py`.
+ *
+ * Out of the cache every npc wanders five tiles, so bankers drift out from behind the counter
+ * and shopkeepers leave their shops -- the same problem the toll gate border guards had. The
+ * {count} listed here are the npcs this server spawns that void pins at 0, or that carry a
+ * counter-service op (`Bank`, `Trade`, `Collect` and the like) in this revision's cache.
+ *
+ * Npcs belonging to a module that already runs its own [NpcEditor] are left out, so no type is
+ * edited from two places.
+ */
+internal object WorldSpawnNpcs : NpcReferences() {{
+    val stationary: List<NpcType> =
+        listOf(
+{names}
+            )
+            .map {{ find(it) }}
+}}
+
+/** Applies [WorldSpawnNpcs.stationary]. A type edit, so the boot config sync picks it up. */
+internal object WorldSpawnNpcEditor : NpcEditor() {{
+    init {{
+        WorldSpawnNpcs.stationary.forEach {{ edit(it) {{ wanderRange = 0 }} }}
+    }}
+}}
+"""
 
 BUILDER_TEMPLATE = """package org.rsmod.content.custom.worldspawns.map
 
@@ -188,6 +269,51 @@ object WorldNpcSpawns : MapNpcSpawnBuilder() {{
 """
 
 
+WANDER_ENTRY_RE = re.compile(r"^\[\.([^\]]+)\]$")
+
+
+def read_wander_ranges(path):
+    """void npc name -> wander range, from void's `wander_ranges.tables.toml`."""
+    ranges = {}
+    current = None
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        match = WANDER_ENTRY_RE.match(line)
+        if match:
+            current = match.group(1)
+        elif current and line.startswith("wander_range"):
+            ranges[current] = int(line.split("=", 1)[1].strip())
+            current = None
+    return ranges
+
+
+def editor_owned_names(repo):
+    """Npc names belonging to modules that already run their own NpcEditor.
+
+    Editing one type from two editors is exactly the conflict the content-group note warns
+    about, so anything those modules name is left alone here.
+    """
+    def module_of(path):
+        for parent in path.parents:
+            if (parent / "build.gradle.kts").exists():
+                return parent
+        return None
+
+    sources = [p for p in (repo / "content").rglob("*.kt") if "/build/" not in str(p)]
+    modules = {
+        module
+        for module in (module_of(p) for p in sources if "NpcEditor()" in p.read_text())
+        if module is not None
+    }
+    names = set()
+    for module in modules:
+        for path in module.rglob("*.kt"):
+            if "/build/" in str(path):
+                continue
+            names.update(re.findall(r'find\("([a-z0-9_]+)"', path.read_text()))
+    return names
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--void", required=True, type=pathlib.Path, help="void checkout")
@@ -196,10 +322,12 @@ def main():
     parser.add_argument("--repo", required=True, type=pathlib.Path)
     parser.add_argument("--out", required=True, type=pathlib.Path)
     parser.add_argument("--builder", type=pathlib.Path, help="WorldNpcSpawns.kt to rewrite")
+    parser.add_argument("--wander", type=pathlib.Path, help="WorldSpawnNpcs.kt to rewrite")
     args = parser.parse_args()
 
     symbols = read_symbols(args.repo / ".data/symbols/npc.sym")
-    bridge = Bridge(read_npc_types(args.npc_types), symbols)
+    npc_types = read_npc_types(args.npc_types)
+    bridge = Bridge(npc_types, symbols)
     in_cache = {
         tuple(int(part) for part in line.split("\t"))
         for line in args.mapsquares.read_text().splitlines()
@@ -238,6 +366,15 @@ def main():
             if square in covered:
                 stats["reserved-square"] += 1
                 continue
+            if any(
+                area["npc"] == name
+                and area["level"] == level
+                and area["box"][0] <= x <= area["box"][2]
+                and area["box"][1] <= y <= area["box"][3]
+                for area in REBUILT_AREAS
+            ):
+                stats["rebuilt-area"] += 1
+                continue
             key = (name, level, x, y)
             if key in seen:
                 stats["duplicate"] += 1
@@ -253,8 +390,19 @@ def main():
             ):
                 stats["near-existing"] += 1
                 continue
-            groups[group].append((name, coord_string(x, y, level), void_name))
+            comment = "" if void_name == name else f"  # void: {void_name}"
+            groups[group].append((name, coord_string(x, y, level), comment))
             stats["kept"] += 1
+
+    for area in REBUILT_AREAS:
+        for x, y in area["place"]:
+            key = (area["npc"], area["level"], x, y)
+            if key in seen:
+                continue
+            seen.add(key)
+            coords = coord_string(x, y, area["level"])
+            groups[area["group"]].append((area["npc"], coords, f'  # rebuilt: {area["why"]}'))
+            stats["rebuilt-placed"] += 1
 
     args.out.mkdir(parents=True, exist_ok=True)
     for group, spawns in sorted(groups.items()):
@@ -263,13 +411,42 @@ def main():
             "# Do not hand-edit: rerun the generator instead.",
             "",
         ]
-        for name, coords, void_name in spawns:
+        for name, coords, comment in spawns:
             lines.append("[[spawn]]")
-            comment = "" if void_name == name else f"  # void: {void_name}"
             lines.append(f"npc = '{name}'{comment}")
             lines.append(f"coords = '{coords}'")
             lines.append("")
         (args.out / f"{group}.toml").write_text("\n".join(lines))
+
+    if args.wander:
+        ranges = read_wander_ranges(args.void / "data/entity/npc/wander_ranges.tables.toml")
+        pinned = collections.defaultdict(list)
+        for void_name, wander in ranges.items():
+            name = bridge.resolve(void_name)
+            if name is not None:
+                pinned[name].append(wander)
+        spawned = {name for spawns in groups.values() for name, _, _ in spawns}
+        owned = editor_owned_names(args.repo)
+
+        ids = {name: num for num, name in symbols.items()}
+
+        def serves_a_counter(name):
+            display_and_ops = npc_types.get(ids.get(name, -1))
+            if display_and_ops is None:
+                return False
+            return any(op.lower() in COUNTER_OPS for op in display_and_ops[1])
+
+        stationary = sorted(
+            name
+            for name in spawned
+            if name not in owned
+            and (set(pinned.get(name, [1])) == {0} or serves_a_counter(name))
+        )
+        listed = "\n".join(f'                "{name}",' for name in stationary)
+        args.wander.write_text(
+            WANDER_TEMPLATE.format(count=len(stationary), names=listed)
+        )
+        stats["wander-pinned"] = len(stationary)
 
     if args.builder:
         entries = "\n".join(
