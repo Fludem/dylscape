@@ -21,13 +21,17 @@ import org.rsmod.map.CoordGrid
  * span a void, so `rooftops_draynor_tightrope_end` at (3090, 3277) is not somewhere a player can
  * stand - the real landing is the platform one tile south. `AgilityCourseTest` asserts every
  * destination here is walkable in the live collision map, which is what caught that.
+ *
+ * Experience is the wiki's per-obstacle table: 5, 8, 7, 7, 10, 4, and 79 for the crate at the end.
+ * That last figure is the completion bonus folded into the final obstacle, so it is split here into
+ * 4 for the climb down and 75 for the lap - 120 per lap either way.
  */
 public object Draynor {
     val course: RooftopCourse =
         RooftopCourse(
             name = "Draynor Village",
             level = 10,
-            lapXp = 64.0,
+            lapXp = 75.0,
             markChance = 5,
             markTiles =
                 listOf(
@@ -42,7 +46,7 @@ public object Draynor {
                 listOf(
                     Obstacle(
                         loc = AgilityLocs.draynor_wallclimb,
-                        xp = 8.0,
+                        xp = 5.0,
                         ticks = 2,
                         movement =
                             Movement.Climb(
@@ -64,7 +68,7 @@ public object Draynor {
                     ),
                     Obstacle(
                         loc = AgilityLocs.draynor_tightrope_2,
-                        xp = 8.0,
+                        xp = 7.0,
                         ticks = 4,
                         movement =
                             Movement.Cross(
@@ -76,7 +80,7 @@ public object Draynor {
                     ),
                     Obstacle(
                         loc = AgilityLocs.draynor_wallcrossing,
-                        xp = 8.0,
+                        xp = 7.0,
                         ticks = 3,
                         movement =
                             Movement.Cross(
@@ -88,7 +92,7 @@ public object Draynor {
                     ),
                     Obstacle(
                         loc = AgilityLocs.draynor_wallscramble,
-                        xp = 8.0,
+                        xp = 10.0,
                         ticks = 2,
                         movement =
                             Movement.Cross(
@@ -99,7 +103,7 @@ public object Draynor {
                     ),
                     Obstacle(
                         loc = AgilityLocs.draynor_leapdown,
-                        xp = 8.0,
+                        xp = 4.0,
                         ticks = 2,
                         movement =
                             Movement.Cross(
@@ -110,7 +114,7 @@ public object Draynor {
                     ),
                     Obstacle(
                         loc = AgilityLocs.draynor_crate,
-                        xp = 8.0,
+                        xp = 4.0,
                         ticks = 2,
                         movement =
                             Movement.Climb(

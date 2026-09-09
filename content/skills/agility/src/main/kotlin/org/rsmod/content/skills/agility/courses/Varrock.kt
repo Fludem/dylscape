@@ -23,13 +23,17 @@ import org.rsmod.map.CoordGrid
  * but the *collision* map - terrain plus locs - has x=3192..3200 blocked solid by the ruin scenery,
  * so the only ground on the far side is x=3186..3191. `AgilityCourseTest` caught that; a terrain
  * dump cannot see it, which is the whole reason that test sweeps the live collision map.
+ *
+ * The wiki's table ends on 143.7 for the edge, which is the completion bonus folded into the last
+ * jump; it is split here into 3.7 for the jump and 140 for the lap. 269.7 per lap, which the wiki
+ * rounds to 270 in prose.
  */
 public object Varrock {
     val course: RooftopCourse =
         RooftopCourse(
             name = "Varrock",
             level = 30,
-            lapXp = 130.0,
+            lapXp = 140.0,
             markChance = 5,
             markTiles =
                 listOf(
@@ -45,7 +49,7 @@ public object Varrock {
                 listOf(
                     Obstacle(
                         loc = AgilityLocs.varrock_wallclimb,
-                        xp = 12.0,
+                        xp = 13.5,
                         ticks = 2,
                         movement =
                             Movement.Climb(
@@ -55,7 +59,7 @@ public object Varrock {
                     ),
                     Obstacle(
                         loc = AgilityLocs.varrock_clothesline,
-                        xp = 12.0,
+                        xp = 23.0,
                         ticks = 4,
                         movement =
                             Movement.Cross(
@@ -67,7 +71,7 @@ public object Varrock {
                     ),
                     Obstacle(
                         loc = AgilityLocs.varrock_leaptoruins,
-                        xp = 12.0,
+                        xp = 19.0,
                         ticks = 3,
                         movement =
                             Movement.Cross(
@@ -79,7 +83,7 @@ public object Varrock {
                     ),
                     Obstacle(
                         loc = AgilityLocs.varrock_wallswing,
-                        xp = 12.0,
+                        xp = 28.0,
                         ticks = 4,
                         movement =
                             Movement.Cross(
@@ -91,7 +95,7 @@ public object Varrock {
                     ),
                     Obstacle(
                         loc = AgilityLocs.varrock_wallscramble,
-                        xp = 12.0,
+                        xp = 10.0,
                         ticks = 3,
                         movement =
                             Movement.Cross(
@@ -103,7 +107,7 @@ public object Varrock {
                     ),
                     Obstacle(
                         loc = AgilityLocs.varrock_leaptobalcony,
-                        xp = 12.0,
+                        xp = 24.5,
                         ticks = 3,
                         movement =
                             Movement.Cross(
@@ -115,7 +119,7 @@ public object Varrock {
                     ),
                     Obstacle(
                         loc = AgilityLocs.varrock_leapdown,
-                        xp = 12.0,
+                        xp = 4.5,
                         ticks = 3,
                         movement =
                             Movement.Cross(
@@ -127,7 +131,7 @@ public object Varrock {
                     ),
                     Obstacle(
                         loc = AgilityLocs.varrock_stepuproof,
-                        xp = 12.0,
+                        xp = 3.5,
                         ticks = 2,
                         movement =
                             Movement.Cross(
@@ -138,7 +142,7 @@ public object Varrock {
                     ),
                     Obstacle(
                         loc = AgilityLocs.varrock_finish,
-                        xp = 12.0,
+                        xp = 3.7,
                         ticks = 2,
                         movement =
                             Movement.Climb(

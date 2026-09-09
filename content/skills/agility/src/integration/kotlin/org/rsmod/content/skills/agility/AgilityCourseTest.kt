@@ -114,6 +114,27 @@ class AgilityCourseTest {
         assertEquals(everyLoc.size, everyLoc.toSet().size) { "An obstacle is on two courses." }
     }
 
+    @Test
+    fun `every course pays the experience per lap the live game pays`() {
+        // Transcribed from the per-obstacle tables on the OSRS wiki, which are the only published
+        // source for these. They are worth pinning: the split between obstacle xp and the lap
+        // bonus is a judgement call (see `RooftopCourse.lapXp`), but the *total* is not, and a
+        // course that quietly drifts off it is the kind of bug nobody notices for months.
+        val published =
+            mapOf(
+                "Draynor Village" to 120.0,
+                "Al Kharid" to 216.0,
+                // 269.7 in the table; the wiki rounds it to 270 in prose.
+                "Varrock" to 269.7,
+                "Seers' Village" to 570.0,
+            )
+        for (course in RooftopCourses.all) {
+            val expected = published[course.name]
+            assertNotNull(expected) { "No published lap total recorded for ${course.name}." }
+            assertEquals(expected!!, course.lapTotalXp, 0.001, "${course.name} lap experience")
+        }
+    }
+
     private fun CollisionFlagMap.isBlocked(coords: CoordGrid): Boolean {
         val blocked = CollisionFlag.BLOCK_WALK or CollisionFlag.BLOCK_PLAYERS
         return this[coords.x, coords.z, coords.level] and blocked != 0

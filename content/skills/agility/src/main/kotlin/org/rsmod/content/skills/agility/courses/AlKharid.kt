@@ -18,13 +18,17 @@ import org.rsmod.map.CoordGrid
  *
  * `rooftops_kharid_tree` is named in the cache but placed nowhere in the world, so the tropical
  * tree here is `bamboo_tree_top`, which is what the map actually uses.
+ *
+ * Alone among the courses implemented so far this one has **no lap bonus**. The wiki is explicit
+ * that Al Kharid's experience is "more evenly spread throughout the course, unlike other Agility
+ * courses", and its eight obstacles already sum to the full 216.
  */
 public object AlKharid {
     val course: RooftopCourse =
         RooftopCourse(
             name = "Al Kharid",
             level = 20,
-            lapXp = 84.0,
+            lapXp = 0.0,
             markChance = 5,
             markTiles =
                 listOf(
@@ -49,7 +53,7 @@ public object AlKharid {
                     ),
                     Obstacle(
                         loc = AgilityLocs.kharid_tightrope_1,
-                        xp = 12.0,
+                        xp = 36.0,
                         ticks = 5,
                         movement =
                             Movement.Cross(
@@ -61,7 +65,7 @@ public object AlKharid {
                     ),
                     Obstacle(
                         loc = AgilityLocs.kharid_rope_swing,
-                        xp = 12.0,
+                        xp = 48.0,
                         ticks = 3,
                         movement =
                             Movement.Cross(
@@ -73,7 +77,7 @@ public object AlKharid {
                     ),
                     Obstacle(
                         loc = AgilityLocs.kharid_slide_side,
-                        xp = 12.0,
+                        xp = 48.0,
                         ticks = 5,
                         movement =
                             Movement.Cross(
@@ -97,7 +101,7 @@ public object AlKharid {
                     ),
                     Obstacle(
                         loc = AgilityLocs.kharid_wallclimb_2,
-                        xp = 12.0,
+                        xp = 6.0,
                         ticks = 2,
                         movement =
                             Movement.Climb(
@@ -107,7 +111,7 @@ public object AlKharid {
                     ),
                     Obstacle(
                         loc = AgilityLocs.kharid_tightrope_4,
-                        xp = 12.0,
+                        xp = 18.0,
                         ticks = 6,
                         movement =
                             Movement.Cross(
@@ -119,7 +123,7 @@ public object AlKharid {
                     ),
                     Obstacle(
                         loc = AgilityLocs.kharid_leapdown,
-                        xp = 12.0,
+                        xp = 36.0,
                         ticks = 2,
                         movement =
                             Movement.Climb(

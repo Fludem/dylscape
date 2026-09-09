@@ -17,13 +17,17 @@ import org.rsmod.map.CoordGrid
  *
  * `rooftops_seers_crate` is left unbound. It sits beside the tightrope at (2707, 3488) and carries
  * `Search`, not a traversal op - it is scenery on the course, not part of the lap.
+ *
+ * The wiki's 435 for the final edge is almost entirely completion bonus - the five obstacles before
+ * it pay 135 between them. Split here into 45 for the jump (matching the opening wall) and 390 for
+ * the lap, for the published 570.
  */
 public object SeersVillage {
     val course: RooftopCourse =
         RooftopCourse(
             name = "Seers' Village",
             level = 60,
-            lapXp = 350.0,
+            lapXp = 390.0,
             markChance = 4,
             markTiles =
                 listOf(
@@ -48,7 +52,7 @@ public object SeersVillage {
                     ),
                     Obstacle(
                         loc = AgilityLocs.seers_jump,
-                        xp = 45.0,
+                        xp = 20.0,
                         ticks = 3,
                         movement =
                             Movement.Cross(
@@ -60,7 +64,7 @@ public object SeersVillage {
                     ),
                     Obstacle(
                         loc = AgilityLocs.seers_tightrope,
-                        xp = 45.0,
+                        xp = 20.0,
                         ticks = 5,
                         movement =
                             Movement.Cross(
@@ -72,7 +76,7 @@ public object SeersVillage {
                     ),
                     Obstacle(
                         loc = AgilityLocs.seers_jump_1,
-                        xp = 45.0,
+                        xp = 35.0,
                         ticks = 3,
                         movement =
                             Movement.Cross(
@@ -84,7 +88,7 @@ public object SeersVillage {
                     ),
                     Obstacle(
                         loc = AgilityLocs.seers_jump_2,
-                        xp = 45.0,
+                        xp = 15.0,
                         ticks = 3,
                         movement =
                             Movement.Cross(

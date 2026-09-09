@@ -13,7 +13,14 @@ import org.rsmod.map.CoordGrid
  *
  * @param name the course's display name, used in the "you need level N" refusal.
  * @param level the Agility level required to use *any* obstacle on the course.
- * @param lapXp the bonus paid on clearing the final obstacle, on top of that obstacle's own xp.
+ * @param lapXp the bonus paid on clearing the final obstacle, on top of that obstacle's own xp. The
+ *   wiki does not publish this split: it lists one figure for the last obstacle that already has
+ *   the completion bonus folded into it (Draynor's crate is 79, Seers' edge is 435). So the last
+ *   obstacle keeps an own-xp in line with its neighbours and the remainder lands here, which makes
+ *   `lapTotalXp` exactly the published per-lap figure while still giving the bonus something to
+ *   withhold from a player who skipped the chain. Al Kharid is `0.0` on purpose - the wiki says its
+ *   experience is "more evenly spread throughout the course, unlike other Agility courses", and its
+ *   eight obstacles already sum to the full 216.
  * @param markChance the chance, as `1 in markChance`, that a lap spawns a Mark of grace. Rolled
  *   once when the player clears the first obstacle, so the mark is on the roof ahead of them for
  *   the rest of the lap - which is how the live game does it.
@@ -30,7 +37,7 @@ public class RooftopCourse(
 ) {
     init {
         require(level in 1..99) { "$name: level must be in 1..99, was $level" }
-        require(lapXp > 0.0) { "$name: lap xp must be positive, was $lapXp" }
+        require(lapXp >= 0.0) { "$name: lap xp cannot be negative, was $lapXp" }
         require(markChance >= 1) { "$name: mark chance must be at least 1, was $markChance" }
         require(obstacles.size >= 2) { "$name: a course needs at least two obstacles" }
         require(markTiles.isNotEmpty()) { "$name: needs at least one mark tile" }
