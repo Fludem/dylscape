@@ -1,0 +1,7 @@
+# Shop currencies authored by this server. See `.local/content.sym` for the id-allocation
+# reasoning.
+#
+# Currencies are name-only server types with no cache encoder, so this needs no `packCache` -
+# `CurrencyReferenceResolver` resolves them straight out of this table on boot. Upstream's
+# `currency.sym` holds only `0 standard_gp`, so 1000 leaves no realistic overlap.
+1000	mark_of_grace

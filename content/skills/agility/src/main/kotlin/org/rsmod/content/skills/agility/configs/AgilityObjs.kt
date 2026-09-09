@@ -21,4 +21,7 @@ public object AgilityObjs : ObjReferences() {
     val graceful_legs = find("graceful_legs")
     val graceful_gloves = find("graceful_gloves")
     val graceful_boots = find("graceful_boots")
+
+    /** 100 amylase crystals. Grace sells these alongside the set; the cache calls it `pack_`. */
+    val amylase_pack = find("pack_amylase")
 }

@@ -1,0 +1,12 @@
+# Grace, in the Rogues' Den beneath The Toad and Chicken in Burthorpe, at her OSRS tile
+# (3050, 4961). `GraceShopTest` checks the tile against the game's own collision map.
+#
+# **Level 1, not 0.** The den is underground, so the obvious reading is level 0 -- but in this
+# cache level 0 across the whole region is solid and every loc in the den (the bank chest, the
+# deposit box) is placed on level 1. Spawning her on level 0 gives a Grace inside the rock.
+#
+# The Rogues' Den has no entrance bound on this server yet -- the Burthorpe trapdoor is not
+# handled -- so the teleport menu carries a "Rogues' Den" destination that lands beside her.
+[[spawn]]
+npc = 'rooftops_grace'
+coords = '1_47_77_42_33'

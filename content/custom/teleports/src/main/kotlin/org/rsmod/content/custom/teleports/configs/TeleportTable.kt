@@ -59,6 +59,11 @@ internal object TeleportTable {
             entry("farming_guild", "Farming Guild", CoordGrid(1249, 3720, 0)),
             entry("catherby_patch", "Catherby Patch", CoordGrid(2809, 3463, 0)), // farm
             entry("falador_patch", "Falador Patch", CoordGrid(3055, 3307, 0)), // farm
+            // Grace, who sells the graceful set for marks of grace. The Rogues' Den has no
+            // entrance bound yet -- the Burthorpe trapdoor is unhandled -- so without this
+            // row she stands in a room nobody can walk into. Level 1, not 0: the den is
+            // underground but its floor is on level 1 in this cache.
+            entry("rogues_den", "Rogues' Den (Grace)", CoordGrid(3050, 4963, 1)),
         )
 
     val dungeons: List<TeleportDestination> =
