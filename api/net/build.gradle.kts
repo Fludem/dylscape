@@ -26,6 +26,7 @@ dependencies {
     implementation(projects.api.script)
     implementation(projects.api.serverConfig)
     implementation(projects.api.totp)
+    implementation(projects.api.utils.utilsMap)
     implementation(projects.api.type.typeReferences)
     implementation(projects.api.type.typeBuilders)
     implementation(projects.api.type.typeScriptDsl)

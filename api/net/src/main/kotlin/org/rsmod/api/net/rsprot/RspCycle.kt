@@ -16,6 +16,7 @@ import org.rsmod.api.config.refs.baseanimsets
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.player.righthand
 import org.rsmod.api.registry.region.RegionRegistry
+import org.rsmod.api.utils.map.BuildAreaUtils
 import org.rsmod.game.client.ClientCycle
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.util.EntityFaceAngle
@@ -44,6 +45,14 @@ class RspCycle(
 
     private var knownBuildArea: CoordGrid = CoordGrid.NULL
 
+    /**
+     * The build area [queueRebuildLogin] centred the log-in scene on.
+     *
+     * Kept so the first cycle can tell "the player is still where we built their scene" from "the
+     * player was moved out of it before the first cycle ran". See [rebuildArea].
+     */
+    private var loginBuildArea: CoordGrid = CoordGrid.NULL
+
     private var knownCachedSpeed: MoveSpeed = MoveSpeed.Stationary
 
     private var knownFaceEntity: Int? = -1
@@ -61,6 +70,7 @@ class RspCycle(
     fun init(player: Player) {
         player.updateCoords()
         player.queueRebuildLogin()
+        loginBuildArea = BuildAreaUtils.calculateBuildArea(ZoneKey.from(player.coords))
     }
 
     private fun Player.queueRebuildLogin() {
@@ -143,8 +153,13 @@ class RspCycle(
             return
         }
 
-        // Skip log-in rebuild as RebuildLogin is already sent.
-        if (knownBuildArea == CoordGrid.NULL) {
+        // Skip the log-in rebuild, as RebuildLogin has already been sent -- but only while the
+        // player is still inside the scene it was built around. `RebuildLogin` is queued from
+        // `init`, which runs before the `SessionStateEvent.Login` handlers, so anything that
+        // places a player from one of those (Tutorial Island routing a brand-new account onto
+        // the island) reaches the first cycle standing somewhere the client was never sent.
+        // Skipping unconditionally left them in an unrendered void until they relogged.
+        if (knownBuildArea == CoordGrid.NULL && buildArea == loginBuildArea) {
             knownBuildArea = buildArea
             return
         }
