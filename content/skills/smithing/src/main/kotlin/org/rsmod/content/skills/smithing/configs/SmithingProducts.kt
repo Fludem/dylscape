@@ -24,15 +24,23 @@ object SmithingProducts {
     /** Bar tiers in ascending order; used to pick the best bar a player is carrying. */
     val tiers: List<Tier> =
         listOf(
-            Tier(SmithingObjs.bronze_bar, 12.5),
-            Tier(SmithingObjs.iron_bar, 25.0),
-            Tier(SmithingObjs.steel_bar, 37.5),
-            Tier(SmithingObjs.mithril_bar, 50.0),
-            Tier(SmithingObjs.adamantite_bar, 62.5),
-            Tier(SmithingObjs.runite_bar, 75.0),
+            Tier(SmithingObjs.bronze_bar, 1, 12.5),
+            Tier(SmithingObjs.iron_bar, 2, 25.0),
+            Tier(SmithingObjs.steel_bar, 3, 37.5),
+            Tier(SmithingObjs.mithril_bar, 4, 50.0),
+            Tier(SmithingObjs.adamantite_bar, 5, 62.5),
+            Tier(SmithingObjs.runite_bar, 6, 75.0),
         )
 
-    data class Tier(val bar: ObjType, val xpPerBar: Double)
+    /**
+     * @param barType the value `smithing_bar_type` takes for this tier -- the key enum 1253 maps to
+     *   [bar]. It is a 1-based index, not the bar's obj id; `SmithingConfigTest` asserts every one
+     *   of these against the cache's own copy of that enum.
+     */
+    data class Tier(val bar: ObjType, val barType: Int, val xpPerBar: Double)
+
+    /** The tier the interface is currently drawing, or `null` if [barType] is not one of ours. */
+    fun tierOf(barType: Int): Tier? = tiers.firstOrNull { it.barType == barType }
 
     private val products: Map<ObjType, Map<ComponentType, ObjType>> =
         mapOf(

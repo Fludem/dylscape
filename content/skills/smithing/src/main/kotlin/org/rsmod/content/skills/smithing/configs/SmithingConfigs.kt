@@ -9,7 +9,7 @@ import org.rsmod.api.type.refs.interf.InterfaceReferences
 import org.rsmod.api.type.refs.loc.LocReferences
 import org.rsmod.api.type.refs.obj.ObjReferences
 import org.rsmod.api.type.refs.seq.SeqReferences
-import org.rsmod.api.type.refs.varp.VarpReferences
+import org.rsmod.api.type.refs.varbit.VarBitReferences
 import org.rsmod.game.type.obj.ObjType
 
 object SmithingContent : ContentReferences() {
@@ -46,18 +46,21 @@ object SmithingSeqs : SeqReferences() {
     val smelt = find("human_furnace")
 }
 
-object SmithingVarps : VarpReferences() {
+object SmithingVarBits : VarBitReferences() {
     /**
      * The bar tier the smithing interface should draw.
      *
-     * This is not a guess. `proc,smithing_setup` (clientscript 430) runs from interface 312's own
-     * `onLoad` and switches on this varp; its switch table keys are the bar **object ids** --
-     * `bronze_bar(2349)`, `iron_bar(2351)`, `steel_bar(2353)`, `mithril_bar(2359)`,
-     * `adamantite_bar(2361)`, `runite_bar(2363)` and `lovakite_bar(13354)`. So the server's only
-     * job is to store the bar's obj id here and open the interface; the client lays out every
-     * product, its level requirement and its bar cost by itself.
+     * `proc,smithing_setup` (clientscript 430) runs from interface 312's own `onLoad` and switches
+     * on this varbit *after* passing it through enum 1253, which maps `1..7` to `bronze_bar`,
+     * `iron_bar`, `steel_bar`, `mithril_bar`, `adamantite_bar`, `runite_bar` and `lovakite_bar`. So
+     * the value stored here is a small tier index, **not** the bar's obj id.
+     *
+     * The distinction matters because `smithing_bar_type` is bits 0..2 of the varp `smithbars`
+     * (210). Writing a bar's obj id into the varp does not fail -- it silently truncates to the low
+     * three bits, and `bronze_bar` (2349) lands on index 5, which is adamant. Every tier mis-drew
+     * that way until the setup script was actually decoded.
      */
-    val smithbars = find("smithbars")
+    val bar_type = find("smithing_bar_type")
 }
 
 object SmithingInterfaces : InterfaceReferences() {

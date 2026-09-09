@@ -17,7 +17,8 @@ import org.rsmod.content.skills.smithing.configs.SmithingComponents
 import org.rsmod.content.skills.smithing.configs.SmithingContent
 import org.rsmod.content.skills.smithing.configs.SmithingObjs
 import org.rsmod.content.skills.smithing.configs.SmithingProductObjs
-import org.rsmod.content.skills.smithing.configs.SmithingVarps
+import org.rsmod.content.skills.smithing.configs.SmithingProducts
+import org.rsmod.content.skills.smithing.configs.SmithingVarBits
 import org.rsmod.game.inv.InvObj
 import org.rsmod.game.type.interf.IfButtonOp
 import org.rsmod.game.type.interf.IfEvent
@@ -34,6 +35,10 @@ import org.rsmod.map.CoordGrid
  */
 @Execution(ExecutionMode.SAME_THREAD)
 class SmithingScriptTest {
+    /** The value `smithing_bar_type` takes for bronze -- enum 1253's key, not the bar's obj id. */
+    private val bronzeBarType =
+        SmithingProducts.tiers.first { it.bar.id == SmithingObjs.bronze_bar.id }.barType
+
     @Test
     fun GameTestState.`smelt a bronze bar from copper and tin`() =
         runGameTest(Smelting::class) {
@@ -111,10 +116,12 @@ class SmithingScriptTest {
             player.opLoc1(anvil)
             advance(ticks = 1)
 
-            // The interface draws itself from this varp alone, so getting the bar's obj id in
-            // there is the entire server side of opening the menu.
-            assertEquals(SmithingObjs.bronze_bar.id, player.vars[SmithingVarps.smithbars]) {
-                "The smithbars varp was not set to the carried bar."
+            // The interface draws itself from this varbit alone, so getting the tier's enum-1253
+            // key in there is the entire server side of opening the menu. It is a 1-based index,
+            // not the bar's obj id -- the varbit is three bits wide, so an obj id would truncate
+            // and silently draw a different tier.
+            assertEquals(bronzeBarType, player.vars[SmithingVarBits.bar_type]) {
+                "The smithing_bar_type varbit was not set to the carried bar's tier."
             }
             assertTrue(player.isBusy) { "Opening the anvil should leave a modal open." }
         }
@@ -129,14 +136,14 @@ class SmithingScriptTest {
             player.stats[stats.smithing] = 1
             val startXp = player.statMap.getXP(stats.smithing)
 
-            // The varp is set directly rather than by clicking the anvil, because an open modal
+            // The varbit is set directly rather than by clicking the anvil, because an open modal
             // makes the player access-protected (`isBusy = isDelayed || ui.modals.isNotEmpty()`).
             // Production dispatches modal buttons through `launchLenient`, which ignores that;
             // the test harness only exposes the strict `launch`, so a click delivered while the
             // interface is genuinely open would never be handled here. Opening is covered by the
             // test above; this one covers what happens after the click.
             player.withProtectedAccess {
-                vars[SmithingVarps.smithbars] = SmithingObjs.bronze_bar.id
+                vars[SmithingVarBits.bar_type] = bronzeBarType
                 eventBus.publish(
                     this,
                     IfModalButton(
@@ -166,7 +173,7 @@ class SmithingScriptTest {
             player.inv[1] = InvObj(SmithingObjs.bronze_bar)
             player.stats[stats.smithing] = 99
             player.withProtectedAccess {
-                vars[SmithingVarps.smithbars] = SmithingObjs.bronze_bar.id
+                vars[SmithingVarBits.bar_type] = bronzeBarType
                 eventBus.publish(
                     this,
                     IfModalButton(

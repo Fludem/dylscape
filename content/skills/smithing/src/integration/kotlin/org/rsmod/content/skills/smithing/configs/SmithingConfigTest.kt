@@ -1,5 +1,6 @@
 package org.rsmod.content.skills.smithing.configs
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -27,6 +28,37 @@ import org.rsmod.content.interfaces.skillmulti.configs.SkillMultiComponents
  */
 @Execution(ExecutionMode.SAME_THREAD)
 class SmithingConfigTest {
+    /**
+     * Pins the tier indices to the client's own table.
+     *
+     * `proc,smithing_setup` reads `smithing_bar_type`, maps it through enum 1253 and switches on
+     * the bar obj it gets back, so `Tier.barType` has to be that enum's key. The varbit is only
+     * three bits wide, which is why the mismatch this test now rules out was invisible: writing a
+     * bar's obj id truncated instead of failing, and `bronze_bar` (2349) came out as 5 -- adamant.
+     */
+    @Test
+    fun GameTestState.`every tier index is the enum key the client switches on`() =
+        runBasicGameTest {
+            val barTypeToBar = cacheTypes.enums[BAR_TYPE_TO_BAR]
+            assertNotNull(barTypeToBar) { "Enum $BAR_TYPE_TO_BAR is missing from the cache." }
+            for (tier in SmithingProducts.tiers) {
+                val name = cacheTypes.objs[tier.bar.id]?.internalName
+                val drawn = barTypeToBar!!.primitiveMap[tier.barType] as? Int
+                assertEquals(tier.bar.id, drawn) {
+                    "smithing_bar_type=${tier.barType} draws " +
+                        "'${drawn?.let { cacheTypes.objs[it]?.internalName }}', not '$name'."
+                }
+            }
+
+            val varbit = cacheTypes.varbits[SmithingVarBits.bar_type.id]
+            assertNotNull(varbit) { "smithing_bar_type is missing from the cache." }
+            val widest = SmithingProducts.tiers.maxOf { it.barType }
+            val capacity = (1 shl (varbit!!.msb - varbit.lsb + 1)) - 1
+            assertTrue(widest <= capacity) {
+                "smithing_bar_type holds at most $capacity but a tier index reaches $widest."
+            }
+        }
+
     @Test
     fun GameTestState.`every anvil product is one the cache agrees is smithable`() =
         runBasicGameTest {
@@ -162,5 +194,12 @@ class SmithingConfigTest {
         assertTrue(cacheTypes.enums[5178]?.primitiveMap?.get(SkillMultiType.Smelt.id) == null) {
             "Skillmulti type ${SkillMultiType.Smelt.id} no longer draws quantity buttons."
         }
+    }
+
+    private companion object {
+        /**
+         * `smithing_bar_type` -> the bar obj `proc,smithing_setup` switches on. Unnamed in syms.
+         */
+        const val BAR_TYPE_TO_BAR = 1253
     }
 }

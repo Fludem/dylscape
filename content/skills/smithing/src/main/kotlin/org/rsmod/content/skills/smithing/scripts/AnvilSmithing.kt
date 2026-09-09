@@ -14,7 +14,7 @@ import org.rsmod.content.skills.smithing.configs.SmithingEnums
 import org.rsmod.content.skills.smithing.configs.SmithingInterfaces
 import org.rsmod.content.skills.smithing.configs.SmithingProducts
 import org.rsmod.content.skills.smithing.configs.SmithingSeqs
-import org.rsmod.content.skills.smithing.configs.SmithingVarps
+import org.rsmod.content.skills.smithing.configs.SmithingVarBits
 import org.rsmod.game.type.comp.ComponentType
 import org.rsmod.game.type.enums.EnumType
 import org.rsmod.game.type.enums.EnumTypeList
@@ -30,13 +30,14 @@ import org.rsmod.plugin.scripts.ScriptContext
  *
  * The interface needs almost nothing from us. Component 0 of interface 312 carries
  * `onLoad=[clientscript,smithing_init]`, so it initialises itself the moment it opens, and
- * `proc,smithing_setup` switches on the `smithbars` varp to decide which tier to draw. That switch
- * table's keys are bar **object ids**, which is how we know what to store there -- it was read out
- * of the cached bytecode, not inferred from how other servers do it.
+ * `proc,smithing_setup` picks the tier to draw by reading `smithing_bar_type`, mapping it through
+ * enum 1253 and switching on the bar obj that comes back. So what goes in the varbit is the enum's
+ * **key** -- `1` for bronze up to `6` for rune -- and not the bar's obj id. Read out of the cached
+ * bytecode, not inferred from how other servers do it.
  *
- * So the whole server side is: put the bar's id in the varp, open the interface, enable ops on the
- * product buttons, and wait for a click. Levels, bar costs and output quantities are then read back
- * from the same three enums the client used to draw the menu, so the two cannot disagree.
+ * So the whole server side is: put the tier index in the varbit, open the interface, enable ops on
+ * the product buttons, and wait for a click. Levels, bar costs and output quantities are then read
+ * back from the same three enums the client used to draw the menu, so the two cannot disagree.
  *
  * TODO:
  * - The `other_1`/`other_2`/`other_3` slots (crossbow grapple tips, lanterns, spits, blurite,
@@ -54,7 +55,14 @@ constructor(
         // Anvils carry `Smith` on op1; verified against the cache in SmithingConfigTest.
         onOpLoc1(SmithingContent.smithing_anvil) { openBestBar() }
         onOpLocU(SmithingContent.smithing_anvil, SmithingContent.smithing_bar) {
-            open(it.objType.id)
+            // `smithing_bar` is tagged from the same six-tier list, so this cannot miss; the
+            // guard is here because a content-group edit outlives the code that added it.
+            val tier = SmithingProducts.tiers.firstOrNull { tier -> tier.bar.id == it.objType.id }
+            if (tier == null) {
+                mes("You can't make anything out of that at an anvil.")
+            } else {
+                open(tier)
+            }
         }
         for (component in SmithingProducts.components) {
             onIfModalButton(component) { smith(component, it.op) }
@@ -68,16 +76,16 @@ constructor(
             mes("You need some bars to work with.")
             return
         }
-        open(tier.bar.id)
+        open(tier)
     }
 
-    private fun ProtectedAccess.open(barId: Int) {
+    private fun ProtectedAccess.open(tier: SmithingProducts.Tier) {
         if (invTotal(inv, objs.hammer) <= 0) {
             mes("You need a hammer to work the metal with.")
             return
         }
 
-        vars[SmithingVarps.smithbars] = barId
+        vars[SmithingVarBits.bar_type] = tier.barType
         ifOpenMainModal(SmithingInterfaces.smithing)
         for (component in SmithingProducts.components) {
             ifSetEvents(
@@ -93,9 +101,9 @@ constructor(
     }
 
     private suspend fun ProtectedAccess.smith(component: ComponentType, op: IfButtonOp) {
-        val barId = vars[SmithingVarps.smithbars]
-        val product = SmithingProducts.find(barId, component)
-        if (product == null) {
+        val tier = SmithingProducts.tierOf(vars[SmithingVarBits.bar_type])
+        val product = tier?.let { SmithingProducts.find(it.bar.id, component) }
+        if (tier == null || product == null) {
             // The client drew something in this slot that this module does not implement.
             ifClose()
             return
@@ -116,14 +124,13 @@ constructor(
             return
         }
 
-        val bar = objTypes.getValue(barId)
+        val bar = objTypes.getValue(tier.bar.id)
         val requested = requestedCount(op)
         ifClose()
         if (requested <= 0) {
             return
         }
 
-        val tier = SmithingProducts.tiers.first { it.bar.id == barId }
         var made = 0
         while (made < requested && invTotal(inv, bar) >= barsRequired) {
             anim(SmithingSeqs.smith)
