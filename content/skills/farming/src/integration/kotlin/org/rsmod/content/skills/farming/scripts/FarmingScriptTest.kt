@@ -6,7 +6,12 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
+import org.rsmod.api.config.refs.components
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.inv.LocUOpScript
+import org.rsmod.api.player.events.interact.LocTDefaultEvents
+import org.rsmod.api.player.interact.LocTInteractions
+import org.rsmod.api.player.interact.LocUInteractions
 import org.rsmod.api.testing.GameTestState
 import org.rsmod.content.skills.farming.configs.FarmingLocs
 import org.rsmod.content.skills.farming.configs.FarmingObjs
@@ -48,6 +53,8 @@ class FarmingScriptTest {
         val registry: FarmingRegistry,
         val actions: FarmingPatchActions,
         val objTypes: ObjTypeList,
+        val locT: LocTInteractions,
+        val locU: LocUInteractions,
     )
 
     private val potato = FarmingCrops.all.first { it.cropName == "potato" }
@@ -243,6 +250,42 @@ class FarmingScriptTest {
             }
             state.plant(deps.objTypes[potato.seed].id, grownAgo(potato))
             assertEquals(5, state.livesLeft(potato)) { "Supercompost is worth two extra lives." }
+        }
+
+    /**
+     * The bug this pins: a patch is a multiloc, and by the time "use item on loc" reaches
+     * [LocUInteractions] the loc has already been resolved down to the child face the player can
+     * see. A handler registered against the parent - the loc that is actually on the map, and the
+     * only one [FarmingScript] knows about - was never consulted, so every seed, compost bucket
+     * and watering can on every patch answered "Nothing interesting happens."
+     */
+    @Test
+    fun GameTestState.`using a seed on a patch resolves to the patch handler`() =
+        runInjectedGameTest(Deps::class, null, FarmingScript::class, LocUOpScript::class) { deps ->
+            val patch = placeMapLoc(TILE, locTypes[FarmingLocs.farming_herb_patch_1])
+            player.teleport(patch.coords.translateX(-1))
+            player.clearInv()
+            player.inv[0] = InvObj(guam.seed)
+
+            val seed = deps.objTypes[guam.seed]
+            val locT =
+                deps.locT.opTrigger(player, patch, seed, components.inv_items, comsub = 0)
+                    as? LocTDefaultEvents.Op
+            assertTrue(locT != null) { "The inventory-on-loc handler should own this click." }
+            checkNotNull(locT)
+
+            assertTrue(locT.vis.id != locT.loc.id) {
+                "A patch must resolve to a multiloc face, or this test proves nothing."
+            }
+
+            player.withProtectedAccess {
+                val trigger =
+                    with(deps.locU) { opTrigger(locT.vis, locT.loc, locT.type, seed, invSlot = 0) }
+                assertTrue(trigger != null) {
+                    "No script found for a seed on the patch: the parent multiloc " +
+                        "(${locT.loc.id}) was skipped in favour of the face (${locT.vis.id})."
+                }
+            }
         }
 
     private fun grownAgo(crop: FarmingCrop): Long =
