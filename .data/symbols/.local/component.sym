@@ -1,0 +1,39 @@
+# Components authored by this server. See `.local/interface.sym` for the id-allocation
+# reasoning; component ids are derived from their parent interface, so staying clear of
+# upstream interface ids is all that is needed here.
+#
+# Format matches the upstream `component.sym`: `<interface>:<childIndex>` -> `<interface>:<name>`,
+# tab separated. `NameLoader.readComponents` resolves the interface half against the merged
+# interface map, so a `.local` component may reference a `.local` interface.
+#
+# Child indices are contiguous from 0 and must match the order authored in
+# `content/interfaces/first-login`'s `FirstLoginBuilder`.
+
+first_login_setup:0	first_login_setup:root
+first_login_setup:1	first_login_setup:background
+first_login_setup:2	first_login_setup:border
+first_login_setup:3	first_login_setup:title
+first_login_setup:4	first_login_setup:subtitle
+first_login_setup:5	first_login_setup:page_mode
+first_login_setup:6	first_login_setup:page_rate
+first_login_setup:7	first_login_setup:mode_button_0
+first_login_setup:8	first_login_setup:mode_name_0
+first_login_setup:9	first_login_setup:mode_desc_0
+first_login_setup:10	first_login_setup:mode_button_1
+first_login_setup:11	first_login_setup:mode_name_1
+first_login_setup:12	first_login_setup:mode_desc_1
+first_login_setup:13	first_login_setup:mode_button_2
+first_login_setup:14	first_login_setup:mode_name_2
+first_login_setup:15	first_login_setup:mode_desc_2
+first_login_setup:16	first_login_setup:mode_button_3
+first_login_setup:17	first_login_setup:mode_name_3
+first_login_setup:18	first_login_setup:mode_desc_3
+first_login_setup:19	first_login_setup:rate_button_0
+first_login_setup:20	first_login_setup:rate_name_0
+first_login_setup:21	first_login_setup:rate_desc_0
+first_login_setup:22	first_login_setup:rate_button_1
+first_login_setup:23	first_login_setup:rate_name_1
+first_login_setup:24	first_login_setup:rate_desc_1
+first_login_setup:25	first_login_setup:rate_button_2
+first_login_setup:26	first_login_setup:rate_name_2
+first_login_setup:27	first_login_setup:rate_desc_2

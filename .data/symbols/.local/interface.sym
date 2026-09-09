@@ -1,0 +1,11 @@
+# Interfaces authored by this server, kept out of the upstream `interface.sym` so
+# rebases never conflict. `SymbolModule.shallowSymbolDirectories` merges
+# `.data/symbols/` and `.data/symbols/.local/`, so entries here are additive.
+#
+# Ids start at 1000 deliberately. Upstream ends at 924 (`slayer_rewards_task_list`),
+# and `NameLoader` only detects duplicate ids *within a single file*, so an id we
+# shared with a future upstream interface would silently alias two different ones.
+#
+# Unlike timers and controllers, interfaces DO have a cache encoder: a new id here
+# is inert until `./gradlew packCache` writes its components into js5 archive 3.
+1000	first_login_setup

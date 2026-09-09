@@ -1,0 +1,5 @@
+# Player queues authored by this server. See `.local/content.sym` for the id-allocation reasoning.
+# Upstream `queue.sym` ends at 25, so 1000 leaves no realistic overlap.
+#
+# Queues are name-only server types with no cache encoder, so this needs no `packCache`.
+1000	account_setup
