@@ -616,9 +616,7 @@ object CraftingRecipes {
         require(jewellery.distinctBy { it.component.packed }.size == jewellery.size) {
             "Two jewellery recipes share a button."
         }
-        require(tanning.size <= TannerComponents.ROWS) {
-            "The tanner panel only has ${TannerComponents.ROWS} rows."
-        }
+        require(tanning.size <= MENU_SLOTS) { "More tanning rows than the make-menu can draw." }
 
         val levels =
             gems.map { it.levelReq } +

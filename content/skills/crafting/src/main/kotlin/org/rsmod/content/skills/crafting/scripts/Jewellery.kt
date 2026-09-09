@@ -19,7 +19,6 @@ import org.rsmod.content.skills.crafting.configs.JewelleryRecipe
 import org.rsmod.content.skills.crafting.configs.SilverCraftingComponents
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.player.SessionStateEvent
-import org.rsmod.game.type.interf.IfEvent
 import org.rsmod.game.type.interf.InterfaceType
 import org.rsmod.game.type.obj.ObjTypeList
 import org.rsmod.plugin.scripts.PluginScript
@@ -35,19 +34,22 @@ import org.rsmod.plugin.scripts.ScriptContext
  * single line of layout -- it opens the interface and enables buttons. `CraftingInterfaceDump`
  * prints all of that against the installed cache.
  *
- * The quantity is the one thing the cache does not hand over. `make_1` through `make_all` run
- * `[clientscript,skillmain_setquantity]` locally and stash the result in a varc the server cannot
- * read, and `[proc,skillmain_setup]` sets no server-visible events at all. So the quantity is
- * recovered two ways at once, and whichever the client actually uses wins:
- * 1. The product buttons are enabled over a subcomponent *range*, so if the client re-targets the
- *    click at the chosen quantity -- which is exactly what interface 270 does -- it arrives in the
- *    `comsub`.
- * 2. The quantity buttons are enabled too, and pressing one records the same number server-side.
- *    The client updates its own label from its own hook; both sides see every click.
+ * **The buttons need nothing from the server.** Every product row and every `make_*` button already
+ * carries `op1` *and* the op1 event bit in the cache, and no clientscript in the whole cache so
+ * much as mentions interface 446 -- so a press is a plain `IfButton` on the component itself, with
+ * no subcomponent. Nothing is enabled here, and nothing should be: `if_setevents` over a
+ * subcomponent range would aim the client's event window at children these components do not have.
+ * That is what the first version did, on the guess that 446 re-targets its clicks the way 270 does.
+ * It does not; only 270 has the clientscript that does that.
  *
- * `make_x` is deliberately left alone: it opens the client's own "Enter amount" box, and binding it
- * would stack a second, server-side one on top. A player who wants an exact count can use it and
- * the click still arrives via (1); if it does not, they get the last button they pressed.
+ * The quantity is the one thing the cache does not hand over. `make_1` through `make_all` also run
+ * `[clientscript,skillmain_setquantity]` locally and stash the number in a varc the server cannot
+ * read. Since they reach the server as well, [pending] mirrors it: whichever one was pressed last
+ * is the count the next product button uses.
+ *
+ * `make_x` is deliberately left unbound: it opens the client's own "Enter amount" box, and binding
+ * it would stack a second, server-side one on top. The cost is that a player who types an exact
+ * count gets the last *button* they pressed instead -- the varc it writes is not readable here.
  */
 class Jewellery
 @Inject
@@ -64,7 +66,7 @@ constructor(private val objTypes: ObjTypeList, private val xpMods: XpModifiers) 
         }
 
         for (recipe in CraftingRecipes.jewellery) {
-            onIfModalButton(recipe.component) { cast(recipe, it.comsub) }
+            onIfModalButton(recipe.component) { cast(recipe) }
         }
         for ((button, quantity) in CraftingGoldComponents.quantityButtons) {
             onIfModalButton(button) { pending[player] = quantity }
@@ -83,25 +85,10 @@ constructor(private val objTypes: ObjTypeList, private val xpMods: XpModifiers) 
     private fun ProtectedAccess.open(interf: InterfaceType) {
         pending[player] = 1
         ifOpenMainModal(interf)
-
-        val components =
-            if (interf.id == CraftingInterfaces.crafting_gold.id) {
-                CraftingRecipes.goldJewellery.map { it.component } +
-                    CraftingGoldComponents.quantityButtons.map { it.first }
-            } else {
-                CraftingRecipes.silverJewellery.map { it.component } +
-                    SilverCraftingComponents.quantityButtons.map { it.first }
-            }
-        for (component in components) {
-            ifSetEvents(component, 0..MAX_QUANTITY, IfEvent.Op1)
-        }
     }
 
-    private suspend fun ProtectedAccess.cast(recipe: JewelleryRecipe, comsub: Int) {
-        // The subcomponent is the quantity, when the client sends one. It arrives outside the range
-        // if the client did not re-target the click, in which case the last quantity button pressed
-        // is the best answer available.
-        val count = if (comsub in 1..MAX_QUANTITY) comsub else pending[player] ?: 1
+    private suspend fun ProtectedAccess.cast(recipe: JewelleryRecipe) {
+        val count = pending[player] ?: 1
         ifClose()
 
         if (player.craftingLvl < recipe.levelReq) {
@@ -145,11 +132,6 @@ constructor(private val objTypes: ObjTypeList, private val xpMods: XpModifiers) 
     }
 
     private companion object {
-        /**
-         * The client clamps every makex quantity into `1..28`, the same ceiling interface 270 has.
-         */
-        const val MAX_QUANTITY = 28
-
         /** Ticks per cast. Tuned, not measured against live. */
         const val CAST_TICKS = 4
     }

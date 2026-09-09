@@ -3,29 +3,32 @@ package org.rsmod.content.skills.crafting.scripts
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.objs
 import org.rsmod.api.player.protect.ProtectedAccess
-import org.rsmod.api.script.onIfModalButton
 import org.rsmod.api.script.onOpNpc3
-import org.rsmod.content.skills.crafting.configs.CraftingInterfaces
+import org.rsmod.content.interfaces.skillmulti.SkillMulti
+import org.rsmod.content.interfaces.skillmulti.SkillMultiType
 import org.rsmod.content.skills.crafting.configs.CraftingNpcs
 import org.rsmod.content.skills.crafting.configs.CraftingRecipes
 import org.rsmod.content.skills.crafting.configs.TanRecipe
-import org.rsmod.content.skills.crafting.configs.TannerComponents
-import org.rsmod.game.type.comp.ComponentType
-import org.rsmod.game.type.interf.IfEvent
 import org.rsmod.game.type.obj.ObjTypeList
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 /**
- * Tanning hides into leather, on the game's own panel: interface 324.
+ * Tanning hides into leather, through the make-menu.
  *
- * Unlike the jewellery panels this one is entirely server-driven. It carries no `onLoad` hooks, no
- * clientscript in the cache references it, and its 156 components arrive blank -- so every row's
- * model, name and price is sent from here, and the four unused rows are hidden.
+ * **Interface 324 cannot be driven, and this used to try.** The panel is in the cache and its
+ * components are named -- eight rows of `tanning_X_model` / `_text` / `_price` with their own `_1`,
+ * `_5`, `_x` and `_all` buttons -- which is what made it look server-driven. It is not: those
+ * buttons carry no op text, no op event, and not one clientscript in the cache references the
+ * interface. No amount of `if_setevents` fixes that, because the client builds a click from the
+ * component's op *name* and the protocol has no way to send one. The proof is a census of the whole
+ * cache: 2,997 components have an op1 event and every single one of them also has op1 text; none
+ * has the event without it. So 324 is a layout with nothing wired to it, and the rows would have
+ * sat there unclickable.
  *
- * That also makes the quantity unambiguous, which the jewellery panels are not: each row has its
- * own `_1`, `_5`, `_x` and `_all` buttons, so the button that was pressed *is* the answer. `_x`
- * asks with the standard count dialog.
+ * The make-menu is the interface that does work, and it already carries the quantity buttons this
+ * needs. What is lost is the price column -- the menu shows names only, so the cost is quoted in
+ * the chatbox when the tanning happens.
  *
  * Tanning is a service, not a Crafting action: it costs coins, pays no experience and has no level
  * requirement. It lives in this module because leather is otherwise unobtainable and every leather
@@ -34,53 +37,31 @@ import org.rsmod.plugin.scripts.ScriptContext
  * TODO: the Canifis werewolf charges a premium in the live game; all four tanners share one price
  *   list here.
  */
-class Tanning @Inject constructor(private val objTypes: ObjTypeList) : PluginScript() {
+class Tanning
+@Inject
+constructor(private val objTypes: ObjTypeList, private val skillMulti: SkillMulti) :
+    PluginScript() {
     override fun ScriptContext.startup() {
         for (npc in CraftingNpcs.tanners) {
             // Op3 only. All four tanners carry `Talk-to` on op1 and `Trade` on op3, so binding the
             // whole set would have swallowed the dialogue op as well.
-            onOpNpc3(npc) { openPanel() }
-        }
-
-        for ((row, recipe) in CraftingRecipes.tanning.withIndex()) {
-            onIfModalButton(TannerComponents.buttons1[row]) { tan(recipe, 1) }
-            onIfModalButton(TannerComponents.buttons5[row]) { tan(recipe, 5) }
-            onIfModalButton(TannerComponents.buttonsAll[row]) { tan(recipe, Int.MAX_VALUE) }
-            onIfModalButton(TannerComponents.buttonsX[row]) { tan(recipe, countDialog()) }
+            onOpNpc3(npc) { openMenu() }
         }
     }
 
-    private fun ProtectedAccess.openPanel() {
-        ifOpenMainModal(CraftingInterfaces.tanner)
-
-        for (row in 0 until TannerComponents.ROWS) {
-            val recipe = CraftingRecipes.tanning.getOrNull(row)
-            if (recipe == null) {
-                // Rows past the end of the table are blanked rather than left showing the
-                // placeholder "Hide"/"Cost" text the interface ships with.
-                hideRow(row)
-                continue
-            }
-            ifSetObj(TannerComponents.models[row], recipe.leather, MODEL_ZOOM)
-            ifSetText(TannerComponents.names[row], recipe.name)
-            ifSetText(TannerComponents.prices[row], "${recipe.cost} coins")
-            for (button in rowButtons(row)) {
-                ifSetHide(button, false)
-                ifSetEvents(button, 0..0, IfEvent.Op1)
-            }
-        }
-    }
-
-    private fun ProtectedAccess.hideRow(row: Int) {
-        ifSetText(TannerComponents.names[row], "")
-        ifSetText(TannerComponents.prices[row], "")
-        for (button in rowButtons(row)) {
-            ifSetHide(button, true)
-        }
+    private suspend fun ProtectedAccess.openMenu() {
+        val pick =
+            skillMulti.open(
+                access = this,
+                type = SkillMultiType.Make,
+                title = "What would you like to tan?",
+                objs = CraftingRecipes.tanning.map { it.leather },
+            ) ?: return
+        val recipe = CraftingRecipes.tanning.getOrNull(pick.slot) ?: return
+        tan(recipe, pick.quantity)
     }
 
     private suspend fun ProtectedAccess.tan(recipe: TanRecipe, requested: Int) {
-        ifClose()
         if (requested <= 0) {
             return
         }
@@ -95,14 +76,14 @@ class Tanning @Inject constructor(private val objTypes: ObjTypeList) : PluginScr
             if (recipe.cost == 0) carried else minOf(carried, invCoinTotal() / recipe.cost)
         val count = minOf(requested, affordable)
         if (count == 0) {
-            mes("You can't afford to tan that.")
+            mes("You can't afford to tan that. It costs ${recipe.cost} coins a hide.")
             return
         }
 
         // Charged first, then handed over: a failed exchange must not leave the player short. The
         // fee is refunded if the swap does not take, the way `Firemaking` refunds its logs.
         if (!invTakeFee(recipe.cost * count)) {
-            mes("You can't afford to tan that.")
+            mes("You can't afford to tan that. It costs ${recipe.cost} coins a hide.")
             return
         }
         val replaced =
@@ -114,23 +95,11 @@ class Tanning @Inject constructor(private val objTypes: ObjTypeList) : PluginScr
         }
 
         val name = objTypes[recipe.leather].name.lowercase()
+        val cost = recipe.cost * count
         if (count == 1) {
-            mes("The tanner tans your hide into $name.")
+            mes("The tanner tans your hide into $name for $cost coins.")
         } else {
-            mes("The tanner tans $count of your hides into $name.")
+            mes("The tanner tans $count of your hides into $name for $cost coins.")
         }
-    }
-
-    private fun rowButtons(row: Int): List<ComponentType> =
-        listOf(
-            TannerComponents.buttons1[row],
-            TannerComponents.buttons5[row],
-            TannerComponents.buttonsX[row],
-            TannerComponents.buttonsAll[row],
-        )
-
-    private companion object {
-        /** Zoom for the hide model in each row. Tuned to sit the model inside its slot. */
-        const val MODEL_ZOOM = 175
     }
 }

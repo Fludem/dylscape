@@ -113,34 +113,15 @@ class CraftingConfigTest {
     }
 
     @Test
-    fun GameTestState.`every tanning row resolves and fits the panel`() = runBasicGameTest {
-        assertTrue(CraftingRecipes.tanning.size <= TannerComponents.ROWS) {
-            "More tanning rows than the panel has."
+    fun GameTestState.`every tanning row resolves and fits the make-menu`() = runBasicGameTest {
+        assertTrue(CraftingRecipes.tanning.size <= SkillMulti.MAX_SLOTS) {
+            "More tanning rows than the make-menu can show."
         }
         for (recipe in CraftingRecipes.tanning) {
             assertResolves(recipe.hide)
             assertResolves(recipe.leather)
             assertTrue(recipe.name.isNotBlank()) { "${recipe.hide} has no label." }
             assertTrue(recipe.hide.id != recipe.leather.id) { "${recipe.hide} tans into itself." }
-        }
-    }
-
-    /** All eight rows are addressed, whether or not the table fills them. */
-    @Test
-    fun GameTestState.`the tanner panel's components all resolve`() = runBasicGameTest {
-        val components =
-            TannerComponents.models +
-                TannerComponents.names +
-                TannerComponents.prices +
-                TannerComponents.buttons1 +
-                TannerComponents.buttons5 +
-                TannerComponents.buttonsX +
-                TannerComponents.buttonsAll
-        assertEquals(TannerComponents.ROWS * 7, components.size) {
-            "A tanner row is missing a part."
-        }
-        for (component in components) {
-            assertNotNull(cacheTypes.components[component.packed]) { "Unresolvable: $component" }
         }
     }
 

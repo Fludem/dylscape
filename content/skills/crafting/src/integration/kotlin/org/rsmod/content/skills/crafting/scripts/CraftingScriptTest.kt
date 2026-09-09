@@ -9,13 +9,21 @@ import org.junit.jupiter.api.parallel.ExecutionMode
 import org.rsmod.api.config.refs.objs
 import org.rsmod.api.config.refs.stats
 import org.rsmod.api.player.events.interact.HeldUEvents
+import org.rsmod.api.player.events.interact.LocUContentEvents
 import org.rsmod.api.testing.GameTestState
 import org.rsmod.api.testing.scope.GameTestScope
 import org.rsmod.content.interfaces.skillmulti.configs.SkillMultiComponents
 import org.rsmod.content.interfaces.skillmulti.configs.SkillMultiInterfaces
+import org.rsmod.content.skills.crafting.configs.CraftingContent
+import org.rsmod.content.skills.crafting.configs.CraftingGoldComponents
+import org.rsmod.content.skills.crafting.configs.CraftingInterfaces
 import org.rsmod.content.skills.crafting.configs.CraftingObjs
+import org.rsmod.game.entity.Npc
 import org.rsmod.game.inv.InvObj
+import org.rsmod.game.loc.BoundLocInfo
+import org.rsmod.game.type.loc.UnpackedLocType
 import org.rsmod.game.type.obj.ObjType
+import org.rsmod.map.CoordGrid
 
 /**
  * Runs single-threaded on purpose: `integration-test-suite` runs the methods of one class
@@ -198,9 +206,123 @@ class CraftingScriptTest {
             assertEquals(0, player.count(CraftingObjs.ball_of_wool)) { "The wool survived." }
         }
 
+    @Test
+    fun GameTestState.`a tanner tans the hides the make-menu asked for`() =
+        runGameTest(Tanning::class) {
+            fresh()
+            val tanner = spawnTanner()
+            for (slot in 0 until 3) {
+                player.inv[slot] = InvObj(CraftingObjs.cowhide)
+            }
+            player.inv[3] = InvObj(objs.coins, 100)
+
+            player.opNpc3(tanner)
+            advance(ticks = 2)
+            assertTrue(player.ui.containsModal(SkillMultiInterfaces.skillmulti)) {
+                "The tanner did not open the make-menu."
+            }
+
+            // Slot a is soft leather, the first row of the tanning table. Two of three hides.
+            player.resumePauseButton(SkillMultiComponents.slot_a, sub = 2)
+            advance(ticks = 2)
+
+            assertEquals(2, player.count(CraftingObjs.leather)) { "Wrong amount tanned." }
+            assertEquals(1, player.count(CraftingObjs.cowhide)) { "Too many hides consumed." }
+            assertEquals(98, player.count(objs.coins)) { "Soft leather costs one coin a hide." }
+        }
+
+    @Test
+    fun GameTestState.`tanning without the coins for it is refused`() =
+        runGameTest(Tanning::class) {
+            fresh()
+            val tanner = spawnTanner()
+            player.inv[0] = InvObj(CraftingObjs.dragonhide_green)
+
+            player.opNpc3(tanner)
+            advance(ticks = 2)
+            // Slot d is green d'hide, at 20 coins a hide, and the player has none.
+            player.resumePauseButton(SkillMultiComponents.slot_d, sub = 1)
+            advance(ticks = 1)
+
+            assertMessageSent("You can't afford to tan that. It costs 20 coins a hide.")
+            assertEquals(1, player.count(CraftingObjs.dragonhide_green)) { "The hide was taken." }
+        }
+
+    @Test
+    fun GameTestState.`the gold panel casts as many as the quantity button chose`() =
+        runGameTest(Jewellery::class) {
+            val type = findLocType(CraftingContent.smithing_furnace) { it.op.getOrNull(1) != null }
+            val furnace = placeMapLoc(CoordGrid(0, 50, 50, 24, 20), type)
+            player.teleport(furnace.coords.translateX(-1))
+            fresh()
+            // Bars do not stack, so five of them means five slots.
+            for (slot in 0 until 5) player.inv[slot] = InvObj(CraftingObjs.gold_bar)
+            player.inv[5] = InvObj(CraftingObjs.ring_mould)
+            player.stats[stats.crafting] = 99
+
+            useOnLoc(furnace, type, CraftingObjs.gold_bar)
+            advance(ticks = 1)
+            assertTrue(player.ui.containsModal(CraftingInterfaces.crafting_gold)) {
+                "A gold bar on a furnace did not open the gold panel."
+            }
+
+            // Both buttons carry their op in the cache, so both arrive with no subcomponent: the
+            // quantity is only known because the server mirrors whichever `make_*` was pressed.
+            player.ifButton(CraftingGoldComponents.make_5)
+            player.ifButton(CraftingGoldComponents.gold_ring)
+            advance(ticks = 30)
+
+            assertEquals(5, player.count(CraftingObjs.gold_ring)) { "Wrong number of rings." }
+            assertEquals(0, player.count(CraftingObjs.gold_bar)) { "Bars were left over." }
+        }
+
+    @Test
+    fun GameTestState.`the gold panel makes one when no quantity was chosen`() =
+        runGameTest(Jewellery::class) {
+            val type = findLocType(CraftingContent.smithing_furnace) { it.op.getOrNull(1) != null }
+            val furnace = placeMapLoc(CoordGrid(0, 50, 50, 26, 20), type)
+            player.teleport(furnace.coords.translateX(-1))
+            fresh()
+            for (slot in 0 until 5) player.inv[slot] = InvObj(CraftingObjs.gold_bar)
+            player.inv[5] = InvObj(CraftingObjs.ring_mould)
+            player.stats[stats.crafting] = 99
+
+            useOnLoc(furnace, type, CraftingObjs.gold_bar)
+            advance(ticks = 1)
+            player.ifButton(CraftingGoldComponents.gold_ring)
+            advance(ticks = 30)
+
+            assertEquals(1, player.count(CraftingObjs.gold_ring)) { "The panel opens on one." }
+            assertEquals(4, player.count(CraftingObjs.gold_bar)) { "Too many bars were spent." }
+        }
+
+    /** Publishes the obj-on-loc event the way the client's "use A on that" arrives. */
+    private fun GameTestScope.useOnLoc(loc: BoundLocInfo, type: UnpackedLocType, obj: ObjType) {
+        val slot = player.inv.objs.indexOfFirst { it != null && it.id == obj.id }
+        player.withProtectedAccess {
+            eventBus.publish(
+                this,
+                LocUContentEvents.OpType(
+                    loc = loc,
+                    vis = loc,
+                    type = type,
+                    objType = objTypes[obj],
+                    invSlot = slot,
+                ),
+            )
+        }
+    }
+
     private fun GameTestScope.fresh() {
         player.ifClose()
         player.clearInv()
+    }
+
+    private fun GameTestScope.spawnTanner(): Npc {
+        val type = npcTypes.values.single { it.internalName == "ellis_tanner" }
+        val npc = spawnNpc(TANNER_COORDS, type)
+        player.teleport(TANNER_COORDS.translateX(-1))
+        return npc
     }
 
     /** Publishes the obj-on-obj event the way the client's "use A on B" arrives. */
@@ -216,5 +338,10 @@ class CraftingScriptTest {
                 ),
             )
         }
+    }
+
+    private companion object {
+        /** Empty ground, well clear of anything the other methods in this class touch. */
+        val TANNER_COORDS = CoordGrid(0, 50, 50, 20, 20)
     }
 }

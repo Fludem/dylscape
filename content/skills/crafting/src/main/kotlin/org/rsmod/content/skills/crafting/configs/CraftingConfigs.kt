@@ -216,7 +216,6 @@ object CraftingNpcs : NpcReferences() {
 object CraftingInterfaces : InterfaceReferences() {
     val crafting_gold = find("crafting_gold")
     val silver_crafting = find("silver_crafting")
-    val tanner = find("tanner")
 }
 
 /**
@@ -303,28 +302,4 @@ object SilverCraftingComponents : ComponentReferences() {
     val make_all = find("silver_crafting:make_all")
 
     val quantityButtons = listOf(make_1 to 1, make_5 to 5, make_10 to 10, make_all to Int.MAX_VALUE)
-}
-
-/**
- * Interface 324, the tanning panel.
- *
- * Eight rows, `a` through `h`, each with a model, a name, a price and its own four quantity
- * buttons. Unlike the jewellery panels this one carries no `onLoad` hooks and no clientscript
- * references it at all, so every row is filled in and enabled by the server. That is also why the
- * quantity is unambiguous here: it is which button was pressed, not a number hidden in a varc.
- */
-object TannerComponents : ComponentReferences() {
-    private val rows = "abcdefgh"
-
-    val models = rows.map { find("tanner:tanning_${it}_model") }
-    val names = rows.map { find("tanner:tanning_${it}_text") }
-    val prices = rows.map { find("tanner:tanning_${it}_price") }
-
-    val buttons1 = rows.map { find("tanner:tanning_${it}_1") }
-    val buttons5 = rows.map { find("tanner:tanning_${it}_5") }
-    val buttonsX = rows.map { find("tanner:tanning_${it}_x") }
-    val buttonsAll = rows.map { find("tanner:tanning_${it}_all") }
-
-    /** Row count, which is also the ceiling on how many hides the panel can offer. */
-    const val ROWS: Int = 8
 }
