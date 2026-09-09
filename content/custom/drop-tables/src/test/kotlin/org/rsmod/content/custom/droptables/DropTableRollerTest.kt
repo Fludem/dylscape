@@ -100,8 +100,105 @@ class DropTableRollerTest {
         assertTrue(error.message.orEmpty().contains("summed to 96"))
     }
 
-    private fun rollSingle(table: DropTable, roll: Int): RolledDrop? =
-        DropTableRoller(ScriptedRolls(roll)).roll(table).singleOrNull()
+    @Test
+    fun `an all-rolls boost widens every non-empty slot`() {
+        val table = dropTable {
+            table(outOf = 128) {
+                drop(64, objs.coins)
+                nothing(64)
+            }
+        }
+
+        // Scaled into fifths: the slot owns [0, 384) of 640 rather than [0, 64) of 128, which is
+        // 64 * 1.2 / 128. The boundary moving is the whole point, so assert it exactly.
+        assertEquals(1, rollSingle(table, roll = 383, DropBoost.PLUS_20_ALL)?.count)
+        assertEquals(null, rollSingle(table, roll = 384, DropBoost.PLUS_20_ALL))
+    }
+
+    @Test
+    fun `a rare boost leaves ordinary slots alone`() {
+        val table = dropTable {
+            table(outOf = 128) {
+                drop(10, objs.coins)
+                rare(10, objs.cabbage)
+                nothing(108)
+            }
+        }
+
+        // Scaled into tenths. The ordinary slot keeps its 10/128 as 100/1280; the rare slot is
+        // boosted to 110, so it owns [100, 210).
+        assertSame(objs.coins, rollSingle(table, roll = 99, DropBoost.PLUS_10_RARE)?.obj)
+        assertSame(objs.cabbage, rollSingle(table, roll = 100, DropBoost.PLUS_10_RARE)?.obj)
+        assertSame(objs.cabbage, rollSingle(table, roll = 209, DropBoost.PLUS_10_RARE)?.obj)
+        assertEquals(null, rollSingle(table, roll = 210, DropBoost.PLUS_10_RARE))
+    }
+
+    @Test
+    fun `a rare nested slot boosts the table it leads to`() {
+        val nested = WeightedTableBuilder(10).apply { drop(10, objs.cabbage) }.build()
+        val table = dropTable {
+            table(outOf = 128) {
+                rareNested(10, nested)
+                nothing(118)
+            }
+        }
+
+        // The access weight is boosted to 110/1280, and the boost is inherited, so the sub-table's
+        // ordinary slot is boosted too: 10 * 1.1 = 110 of its own 100 space, which guarantees it.
+        val drops = DropTableRoller(ScriptedRolls(109, 99)).roll(table, DropBoost.PLUS_10_RARE)
+        assertEquals(1, drops.size)
+        assertSame(objs.cabbage, drops.single().obj)
+
+        assertEquals(null, rollSingle(table, roll = 110, DropBoost.PLUS_10_RARE))
+    }
+
+    @Test
+    fun `a boost that would exceed the denominator always drops something`() {
+        val table = dropTable {
+            table(outOf = 128) {
+                drop(127, objs.coins)
+                nothing(1)
+            }
+        }
+
+        // 127 * 1.2 = 152.4 out of 128, so the empty slot is squeezed out entirely and the roll
+        // space collapses onto the real slot. Every roll must produce a drop.
+        val rollSpace = 127 * 6
+        assertSame(objs.coins, rollSingle(table, roll = 0, DropBoost.PLUS_20_ALL)?.obj)
+        assertSame(objs.coins, rollSingle(table, roll = rollSpace - 1, DropBoost.PLUS_20_ALL)?.obj)
+    }
+
+    @Test
+    fun `tertiary drops scale with the boost`() {
+        val table = dropTable { rareTertiary(oneIn = 128, objs.cabbage) }
+
+        // 1 in 128 becomes 1.2 in 128, expressed as 6 in 640.
+        assertEquals(1, DropTableRoller(ScriptedRolls(5)).roll(table, DropBoost.PLUS_20_ALL).size)
+        assertEquals(0, DropTableRoller(ScriptedRolls(6)).roll(table, DropBoost.PLUS_20_ALL).size)
+    }
+
+    @Test
+    fun `an unboosted roll is unchanged by the boost machinery`() {
+        val table = dropTable {
+            table(outOf = 128) {
+                drop(64, objs.coins, 1)
+                drop(32, objs.coins, 2)
+                nothing(32)
+            }
+        }
+
+        // The boundaries asserted in `weighted slots claim the roll range` must hold identically
+        // when NONE is passed explicitly, since that is what every un-tiered player rolls with.
+        assertEquals(1, rollSingle(table, roll = 63, DropBoost.NONE)?.count)
+        assertEquals(2, rollSingle(table, roll = 64, DropBoost.NONE)?.count)
+        assertEquals(null, rollSingle(table, roll = 96, DropBoost.NONE))
+    }
+
+    private fun rollSingle(
+        table: DropTable,
+        roll: Int,
+        boost: DropBoost = DropBoost.NONE,
+    ): RolledDrop? = DropTableRoller(ScriptedRolls(roll)).roll(table, boost).singleOrNull()
 
     private class ScriptedRolls(private vararg val values: Int) : GameRandom {
         private var index = 0

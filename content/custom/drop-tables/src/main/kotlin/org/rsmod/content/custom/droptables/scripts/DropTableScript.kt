@@ -7,6 +7,7 @@ import org.rsmod.api.death.NpcDeath
 import org.rsmod.api.npc.access.StandardNpcAccess
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onNpcQueue
+import org.rsmod.content.custom.droptables.DropBoost
 import org.rsmod.content.custom.droptables.DropTable
 import org.rsmod.content.custom.droptables.DropTableRoller
 import org.rsmod.content.custom.droptables.configs.LumbridgeDropTables
@@ -49,7 +50,7 @@ constructor(
         }
 
         val duration = hero.lootDropDuration ?: constants.lootdrop_duration
-        for (drop in roller.roll(table)) {
+        for (drop in roller.roll(table, DropBoost.forTier(hero.xpRateTier))) {
             objRepo.add(
                 type = drop.obj,
                 coords = dropCoords,
