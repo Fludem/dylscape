@@ -1,5 +1,7 @@
 package org.rsmod.game.type.comp
 
+import org.rsmod.game.type.util.MergeableCacheBuilder
+
 @DslMarker private annotation class ComponentBuilderDsl
 
 @ComponentBuilderDsl
@@ -252,7 +254,7 @@ public class ComponentTypeBuilder(public var internal: String? = null) {
         )
     }
 
-    public companion object {
+    public companion object : MergeableCacheBuilder<UnpackedComponentType> {
         public const val DEFAULT_LINE_WID: Int = 1
         public const val DEFAULT_GRAPHIC: Int = -1
         public const val DEFAULT_SECONDARY_GRAPHIC: Int = -1
@@ -268,5 +270,26 @@ public class ComponentTypeBuilder(public var internal: String? = null) {
         public const val DEFAULT_BUTTON_TEXT: String = "Ok"
         public const val DEFAULT_LAYER: Int = -1
         public const val DEFAULT_EMPTY_TEXT: String = ""
+
+        /**
+         * Components are authored *whole*: there is no component type-editor, so [edit] is always a
+         * complete definition produced by a `ComponentBuilder`.
+         *
+         * A field-wise overlay onto [base] - the way [org.rsmod.game.type.area.AreaTypeBuilder]
+         * merges - would be actively wrong here. [UnpackedComponentType.layer] alone holds the
+         * packed id of a parent that only makes sense within the authored interface, so inheriting
+         * it from a vanilla component would reparent the type onto an unrelated interface.
+         *
+         * If a `ComponentEditor` is ever added, this must become a `select`-based merge.
+         */
+        override fun merge(
+            edit: UnpackedComponentType,
+            base: UnpackedComponentType,
+        ): UnpackedComponentType {
+            check(edit.internalId == base.internalId) {
+                "Cannot merge components with differing ids: $edit / $base."
+            }
+            return edit
+        }
     }
 }

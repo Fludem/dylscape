@@ -1,10 +1,53 @@
 package org.rsmod.api.cache.types.comp
 
 import io.netty.buffer.ByteBuf
+import io.netty.buffer.PooledByteBufAllocator
 import org.openrs2.buffer.writeString
+import org.openrs2.cache.Cache
+import org.rsmod.api.cache.Js5Archives
+import org.rsmod.api.cache.util.readOrNull
 import org.rsmod.game.type.comp.UnpackedComponentType
 
 public object ComponentTypeEncoder {
+    /**
+     * Packs [types] into [Js5Archives.INTERFACES], where each interface is a group and each of its
+     * components is a file within that group. This inverts [ComponentTypeDecoder.decodeAll].
+     *
+     * Unlike the config-archive encoders this takes no `EncoderContext`: components have no
+     * server-side-only fields, so the game cache and the js5 cache must receive byte-identical
+     * data. Both are still written - js5 so the client can render the interface, game so that
+     * `ComponentReferences.find` resolves it server-side.
+     *
+     * Note the absence of `encodeConfig`: archive 3 files are raw definitions, not opcode-keyed
+     * config records, so appending a terminator byte would corrupt them.
+     *
+     * @return the types whose encoded bytes differed from what the cache already held.
+     */
+    public fun encodeAll(
+        cache: Cache,
+        types: Iterable<UnpackedComponentType>,
+    ): List<UnpackedComponentType> {
+        val buffer = PooledByteBufAllocator.DEFAULT.buffer()
+        val archive = Js5Archives.INTERFACES
+        val packed = mutableListOf<UnpackedComponentType>()
+        // Sorted so a group's files are always written low-to-high. `Archive.write` resets a group
+        // when it holds exactly one file and that same file is rewritten, so a stable order keeps
+        // the outcome deterministic.
+        for (type in types.sortedBy(UnpackedComponentType::packed)) {
+            val group = type.interfaceId
+            val file = type.component
+            val oldBuf = cache.readOrNull(archive, group, file)
+            val newBuf = buffer.clear().apply { encode(type, this) }
+            if (newBuf != oldBuf) {
+                cache.write(archive, group, file, newBuf)
+                packed += type
+            }
+            oldBuf?.release()
+        }
+        buffer.release()
+        return packed
+    }
+
     public fun encode(type: UnpackedComponentType, data: ByteBuf) {
         if (type.v3) {
             encodeV3(type, data)

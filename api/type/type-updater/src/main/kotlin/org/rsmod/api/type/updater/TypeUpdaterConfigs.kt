@@ -9,6 +9,7 @@ import org.rsmod.annotations.GameCache
 import org.rsmod.annotations.Js5Cache
 import org.rsmod.api.cache.types.TypeListMapDecoder
 import org.rsmod.api.cache.types.area.AreaTypeEncoder
+import org.rsmod.api.cache.types.comp.ComponentTypeEncoder
 import org.rsmod.api.cache.types.dbrow.DbRowTypeEncoder
 import org.rsmod.api.cache.types.dbtable.DbTableTypeEncoder
 import org.rsmod.api.cache.types.enums.EnumTypeEncoder
@@ -36,6 +37,8 @@ import org.rsmod.game.type.CacheType
 import org.rsmod.game.type.TypeListMap
 import org.rsmod.game.type.area.AreaTypeBuilder
 import org.rsmod.game.type.area.UnpackedAreaType
+import org.rsmod.game.type.comp.ComponentTypeBuilder
+import org.rsmod.game.type.comp.UnpackedComponentType
 import org.rsmod.game.type.dbrow.DbRowTypeBuilder
 import org.rsmod.game.type.dbrow.UnpackedDbRowType
 import org.rsmod.game.type.dbtable.DbTableTypeBuilder
@@ -184,6 +187,7 @@ constructor(
         val edit = editors.resultValues.toUpdateMap()
 
         val invs = merge(build.invs, edit.invs, vanilla.invs, InvTypeBuilder)
+        val comps = merge(build.comps, edit.comps, vanilla.components, ComponentTypeBuilder)
         val locs = merge(build.locs, edit.locs, vanilla.locs, LocTypeBuilder)
         val npcs = merge(build.npcs, edit.npcs, vanilla.npcs, NpcTypeBuilder)
         val objs = merge(build.objs, edit.objs, vanilla.objs, ObjTypeBuilder)
@@ -217,6 +221,7 @@ constructor(
 
         return UpdateMap(
             invs = invs,
+            comps = comps,
             locs = locs,
             npcs = npcs,
             objs = objs,
@@ -241,6 +246,7 @@ constructor(
 
     private data class UpdateMap(
         val invs: List<UnpackedInvType>,
+        val comps: List<UnpackedComponentType>,
         val locs: List<UnpackedLocType>,
         val npcs: List<UnpackedNpcType>,
         val objs: List<UnpackedObjType>,
@@ -264,6 +270,7 @@ constructor(
 
     private fun List<*>.toUpdateMap(): UpdateMap {
         val invs = filterIsInstance<UnpackedInvType>()
+        val comps = filterIsInstance<UnpackedComponentType>()
         val locs = filterIsInstance<UnpackedLocType>()
         val npcs = filterIsInstance<UnpackedNpcType>()
         val objs = filterIsInstance<UnpackedObjType>()
@@ -286,6 +293,7 @@ constructor(
 
         return UpdateMap(
             invs = invs,
+            comps = comps,
             locs = locs,
             npcs = npcs,
             objs = objs,
@@ -332,6 +340,7 @@ constructor(
             AreaTypeEncoder.encodeAll(cache, updates.areas, ctx)
             EnumTypeEncoder.encodeAll(cache, updates.enums, ctx)
             InvTypeEncoder.encodeAll(cache, updates.invs, ctx)
+            ComponentTypeEncoder.encodeAll(cache, updates.comps)
             LocTypeEncoder.encodeAll(cache, updates.locs, ctx)
             NpcTypeEncoder.encodeAll(cache, updates.npcs, ctx)
             ObjTypeEncoder.encodeAll(cache, updates.objs, ctx)
