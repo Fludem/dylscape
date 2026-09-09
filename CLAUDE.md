@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 A fork of [RS Mod](https://github.com/rsmod/rsmod) — an OSRS (rev 233) game-server emulator in
 **Kotlin** (no `.java` files; Java 21 is only the runtime). Upstream is `engine/`, `api/`,
 `server/` and most of `content/`; our additions live in `content/custom/`, `tools/local/`,
-`tools/npc-spawns/` and `.data/symbols/.local/`.
+`tools/npc-spawns/`, `web/` and `.data/symbols/.local/`.
 
 Read these before doing real work — they are long, current, and written for this checkout:
 
@@ -17,8 +17,9 @@ Read these before doing real work — they are long, current, and written for th
 | `brief-guide.md` | End-to-end checklist for adding a skill module, from the Fletching/Crafting builds |
 | `tools/local/README.md` | Local dev stack (RSProx + client), memory limits, and the accumulated content gotchas |
 | `docs/quirks.md` | Upstream's own list of deliberate design compromises |
-| `docs/DEPLOY.md` | The live VPS: deploying, the realm lockdown, and the two rules that brick clients |
+| `docs/DEPLOY.md` | The live VPS: deploying, the realm lockdown, and the two rules that brick clients. **Not in git** (gitignored: it carries the host address and access details) |
 | `docs/CLIENT.md` | The friend-facing client: patched RuneLite, no RSProx, no cache to ship |
+| `web/README.md` | The website: hiscores off the save DB, generated guides, and its own deploy |
 
 ## Commands
 

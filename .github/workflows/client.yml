@@ -7,7 +7,13 @@
 #                  It is the PUBLIC half of the keypair, so it is safe here; the private
 #                  .data/game.key must never leave the server.
 #
-# NOTE: run this on a PRIVATE repo. The artifacts contain patched Jagex client bytecode.
+# HEADS UP: this repo is PUBLIC, so workflow artifacts are downloadable by anyone, and the
+# installers below embed injected-client-*.jar (Jagex client bytecode). Either accept that, or
+# swap the upload-artifact step for an scp to the VPS behind a deploy-key secret.
+#
+# Dispatch manually only. Public repos get free Actions minutes, but there is no reason to
+# rebuild installers on a schedule.
+
 name: client
 
 on:

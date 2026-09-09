@@ -116,7 +116,13 @@ which is gitignored. That is the *public* half, so it is safe in a secret; `.dat
 must never leave the server. `build_client.py` prefers `$ONYX_MODULUS` and falls back to
 `.data/client.key` locally.
 
-**Run this on a private repo** — the artifacts contain patched Jagex bytecode.
+`Fludem/dylscape` is **public**, so anyone can download this workflow's artifacts — and the
+installers embed `injected-client-*.jar`, i.e. Jagex client bytecode. The `upload-artifact`
+step is therefore the one thing to think about before dispatching it. Either accept that, or
+replace the upload with an `scp` to the VPS behind a deploy-key secret.
+
+The build *scripts* carry no Jagex code — `build_client.py` fetches from RuneLite's maven at
+build time — so the repo itself is unremarkable; only the built artifacts are.
 
 ### jlink modules
 
