@@ -966,10 +966,30 @@ constructor(
         }
     }
 
+    /**
+     * A slot outside every tab used to `checkNotNull` here, which throws inside the input cycle and
+     * drops the player's connection - so a desynced bank was unusable rather than merely untidy,
+     * and no amount of relogging fixed it because the desync is in the save.
+     *
+     * The tab sizes are bookkeeping kept alongside the bank inv, not derived from it, so anything
+     * that puts an obj in the bank without growing a tab leaves slots no tab claims. `::bankadd`
+     * did exactly that. Rather than trust the bookkeeping, adopt the orphaned slots into the main
+     * tab - which is where an untracked obj is displayed anyway - and carry on.
+     */
     private fun ProtectedAccess.notifySlotUpdate(slot: Int) {
-        val tab = BankTab.forSlot(this, slot)
-        checkNotNull(tab) { "`slot` was not associated with a valid bank tab: $slot" }
+        val tab = BankTab.forSlot(this, slot) ?: adoptUntrackedSlots(slot)
         notifySlotUpdate(tab)
+    }
+
+    /** Grows the main tab until it covers [slot], and returns it. */
+    private fun ProtectedAccess.adoptUntrackedSlots(slot: Int): BankTab {
+        val main = BankTab.Main
+        val tracked = main.slotRange(this).last + 1
+        val missing = slot - tracked + 1
+        if (missing > 0) {
+            main.increaseSize(this, missing)
+        }
+        return main
     }
 
     private fun ProtectedAccess.notifySlotUpdate(tab: BankTab) {

@@ -26,6 +26,7 @@ import org.rsmod.content.custom.barrows.configs.barrows_npcs
 import org.rsmod.content.custom.barrows.configs.barrows_seqs
 import org.rsmod.content.custom.barrows.configs.barrows_spots
 import org.rsmod.game.entity.Player
+import org.rsmod.game.hit.Hit
 import org.rsmod.game.hit.HitType
 import org.rsmod.game.type.obj.ObjTypeList
 import org.rsmod.plugin.scripts.PluginScript
@@ -90,9 +91,10 @@ constructor(
             worldRepo.projAnim(npc, target, barrows_spots.ahrim_aura, BarrowsProjAnims.magic)
         val landed = accuracy.rollMagicAccuracy(npc, target, random)
         val damage = if (landed) random.of(maxHits.getMagicMaxHit(npc, target) + 1) else 0
-        strike(target, damage, HitType.Magic, projectile.clientCycles)
+        val hit = strike(target, damage, HitType.Magic, projectile.clientCycles)
 
-        if (landed && random.of(SPECIAL_CHANCE) == 0 && target.strengthLvl > 0) {
+        // On damage dealt, not on the roll behind it - see `applyOnHitEffects`.
+        if (hit.damage > 0 && random.of(SPECIAL_CHANCE) == 0 && target.strengthLvl > 0) {
             target.statSub(stats.strength, constant = STRENGTH_DRAIN, percent = 0)
             target.spotanim(barrows_spots.ahrim_aura, delay = projectile.clientCycles)
         }
@@ -105,9 +107,10 @@ constructor(
             worldRepo.projAnim(npc, target, barrows_spots.crossbow_bolt, BarrowsProjAnims.bolt)
         val landed = accuracy.rollRangedAccuracy(npc, target, random)
         val damage = if (landed) random.of(maxHits.getRangedMaxHit(npc, target) + 1) else 0
-        strike(target, damage, HitType.Ranged, projectile.clientCycles)
+        val hit = strike(target, damage, HitType.Ranged, projectile.clientCycles)
 
-        if (landed && random.of(SPECIAL_CHANCE) == 0 && target.agilityLvl > 0) {
+        // On damage dealt, not on the roll behind it - see `applyOnHitEffects`.
+        if (hit.damage > 0 && random.of(SPECIAL_CHANCE) == 0 && target.agilityLvl > 0) {
             // Karil's tainted shot takes a fifth of what is left, not a flat amount.
             target.statSub(stats.agility, constant = 0, percent = AGILITY_DRAIN_PERCENT)
             target.spotanim(barrows_spots.karil_shot, delay = projectile.clientCycles)
@@ -115,7 +118,8 @@ constructor(
     }
 
     /**
-     * The four melee brothers. They share one swing; what differs is [applySpecial].
+     * The four melee brothers. They share one swing; what differs is [scaleDamage] before it and
+     * [applyOnHitEffects] after.
      *
      * Verac is the exception to the accuracy roll: his flail ignores the player's defence, so his
      * swing is resolved as a hit that always lands.
@@ -126,60 +130,62 @@ constructor(
         val ignoresDefence = brother == Brother.Verac && random.of(SPECIAL_CHANCE) == 0
         val landed = ignoresDefence || accuracy.rollMeleeAccuracy(npc, target, null, random)
         val maxHit = maxHits.getMeleeMaxHit(npc, target, null)
-        var damage =
+        val rolled =
             when {
                 ignoresDefence -> random.of(VERAC_MINIMUM, max(VERAC_MINIMUM, maxHit))
                 landed -> random.of(maxHit + 1)
                 else -> 0
             }
-        damage = applySpecial(brother, target, damage, maxHit, ignoresDefence)
-        strike(target, damage, HitType.Melee, delay = 1)
+        val damage = scaleDamage(brother, rolled, maxHit)
+
+        if (ignoresDefence) {
+            spotanim(barrows_spots.verac_desolation)
+        }
+
+        val hit = strike(target, damage, HitType.Melee, delay = 1)
+        applyOnHitEffects(brother, target, hit.damage)
     }
 
     /**
-     * The melee brothers' defining traits, applied once the damage is known.
-     *
-     * Returns the damage to actually deal, which only Dharok changes.
+     * Dharok's Wretched strength: every point of health he has lost makes him hit harder, so a
+     * nearly-dead Dharok is the most dangerous thing in the crypt. Nobody else scales.
      */
-    private fun StandardNpcAccess.applySpecial(
-        brother: Brother,
-        target: Player,
-        damage: Int,
-        maxHit: Int,
-        ignoredDefence: Boolean,
-    ): Int =
+    private fun StandardNpcAccess.scaleDamage(brother: Brother, damage: Int, maxHit: Int): Int {
+        if (brother != Brother.Dharok) {
+            return damage
+        }
+        val missing = npc.visType.hitpoints - npc.hitpoints
+        val scaled = damage + damage * missing / npc.visType.hitpoints.coerceAtLeast(1)
+        return min(scaled, maxHit * DHAROK_DAMAGE_CAP)
+    }
+
+    /**
+     * The traits that key off damage *dealt*, applied once the hit is built.
+     *
+     * [dealt] is the hit's own damage, not the roll behind it, and the difference is the whole
+     * point. `StandardPlayerHitModifier` runs inside `queueHit` and zeroes an npc's melee hit
+     * outright when the player has Protect from Melee up - which anyone in a crypt does. Read from
+     * the roll instead, and Guthan heals himself the full swing off a player who took nothing and
+     * saw a 0, and Torag drains run energy through a prayer that should have stopped him.
+     */
+    private fun StandardNpcAccess.applyOnHitEffects(brother: Brother, target: Player, dealt: Int) {
+        if (dealt <= 0) {
+            return
+        }
         when (brother) {
-            // The Wretched strength: every point of health he has lost makes him hit harder, so a
-            // nearly-dead Dharok is the most dangerous thing in the crypt.
-            Brother.Dharok -> {
-                val missing = npc.visType.hitpoints - npc.hitpoints
-                val scaled = damage + damage * missing / npc.visType.hitpoints.coerceAtLeast(1)
-                min(scaled, maxHit * DHAROK_DAMAGE_CAP)
-            }
             // The Infested: heals himself for what he takes out of you.
             Brother.Guthan -> {
-                if (damage > 0) {
-                    npc.hitpoints = min(npc.visType.hitpoints, npc.hitpoints + damage)
-                    spotanim(barrows_spots.guthan_effect)
-                }
-                damage
+                npc.hitpoints = min(npc.visType.hitpoints, npc.hitpoints + dealt)
+                spotanim(barrows_spots.guthan_effect)
             }
             // The Corrupted: saps the will to run.
             Brother.Torag -> {
-                if (damage > 0) {
-                    target.runEnergy = max(0, target.runEnergy - TORAG_ENERGY_DRAIN)
-                    spotanim(barrows_spots.torag_effect)
-                }
-                damage
+                target.runEnergy = max(0, target.runEnergy - TORAG_ENERGY_DRAIN)
+                spotanim(barrows_spots.torag_effect)
             }
-            Brother.Verac -> {
-                if (ignoredDefence) {
-                    spotanim(barrows_spots.verac_desolation)
-                }
-                damage
-            }
-            else -> damage
+            else -> Unit
         }
+    }
 
     /**
      * The guards `NvPCombat` applies before every swing, and the attack-speed bookkeeping.
@@ -203,12 +209,24 @@ constructor(
         return true
     }
 
-    /** The hit itself, delayed to land when the projectile arrives. */
-    private fun StandardNpcAccess.strike(target: Player, damage: Int, type: HitType, delay: Int) {
+    /**
+     * The hit itself, delayed to land when the projectile arrives.
+     *
+     * Returns the built [Hit], whose `damage` is what the player will actually take: `queueHit`
+     * runs `StandardPlayerHitModifier` as it builds, so protection prayers have already been
+     * applied by the time it comes back.
+     */
+    private fun StandardNpcAccess.strike(
+        target: Player,
+        damage: Int,
+        type: HitType,
+        delay: Int,
+    ): Hit {
         // Before the hit, never after - see the class comment.
         target.queueCombatRetaliate(npc)
-        target.queueHit(npc, delay.coerceAtLeast(1), type, damage)
+        val hit = target.queueHit(npc, delay.coerceAtLeast(1), type, damage)
         target.combatPlayDefendAnim(objTypes)
+        return hit
     }
 
     private companion object {
