@@ -26,6 +26,7 @@ import org.rsmod.api.script.onEvent
 import org.rsmod.api.stats.levelmod.InvisibleLevels
 import org.rsmod.game.MapClock
 import org.rsmod.game.entity.Player
+import org.rsmod.game.entity.player.AccountModeRules
 import org.rsmod.game.entity.player.SessionStateEvent
 import org.rsmod.game.type.obj.ObjTypeList
 import org.rsmod.game.type.stat.StatTypeList
@@ -136,7 +137,11 @@ constructor(
     private fun Player.sendPlayerOps() {
         MiscOutput.setPlayerOp(this, slot = 2, op = null)
         MiscOutput.setPlayerOp(this, slot = 3, op = "Follow")
-        MiscOutput.setPlayerOp(this, slot = 4, op = "Trade with")
+        // Cosmetic only: `OpPlayerHandler` never checks that an op was actually sent, so the
+        // authoritative refusal lives in the op-4 handler. This just stops the menu offering
+        // an ironman something they cannot do.
+        val tradeOp = if (AccountModeRules.canTradePlayers(this)) "Trade with" else null
+        MiscOutput.setPlayerOp(this, slot = 4, op = tradeOp)
         MiscOutput.setPlayerOp(this, slot = 5, op = null)
         MiscOutput.setPlayerOp(this, slot = 8, op = "Report")
     }

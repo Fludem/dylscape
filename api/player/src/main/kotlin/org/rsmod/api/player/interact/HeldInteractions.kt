@@ -481,7 +481,10 @@ constructor(
         val observer = observerUUID ?: error("`observerUUID` not set for player: $this")
         val entity =
             ObjEntity(id = invObj.id, count = transaction.completed(), scope = ObjScope.Private.id)
-        val obj = Obj(coords, entity, currentMapClock, observer)
+        // `ownerId` must be set explicitly: the four-arg constructor defaults it to
+        // `NULL_OBSERVER_ID`, which would make every manually-dropped item ownerless and so
+        // freely takeable by an ironman once it reveals.
+        val obj = Obj(coords, entity, currentMapClock, observer, ownerId = observer)
         val dropped = repo.add(obj, duration, reveal)
         if (!dropped) {
             return false

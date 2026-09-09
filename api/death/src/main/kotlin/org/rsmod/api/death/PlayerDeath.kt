@@ -10,14 +10,18 @@ import org.rsmod.api.config.refs.seqs
 import org.rsmod.api.config.refs.varps
 import org.rsmod.api.player.deathResetTimers
 import org.rsmod.api.player.disablePrayers
+import org.rsmod.api.player.events.PlayerDeathEvents
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.intVarp
+import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Player
 import org.rsmod.game.type.stat.StatTypeList
 import org.rsmod.map.CoordGrid
 
 @Singleton
-public class PlayerDeath @Inject constructor(private val statTypes: StatTypeList) {
+public class PlayerDeath
+@Inject
+constructor(private val statTypes: StatTypeList, private val eventBus: EventBus) {
     private var Player.specialAttackType by intVarp(varps.sa_attack)
 
     public suspend fun death(access: ProtectedAccess) {
@@ -36,6 +40,8 @@ public class PlayerDeath @Inject constructor(private val statTypes: StatTypeList
         midiSong(midis.stop_music)
         midiJingle(jingles.death_jingle_2)
         mes("Oh dear, you are dead!")
+        // Published before the teleport so subscribers still see where the player died.
+        eventBus.publish(PlayerDeathEvents.Death(player))
         telejump(randomRespawn ?: respawn)
         resetAnim()
         // TODO: Drop death invs, etc.

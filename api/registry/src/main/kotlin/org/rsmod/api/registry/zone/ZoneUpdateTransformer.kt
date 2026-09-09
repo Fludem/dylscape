@@ -138,7 +138,7 @@ public object ZoneUpdateTransformer {
         )
     }
 
-    private fun Obj.copy(): Obj = Obj(coords, entity, creationCycle, receiverId)
+    private fun Obj.copy(): Obj = Obj(coords, entity, creationCycle, receiverId, ownerId)
 
     public interface PartialFollowsZoneProt : ZoneProt {
         public val backing: ZoneProt

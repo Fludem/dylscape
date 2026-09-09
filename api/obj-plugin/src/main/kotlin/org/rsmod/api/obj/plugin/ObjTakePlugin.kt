@@ -10,6 +10,7 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.advanced.onDefaultOpObj3
 import org.rsmod.game.entity.Player
+import org.rsmod.game.entity.player.AccountModeRules
 import org.rsmod.game.inv.InvObj
 import org.rsmod.game.obj.Obj
 import org.rsmod.objtx.TransactionResultList
@@ -22,6 +23,12 @@ public class ObjTakePlugin @Inject constructor(private val repo: ObjRepository) 
     }
 
     private suspend fun ProtectedAccess.triggerTake(obj: Obj) {
+        // Checked before the walk and the pickup animation, so an ironman is refused where they
+        // stand rather than after crossing the room.
+        if (!AccountModeRules.canTakeObj(player, obj)) {
+            player.mes("You cannot pick up items that belong to other players.")
+            return
+        }
         if (!player.hasInvSpace(obj)) {
             player.mes(Constants.dm_take_invspace)
             return

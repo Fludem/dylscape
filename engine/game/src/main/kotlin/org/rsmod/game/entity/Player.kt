@@ -15,9 +15,11 @@ import org.rsmod.game.client.Client
 import org.rsmod.game.client.ClientCycle
 import org.rsmod.game.client.NoopClient
 import org.rsmod.game.client.NoopClientCycle
+import org.rsmod.game.entity.player.AccountMode
 import org.rsmod.game.entity.player.Appearance
 import org.rsmod.game.entity.player.PlayerUid
 import org.rsmod.game.entity.player.PublicMessage
+import org.rsmod.game.entity.player.XpRateTier
 import org.rsmod.game.entity.util.EntityFaceAngle
 import org.rsmod.game.entity.util.PathingEntityCommon
 import org.rsmod.game.headbar.Headbar
@@ -198,6 +200,16 @@ public class Player(
 
     public var xpRate: Double = 1.0
     public var globalXpRate: Double = 1.0
+
+    /** The account type picked during first-login setup. See [AccountMode]. */
+    public var accountMode: AccountMode = AccountMode.Standard
+
+    /**
+     * The experience-rate tier picked during first-login setup, or `null` when the chooser has not
+     * run yet - that absence is the "has chosen" flag. Authoritative over [xpRate], which is
+     * regenerated from it on load.
+     */
+    public var xpRateTier: XpRateTier? = null
 
     public var publicMessage: PublicMessage? = null
     public var pendingSay: String? = null

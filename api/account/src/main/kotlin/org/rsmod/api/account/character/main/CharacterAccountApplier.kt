@@ -4,6 +4,8 @@ import jakarta.inject.Inject
 import java.time.LocalDateTime
 import org.rsmod.api.account.character.CharacterDataStage
 import org.rsmod.game.entity.Player
+import org.rsmod.game.entity.player.AccountMode
+import org.rsmod.game.entity.player.XpRateTier
 import org.rsmod.game.type.mod.ModLevelTypeList
 import org.rsmod.map.CoordGrid
 
@@ -32,7 +34,12 @@ constructor(private val modLevelTypes: ModLevelTypeList) :
         player.displayName = data.displayName ?: ""
         player.coords = CoordGrid(data.coordX, data.coordZ, data.coordLevel)
         player.runEnergy = data.runEnergy
-        player.xpRate = data.xpRate
+        player.accountMode = AccountMode.of(data.accountMode)
+        player.xpRateTier = XpRateTier.of(data.xpRateTier)
+        // The tier is authoritative: regenerating `xpRate` from it here means the two can never
+        // drift apart. `xp_rate_in_hundreds` remains the fallback for characters that predate the
+        // chooser, and for an admin override on an account that never picked a tier.
+        player.xpRate = player.xpRateTier?.xpRate ?: data.xpRate
         player.lastLogin = LocalDateTime.now()
         player.vars.backing.putAll(data.varps)
         player.assignModLevel(data.modLevel)

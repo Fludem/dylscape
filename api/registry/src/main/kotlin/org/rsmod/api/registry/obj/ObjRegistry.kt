@@ -112,8 +112,9 @@ constructor(private val updates: ZoneUpdateMap, private val objTypes: ObjTypeLis
         return totalCount <= Int.MAX_VALUE
     }
 
+    /** Carries [Obj.ownerId] across, or splitting a stack would launder its ownership. */
     private fun Obj.singleCopy(): Obj =
-        Obj(coords, entity.copy(count = 1), creationCycle, receiverId)
+        Obj(coords, entity.copy(count = 1), creationCycle, receiverId, ownerId)
 
     public companion object {
         /**

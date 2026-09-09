@@ -15,6 +15,7 @@ import org.rsmod.api.parsers.jackson.readReifiedValue
 import org.rsmod.api.parsers.json.Json
 import org.rsmod.api.realm.Realm
 import org.rsmod.game.entity.Player
+import org.rsmod.game.entity.player.XpRateTier
 import org.rsmod.game.type.varp.VarpLifetime
 import org.rsmod.game.type.varp.VarpTypeList
 
@@ -133,7 +134,9 @@ constructor(
                         c.muted_until,
                         c.banned_until,
                         c.run_energy,
-                        c.xp_rate_in_hundreds
+                        c.xp_rate_in_hundreds,
+                        c.account_mode,
+                        c.xp_rate_tier
                     FROM accounts a
                     JOIN characters c ON c.account_id = a.id
                     WHERE c.realm_id = ?
@@ -171,6 +174,8 @@ constructor(
                     val bannedUntil = resultSet.getLocalDateTime("banned_until")
                     val runEnergy = resultSet.getInt("run_energy")
                     val xpRateInHundreds = resultSet.getInt("xp_rate_in_hundreds")
+                    val accountMode = resultSet.getInt("account_mode")
+                    val xpRateTier = resultSet.getInt("xp_rate_tier")
                     val varps = objectMapper.readReifiedValue<Map<Int, Int>>(varpsText)
                     val characterData =
                         CharacterAccountData(
@@ -199,6 +204,8 @@ constructor(
                             bannedUntil = bannedUntil,
                             runEnergy = runEnergy,
                             xpRate = xpRateInHundreds / 100.0,
+                            accountMode = accountMode,
+                            xpRateTier = xpRateTier,
                         )
                     val metadataList = CharacterMetadataList(characterData, mutableListOf())
                     metadataList.add(applier, characterData)
@@ -221,7 +228,8 @@ constructor(
                 """
                     UPDATE characters
                     SET x = ?, z = ?, level = ?, varps = ?, last_login = ?, run_energy = ?,
-                        xp_rate_in_hundreds = ?, last_logout = CURRENT_TIMESTAMP
+                        xp_rate_in_hundreds = ?, account_mode = ?, xp_rate_tier = ?,
+                        last_logout = CURRENT_TIMESTAMP
                     WHERE id = ?
                 """
                     .trimIndent()
@@ -238,7 +246,9 @@ constructor(
             it.setSqliteTimestamp(5, player.lastLogin)
             it.setInt(6, player.runEnergy)
             it.setInt(7, (player.xpRate * 100).roundToInt())
-            it.setInt(8, characterId)
+            it.setInt(8, player.accountMode.id)
+            it.setInt(9, player.xpRateTier?.id ?: XpRateTier.UNCHOSEN_ID)
+            it.setInt(10, characterId)
             it.executeUpdate()
         }
 
