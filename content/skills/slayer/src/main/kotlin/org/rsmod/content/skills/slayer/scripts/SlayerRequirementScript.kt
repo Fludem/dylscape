@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.ints.IntSets
 import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.slayer.SlayerRequirement
 import org.rsmod.api.combat.commons.slayer.SlayerRequirementRegistry
-import org.rsmod.api.config.refs.params
 import org.rsmod.content.skills.slayer.configs.SlayerGear
 import org.rsmod.content.skills.slayer.data.SlayerTaskRepository
 import org.rsmod.game.type.obj.ObjTypeList
@@ -72,16 +71,22 @@ constructor(
     }
 
     /**
-     * Every slayer helmet in the cache, found by the param rather than by id.
+     * Every slayer helmet in the cache, found by internal name rather than by id.
      *
-     * `slayer_helm` and `slayer_helm_imbued` are the same params the melee formula already uses to
-     * spot a black mask, so this picks up the recoloured and imbued variants for free and cannot
-     * drift from a hand-written list.
+     * The obvious approach - reading the `slayer_helm` and `slayer_helm_imbued` params, which is
+     * what the melee formula uses to spot a black mask - does not work: **no obj in this cache
+     * carries either param**. They are RSMod-authored params that were never populated, the same
+     * dead end as `slayer_levelrequire` and `slayer_category`. The first cut of this shipped with
+     * them and reported "0 slayer helmet variants", which would have meant a player in a slayer
+     * helmet being told to go and fetch earmuffs.
+     *
+     * The names, by contrast, are the cache's own and are perfectly uniform across all 24 variants,
+     * so this cannot drift from a hand-written id list either.
      */
     private fun slayerHelmets(): IntSet {
         val helmets = IntOpenHashSet()
         for ((id, type) in objTypes) {
-            if (type.param(params.slayer_helm) != 0 || type.param(params.slayer_helm_imbued) != 0) {
+            if (type.internalName?.startsWith(HELMET_PREFIX) == true) {
                 helmets.add(id)
             }
         }
@@ -89,6 +94,14 @@ constructor(
     }
 
     private companion object {
+        /**
+         * Matches all 24 helmet variants - plain, imbued, and every recolour from black through
+         * araxyte - because the cache names them uniformly. Noted and placeholder copies are
+         * `cert_`/`placeholder_` prefixed, so they fall outside this and should: neither can be
+         * worn.
+         */
+        private const val HELMET_PREFIX = "slayer_helm"
+
         private val logger = InlineLogger()
     }
 }
