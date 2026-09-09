@@ -64,6 +64,14 @@ public data class Edible(
     public val damage: Int = 0,
     /** Damage as a percentage of *current* hitpoints, which is how the rock cakes bite. */
     public val damagePercent: Int = 0,
+    /**
+     * The live game shows the op but refuses to honour it.
+     *
+     * A refusal consumes nothing, starts no cooldown and heals nothing - it only prints [message].
+     * Rotten apples, the Hosidius servery food and the quest kebabs all behave this way, and the
+     * distinction matters: without it a refusal would silently eat the item.
+     */
+    public val refuses: Boolean = false,
     /** Overrides the default "You eat the {name}." line. */
     public val message: String? = null,
     /** An extra line after the default one, for foods that comment on what they did. */
@@ -84,6 +92,10 @@ public data class Edible(
         }
         require(healRange == null || !healRange.isEmpty()) {
             "Heal range must not be empty: ${obj.internalName}"
+        }
+        require(!refuses || message != null) { "A refusal has to say why: ${obj.internalName}" }
+        require(!refuses || (heal == 0 && damage == 0 && next == null)) {
+            "A refusal must not consume or change anything: ${obj.internalName}"
         }
     }
 

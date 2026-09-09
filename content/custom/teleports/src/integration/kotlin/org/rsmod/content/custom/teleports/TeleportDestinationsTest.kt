@@ -1,7 +1,10 @@
 package org.rsmod.content.custom.teleports
 
+import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
@@ -10,11 +13,15 @@ import org.rsmod.content.custom.teleports.configs.TeleportCategory
 import org.rsmod.content.custom.teleports.configs.TeleportDestination
 import org.rsmod.content.custom.teleports.configs.TeleportDestinations
 import org.rsmod.map.CoordGrid
+import org.rsmod.routefinder.collision.CollisionFlagMap
+import org.rsmod.routefinder.flag.CollisionFlag
+
+class TeleportCollisionDeps @Inject constructor(val collision: CollisionFlagMap)
 
 /**
- * Guards the two things the destination table cannot check for itself: that the component name we
- * bind is one the cache actually has, and that the Wilderness arithmetic matches the bounds it
- * claims to model.
+ * Guards the things the destination table cannot check for itself: that the component we bind is
+ * one the cache actually has, that every coordinate lands on ground a player can stand on, and that
+ * the Wilderness arithmetic matches the bounds it claims to model.
  */
 @Execution(ExecutionMode.SAME_THREAD)
 class TeleportDestinationsTest {
@@ -30,14 +37,71 @@ class TeleportDestinationsTest {
             assertEquals(7, component.component)
         }
 
+    /**
+     * The one test that makes a fifty-row table safe to extend.
+     *
+     * `TeleportMenuScript` falls back to `telejump(… ?: dest)`, so a coordinate typed one mapsquare
+     * out does not fail loudly -- it drops the player inside a wall. Every `GameTestScope` is
+     * handed a copy of the real game collision map, so the whole table can be checked against it
+     * here.
+     */
+    @Test
+    fun GameTestState.`every destination lands on a tile a player can stand on`() =
+        runInjectedGameTest(TeleportCollisionDeps::class) { deps ->
+            val blocked = CollisionFlag.BLOCK_WALK or CollisionFlag.BLOCK_PLAYERS
+            val failures =
+                TeleportDestinations.all.filter { destination ->
+                    val dest = destination.dest
+                    val flags = deps.collision[dest.x, dest.z, dest.level]
+                    flags and blocked != 0
+                }
+            assertTrue(failures.isEmpty()) {
+                "Destinations on unwalkable tiles: " +
+                    failures.joinToString { "${it.label} ${it.dest}" }
+            }
+        }
+
     @Test
     fun `every category has entries and no coordinate is reused`() {
         for (category in TeleportCategory.entries) {
             val destinations = TeleportDestinations[category]
-            assert(destinations.isNotEmpty()) { "Category $category is empty." }
+            assertTrue(destinations.isNotEmpty()) { "Category $category is empty." }
         }
         val coords = TeleportDestinations.all.map(TeleportDestination::dest)
         assertEquals(coords.size, coords.toSet().size, "Two destinations share a coordinate.")
+    }
+
+    @Test
+    fun `keys are unique and round-trip back to their destination`() {
+        // The registry stores a key, so a key that does not resolve is a silently dead
+        // "Previous" row.
+        val keys = TeleportDestinations.all.map(TeleportDestination::key)
+        assertEquals(keys.size, keys.toSet().size, "Two destinations share a key.")
+        for (destination in TeleportDestinations.all) {
+            assertSame(destination, TeleportDestinations[destination.key])
+        }
+    }
+
+    @Test
+    fun `home is offered but belongs to no category`() {
+        assertTrue(TeleportDestinations.home in TeleportDestinations.all)
+        assertSame(TeleportDestinations.home, TeleportDestinations["home"])
+        assertEquals(TeleportDestinations.HOME, TeleportDestinations.home.dest)
+        for (category in TeleportCategory.entries) {
+            assertTrue(TeleportDestinations.home !in TeleportDestinations[category]) {
+                "Home is duplicated inside $category."
+            }
+        }
+    }
+
+    @Test
+    fun `category order is deliberate`() {
+        // The rows are drawn in this order and their hotkeys follow it, so a reorder should be a
+        // conscious edit rather than a side effect.
+        assertEquals(
+            listOf(TeleportCategory.Cities, TeleportCategory.Skilling, TeleportCategory.Dungeons),
+            TeleportCategory.entries.toList(),
+        )
     }
 
     @Test

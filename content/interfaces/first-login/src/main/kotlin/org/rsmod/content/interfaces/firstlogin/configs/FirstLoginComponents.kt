@@ -21,6 +21,14 @@ object FirstLoginInterfaces : InterfaceReferences() {
 object FirstLoginComponents : ComponentReferences() {
     val page_mode = find("first_login_setup:page_mode")
     val page_rate = find("first_login_setup:page_rate")
+    val page_confirm = find("first_login_setup:page_confirm")
+
+    /** Filled with `ifSetText` once the player has picked; authored empty. */
+    val confirm_mode = find("first_login_setup:confirm_mode")
+    val confirm_rate = find("first_login_setup:confirm_rate")
+
+    val confirm_button = find("first_login_setup:confirm_button")
+    val back_button = find("first_login_setup:back_button")
 
     val mode_buttons = List(MODE_COUNT) { find("first_login_setup:mode_button_$it") }
     val rate_buttons = List(RATE_COUNT) { find("first_login_setup:rate_button_$it") }

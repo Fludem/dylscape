@@ -32,6 +32,14 @@ object FirstLoginBuilder : ComponentBuilder() {
     private const val ROOT = 0
     private const val PAGE_MODE = 5
     private const val PAGE_RATE = 6
+    private const val PAGE_CONFIRM = 28
+
+    private const val CONFIRM_MODE_Y = 44
+    private const val CONFIRM_RATE_Y = 68
+    private const val CONFIRM_ACCEPT_Y = 116
+    private const val CONFIRM_BACK_Y = 180
+    private const val ACTION_HEIGHT = 44
+    private const val ACTION_LABEL_OFFSET_Y = 14
 
     /** Mode rows, in the order they are drawn. Copy lives here; the enum stays policy-free. */
     val modeRows: List<Row> =
@@ -107,6 +115,81 @@ object FirstLoginBuilder : ComponentBuilder() {
 
         modeRows.forEachIndexed { index, row -> row(PAGE_MODE, "mode", index, row) }
         rateRows.forEachIndexed { index, row -> row(PAGE_RATE, "rate", index, row) }
+
+        confirmPage()
+    }
+
+    /**
+     * The final review step. Both choices are irreversible, so a misclick on the rate page must not
+     * be the last word - this page restates what was picked and offers a way back.
+     *
+     * The two summary lines are authored empty and filled with `ifSetText` at runtime: the copy
+     * depends on what the player chose, and text pushed from the server costs no repack.
+     */
+    private fun confirmPage() {
+        page("first_login_setup:page_confirm", hidden = true)
+
+        child("first_login_setup:confirm_heading", parent = PAGE_CONFIRM) {
+            heading()
+            y = layout.ROW_GAP
+            width = layout.WIDTH
+            textAlignH = layout.ALIGN_CENTRE
+            text = "Is this right?"
+        }
+
+        child("first_login_setup:confirm_mode", parent = PAGE_CONFIRM) {
+            body()
+            y = CONFIRM_MODE_Y
+            width = layout.WIDTH
+            textAlignH = layout.ALIGN_CENTRE
+        }
+
+        child("first_login_setup:confirm_rate", parent = PAGE_CONFIRM) {
+            body()
+            y = CONFIRM_RATE_Y
+            width = layout.WIDTH
+            textAlignH = layout.ALIGN_CENTRE
+        }
+
+        actionRow(
+            "confirm",
+            parent = PAGE_CONFIRM,
+            top = CONFIRM_ACCEPT_Y,
+            op = "Confirm",
+            label = "Yes, lock these in",
+        )
+        actionRow(
+            "back",
+            parent = PAGE_CONFIRM,
+            top = CONFIRM_BACK_Y,
+            op = "Back",
+            label = "No, start over",
+        )
+    }
+
+    /** A single full-width button: a clickable plate with a centred label sitting on top of it. */
+    private fun actionRow(prefix: String, parent: Int, top: Int, op: String, label: String) {
+        child("first_login_setup:${prefix}_button", parent = parent) {
+            type = TYPE_RECT
+            fill = true
+            colour1 = layout.COLOUR_ROW
+            x = layout.ROW_INSET_X
+            y = top
+            width = layout.ROW_WIDTH
+            height = ACTION_HEIGHT
+            events = layout.EVENT_OP1
+            this.op = arrayOf(op)
+            opBase = label
+        }
+
+        child("first_login_setup:${prefix}_label", parent = parent) {
+            heading()
+            x = layout.ROW_INSET_X
+            y = top + ACTION_LABEL_OFFSET_Y
+            width = layout.ROW_WIDTH
+            textAlignH = layout.ALIGN_CENTRE
+            text = label
+        }
     }
 
     private fun page(internal: String, hidden: Boolean) {

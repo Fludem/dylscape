@@ -46,11 +46,13 @@ class EdibleObjDump {
     }
 
     /**
-     * Reads the eat and drink sounds out of the animations that carry them.
+     * Looks for the eat and drink sounds on the animations that would carry them.
      *
-     * `.data/symbols/synth.sym` is a curated 187-entry list and neither sound is named in it, but
-     * they are not guesswork either: `human_eat_withsound` embeds the synth id in its frame sounds,
-     * so the id can be decoded rather than sourced from a wiki page.
+     * The answer, recorded here so nobody repeats the search: they are not there. Every one of the
+     * 12,521 seqs in this revision decodes with an empty frame-sound array, `human_eat_withsound`
+     * included, and `.data/symbols/synth.sym` is a curated 187-entry list naming neither sound. The
+     * synth ids are therefore not recoverable from the cache, which is why eating is silent rather
+     * than playing a guessed id.
      */
     @Test
     fun GameTestState.`dump consume anim sounds`() = runBasicGameTest {
@@ -65,17 +67,6 @@ class EdibleObjDump {
                 "SEQ ${seq.id} sym=$name ticks=${seq.tickDuration} " +
                     "sounds=${sounds.map { "synth=${it.type} loops=${it.loops}" }}"
             )
-        }
-    }
-
-    @Test
-    fun GameTestState.`dump seq sound coverage`() = runBasicGameTest {
-        val withSound = cacheTypes.seqs.values.filter { seq ->
-            seq.sounds.any { it != SeqFrameSound.NULL }
-        }
-        println("SEQS_TOTAL=${cacheTypes.seqs.values.size} SEQS_WITH_SOUND=${withSound.size}")
-        for (seq in withSound.take(5)) {
-            println("SAMPLE ${seq.id} sym=${seq.internalName}")
         }
     }
 

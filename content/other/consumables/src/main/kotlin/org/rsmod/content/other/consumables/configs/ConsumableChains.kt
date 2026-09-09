@@ -31,7 +31,14 @@ internal object ConsumableChains : ConsumableFamily() {
         // Chocolate cake
         chain(5, "chocolate_cake", "partial_chocolate_cake", "chocolate_slice")
         // Cooked giant crab meat
-        chain(2, "hundred_pirate_giant_crab_meat_5", "hundred_pirate_giant_crab_meat_4", "hundred_pirate_giant_crab_meat_3", "hundred_pirate_giant_crab_meat_2", "hundred_pirate_giant_crab_meat_1")
+        chain(
+            2,
+            "hundred_pirate_giant_crab_meat_5",
+            "hundred_pirate_giant_crab_meat_4",
+            "hundred_pirate_giant_crab_meat_3",
+            "hundred_pirate_giant_crab_meat_2",
+            "hundred_pirate_giant_crab_meat_1",
+        )
         // Dragonfruit pie
         chain(10, "dragonfruit_pie", "half_dragonfruit_pie")
         // Fish pie

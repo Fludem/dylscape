@@ -111,6 +111,11 @@ class DropTableRoller @Inject constructor(private val random: GameRandom) {
      * Shares [remainder] out across the empty slots in proportion to their authored weights, so an
      * unboosted table hands each one back exactly what it declared. Any rounding shortfall goes to
      * the last empty slot, keeping the weights summing to the roll space exactly.
+     *
+     * The share is computed in [Long] because the product overflows [Int] long before the quotient
+     * would: [remainder] reaches `denominator * scale` and a slot's weight reaches `denominator`,
+     * so a table any larger than `/6553` would wrap under a boosted roll. The quotient is always at
+     * most [remainder], so narrowing back is safe.
      */
     private fun distributeRemainder(
         slots: List<DropSlot>,
@@ -127,7 +132,7 @@ class DropTableRoller @Inject constructor(private val random: GameRandom) {
             if (slot !is DropSlot.Empty) {
                 continue
             }
-            val share = remainder * slot.weight / emptyWeightTotal
+            val share = (remainder.toLong() * slot.weight / emptyWeightTotal).toInt()
             weights[index] = share
             assigned += share
             lastEmpty = index

@@ -13,16 +13,18 @@ package org.rsmod.content.other.consumables.configs
  * - **combo** - karambwans ride their own clock, so they stack with an ordinary food.
  * - **harmful** - the rock cakes, the nightshades and the poison karambwan cost hitpoints.
  * - **refused** - the obj carries an `Eat` op the live game will not honour. These are not gaps
- *   waiting to be filled: rotten apples, the Hosidius servery food and the quest kebabs all print
- *   a refusal in the real game, and the row exists to say so rather than let the click fall
- *   through to "Nothing interesting happens."
+ *   waiting to be filled: rotten apples, the Hosidius servery food and the quest kebabs all print a
+ *   refusal in the real game, and the row exists to say so rather than let the click fall through
+ *   to "Nothing interesting happens."
  *
  * The `food(name, 0)` rows are the unobtainable leftovers - 2005 Hallowe'en sweets, 2020 candy and
- * the historical Gnome Restaurant intermediates from before the 2006 rework. They carry an `Eat`
- * op and the wiki records no healing for any of them, so they are consumed for nothing rather than
+ * the historical Gnome Restaurant intermediates from before the 2006 rework. They carry an `Eat` op
+ * and the wiki records no healing for any of them, so they are consumed for nothing rather than
  * handed an invented number.
  */
 internal object ConsumableSpecials : ConsumableFamily() {
+    private const val HONEY_LOCUST_OVERHEAL = 20
+
     init {
         energyFood(
             "macro_triffidfruit",
@@ -97,8 +99,16 @@ internal object ConsumableSpecials : ConsumableFamily() {
         randomFood("tbw_spider_on_shaft_cooked", 7, 10)
         refusedFood("ratcatchers_poisonedcheese", "Um... let me think about this one... no.")
         scaledFood("bowl_sweetcorn", heal = 1, percent = 10)
-        harmfulFood("hundred_dwarf_hot_rockcake", damage = 1, message = "You take a bite of the rock cake. Ouch!")
-        harmfulFood("hundred_dwarf_cool_rockcake", damage = 1, message = "You take a bite of the rock cake. Ouch!")
+        harmfulFood(
+            "hundred_dwarf_hot_rockcake",
+            damage = 1,
+            message = "You take a bite of the rock cake. Ouch!",
+        )
+        harmfulFood(
+            "hundred_dwarf_cool_rockcake",
+            damage = 1,
+            message = "You take a bite of the rock cake. Ouch!",
+        )
         energyFood(
             "aluft_gnome_mint_cake",
             energy = 50,
@@ -114,7 +124,10 @@ internal object ConsumableSpecials : ConsumableFamily() {
         refusedFood("snakeboss_eel", "You don't want to eat that.")
         refusedFood("hosidius_servery_meat_pie", "That's not for you - it's for the soldiers.")
         refusedFood("hosidius_servery_plain_pizza", "That's not for you - it's for the soldiers.")
-        refusedFood("hosidius_servery_pineapple_pizza", "That's not for you - it's for the soldiers.")
+        refusedFood(
+            "hosidius_servery_pineapple_pizza",
+            "That's not for you - it's for the soldiers.",
+        )
         refusedFood("hosidius_servery_cooked_meat", "That's not for you - it's for the soldiers.")
         refusedFood("hosidius_servery_potato", "That's not for you - it's for the soldiers.")
         refusedFood("hosidius_servery_stew", "That's not for you - it's for the soldiers.")
@@ -171,8 +184,4 @@ internal object ConsumableSpecials : ConsumableFamily() {
 
     /** The honey locust always heals 20 and always overheals, so the cap is simply the heal. */
     private fun honeyLocustBonus(base: Int): Int = HONEY_LOCUST_OVERHEAL
-
-    private companion object {
-        private const val HONEY_LOCUST_OVERHEAL = 20
-    }
 }

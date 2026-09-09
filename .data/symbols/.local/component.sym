@@ -37,3 +37,11 @@ first_login_setup:24	first_login_setup:rate_desc_1
 first_login_setup:25	first_login_setup:rate_button_2
 first_login_setup:26	first_login_setup:rate_name_2
 first_login_setup:27	first_login_setup:rate_desc_2
+first_login_setup:28	first_login_setup:page_confirm
+first_login_setup:29	first_login_setup:confirm_heading
+first_login_setup:30	first_login_setup:confirm_mode
+first_login_setup:31	first_login_setup:confirm_rate
+first_login_setup:32	first_login_setup:confirm_button
+first_login_setup:33	first_login_setup:confirm_label
+first_login_setup:34	first_login_setup:back_button
+first_login_setup:35	first_login_setup:back_label

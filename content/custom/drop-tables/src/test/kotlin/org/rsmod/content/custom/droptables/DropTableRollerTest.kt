@@ -194,6 +194,28 @@ class DropTableRollerTest {
         assertEquals(null, rollSingle(table, roll = 96, DropBoost.NONE))
     }
 
+    @Test
+    fun `a large denominator survives a boosted roll`() {
+        val table = dropTable {
+            table(outOf = 10_000_000) {
+                nothing(5_000_000)
+                drop(100, objs.coins)
+                nothing(4_999_900)
+            }
+        }
+
+        // Generated tables run out of ten million so that rates like 1/699,050 stay representable.
+        // Scaled into tenths that is a hundred-million roll space, and sharing it out across the
+        // empty slots overflows `Int` well before the quotient does: the first empty slot is
+        // owed `99,999,000 * 5,000,000 / 9,999,900`, whose product is ~5e14. Wrapped to `Int` the
+        // share comes out as 67 instead of 50,000,000, which drags every later slot down with it.
+        // So assert the drop's boundaries, which sit either side of that first empty slot.
+        assertEquals(null, rollSingle(table, roll = 49_999_999, DropBoost.PLUS_10_RARE))
+        assertSame(objs.coins, rollSingle(table, roll = 50_000_000, DropBoost.PLUS_10_RARE)?.obj)
+        assertSame(objs.coins, rollSingle(table, roll = 50_000_999, DropBoost.PLUS_10_RARE)?.obj)
+        assertEquals(null, rollSingle(table, roll = 50_001_000, DropBoost.PLUS_10_RARE))
+    }
+
     private fun rollSingle(
         table: DropTable,
         roll: Int,

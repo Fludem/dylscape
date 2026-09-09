@@ -4,13 +4,13 @@ package org.rsmod.content.other.consumables.configs
  * Every food that restores a flat number of hitpoints and does nothing else.
  *
  * The bulk of the game. Rows are ordered by obj id, which keeps them in the families the cache
- * itself groups them in - the fish ladder, the Gnome Restaurant menu, the Dorgesh-Kaan cuisine,
- * the Varlamore hunter meats - and makes a diff against the wiki table easy to read.
+ * itself groups them in - the fish ladder, the Gnome Restaurant menu, the Dorgesh-Kaan cuisine, the
+ * Varlamore hunter meats - and makes a diff against the wiki table easy to read.
  *
  * Healing values are the live ones, read off the wiki's complete food list rather than recalled.
  * Anything that scales, rolls, chains, overheals or carries a side effect lives in
- * [ConsumableSpecials] or [ConsumableChains] instead, so a plain number here can be trusted to
- * mean exactly that.
+ * [ConsumableSpecials] or [ConsumableChains] instead, so a plain number here can be trusted to mean
+ * exactly that.
  */
 internal object ConsumablePlainFoods : ConsumableFamily() {
     init {

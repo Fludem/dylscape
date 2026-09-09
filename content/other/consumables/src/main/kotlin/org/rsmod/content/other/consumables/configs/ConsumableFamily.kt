@@ -89,7 +89,7 @@ internal abstract class ConsumableFamily : ObjReferences() {
      * "Nothing interesting happens."
      */
     protected fun refusedFood(name: String, message: String) {
-        rows += Edible(obj = find(name), message = message)
+        rows += Edible(obj = find(name), refuses = true, message = message)
     }
 
     /**
@@ -145,8 +145,12 @@ internal abstract class ConsumableFamily : ObjReferences() {
     }
 
     /** A keg drunk down through its four doses, each dose the same size. */
-    protected fun keg(heal: Int, vararg names: String, boosts: List<StatEffect> = emptyList(),
-                      drains: List<StatEffect> = emptyList()) {
+    protected fun keg(
+        heal: Int,
+        vararg names: String,
+        boosts: List<StatEffect> = emptyList(),
+        drains: List<StatEffect> = emptyList(),
+    ) {
         val types = names.map { find(it) }
         for ((index, type) in types.withIndex()) {
             rows +=

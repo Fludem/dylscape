@@ -3,3 +3,4 @@
 #
 # Queues are name-only server types with no cache encoder, so this needs no `packCache`.
 1000	account_setup
+1001	consumable_delayed_heal

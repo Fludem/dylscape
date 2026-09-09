@@ -1,0 +1,60 @@
+# Builds the friend-facing client installers.
+#
+# jpackage cannot cross-compile, so each OS builds on its own runner.
+#
+# Requires one repository secret:
+#   ONYX_MODULUS - the 256-hex-char modulus from .data/client.key (that file is gitignored).
+#                  It is the PUBLIC half of the keypair, so it is safe here; the private
+#                  .data/game.key must never leave the server.
+#
+# NOTE: run this on a PRIVATE repo. The artifacts contain patched Jagex client bytecode.
+name: client
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Installer version
+        default: 1.0.0
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: windows-x64
+          - os: macos-14      # Apple Silicon
+            label: macos-arm64
+          - os: macos-13      # Intel; drop this job if nobody needs it
+            label: macos-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'   # jpackage + jlink; also the JRE that gets bundled
+
+      # jpackage needs WiX 3.x on PATH to emit an .msi
+      - name: Install WiX (Windows)
+        if: runner.os == 'Windows'
+        run: choco install wixtoolset --no-progress -y
+        shell: pwsh
+
+      - name: Build installer
+        shell: bash
+        env:
+          ONYX_MODULUS: ${{ secrets.ONYX_MODULUS }}
+          APP_VERSION: ${{ inputs.version }}
+        run: |
+          test -n "$ONYX_MODULUS" || { echo "::error::ONYX_MODULUS secret is not set"; exit 1; }
+          ./tools/client/package.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: onyx-${{ matrix.label }}
+          path: build/client-package/out/*
+          if-no-files-found: error

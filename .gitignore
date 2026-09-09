@@ -52,3 +52,7 @@ bin/
 # Per-machine IDE state, and the runtime logs `tools/local/dev.sh` writes.
 .idea/workspace.xml
 tools/local/logs/
+
+# Python bytecode (web/api tooling).
+__pycache__/
+*.pyc

@@ -17,6 +17,8 @@ Read these before doing real work — they are long, current, and written for th
 | `brief-guide.md` | End-to-end checklist for adding a skill module, from the Fletching/Crafting builds |
 | `tools/local/README.md` | Local dev stack (RSProx + client), memory limits, and the accumulated content gotchas |
 | `docs/quirks.md` | Upstream's own list of deliberate design compromises |
+| `docs/DEPLOY.md` | The live VPS: deploying, the realm lockdown, and the two rules that brick clients |
+| `docs/CLIENT.md` | The friend-facing client: patched RuneLite, no RSProx, no cache to ship |
 
 ## Commands
 
