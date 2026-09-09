@@ -31,17 +31,17 @@ object BarrowsMap {
     /**
      * The diggable top of each mound.
      *
-     * The mounds are bare terrain - no loc is placed on any of them, and the `barrows_short_grass_*`
-     * scenery that covers them is generic dressing used all over the world, so neither is a marker
-     * we can test against. What *does* mark a mound is the terrain height: the `m55_51` height bytes
-     * put each mound top on a plateau eight to seventeen units above the surrounding grass, and a
-     * flood fill from each peak down to `peak - 4` gives the six blobs boxed here. `BarrowsMapTest`
-     * re-derives nothing, but it does check the boxes are disjoint and that each [mounds] tile sits
-     * inside its own.
+     * The mounds are bare terrain - no loc is placed on any of them, and the
+     * `barrows_short_grass_*` scenery that covers them is generic dressing used all over the world,
+     * so neither is a marker we can test against. What *does* mark a mound is the terrain height:
+     * the `m55_51` height bytes put each mound top on a plateau eight to seventeen units above the
+     * surrounding grass, and a flood fill from each peak down to `peak - 4` gives the six blobs
+     * boxed here. `BarrowsMapTest` re-derives nothing, but it does check the boxes are disjoint and
+     * that each [mounds] tile sits inside its own.
      *
      * Boxing the plateau rather than testing one tile is the whole point: a single coordinate means
-     * a player standing anywhere else on the hill gets "You find nothing but earth" and no hint that
-     * they are two tiles from the entrance.
+     * a player standing anywhere else on the hill gets "You find nothing but earth" and no hint
+     * that they are two tiles from the entrance.
      */
     val moundTops: Map<Brother, MoundTop> =
         mapOf(

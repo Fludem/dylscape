@@ -78,12 +78,7 @@ class BarrowsDigTest {
         player.withProtectedAccess {
             eventBus.publish(
                 this,
-                HeldObjEvents.Op1(
-                    slot = 0,
-                    obj = obj,
-                    type = objTypes[obj],
-                    inventory = player.inv,
-                ),
+                HeldObjEvents.Op1(slot = 0, obj = obj, type = objTypes[obj], inventory = player.inv),
             )
         }
     }
