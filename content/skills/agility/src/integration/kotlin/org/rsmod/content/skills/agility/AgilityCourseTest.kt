@@ -69,6 +69,38 @@ class AgilityCourseTest {
             assertTrue(failures.isEmpty()) { "Mark tiles on unwalkable tiles: $failures" }
         }
 
+    /**
+     * The failure mode that actually strands a player.
+     *
+     * A destination can be perfectly walkable and still be a one-tile island in the middle of a
+     * roof - `exactMove` and `telejump` will happily put someone there, and then there is no way
+     * off it except logging out. Requiring at least one walkable orthogonal neighbour is a cheap
+     * guard against authoring a landing on the wrong side of a gap.
+     */
+    @Test
+    fun GameTestState.`no destination is an isolated tile`() =
+        runInjectedGameTest(AgilityCollisionDeps::class) { deps ->
+            val stranded =
+                RooftopCourses.all.flatMap { course ->
+                    course.obstacles
+                        .filter { obstacle ->
+                            val d = obstacle.dest
+                            val neighbours =
+                                listOf(
+                                    d.translateX(1),
+                                    d.translateX(-1),
+                                    d.translateZ(1),
+                                    d.translateZ(-1),
+                                )
+                            neighbours.none { !deps.collision.isBlocked(it) }
+                        }
+                        .map {
+                            "${course.name} -> ${it.loc.id} @ ${it.dest.toConventionalString()}"
+                        }
+                }
+            assertTrue(stranded.isEmpty()) { "Destinations with no way off them: $stranded" }
+        }
+
     @Test
     fun GameTestState.`courses are internally consistent`() = runBasicGameTest {
         for (course in RooftopCourses.all) {
