@@ -15,6 +15,7 @@ import org.rsmod.content.custom.knightwaves.KnightWavesProgress.wavesCleared
 import org.rsmod.content.custom.knightwaves.configs.KnightWavesArena
 import org.rsmod.content.custom.knightwaves.configs.knightwaves_npcs
 import org.rsmod.game.entity.Npc
+import org.rsmod.game.region.Region
 import org.rsmod.game.type.npc.NpcTypeList
 import org.rsmod.map.CoordGrid
 
@@ -37,18 +38,24 @@ constructor(
      * Allocates a private copy of the training grounds, moves the player into it and sets the next
      * knight on them.
      *
-     * Returns `false` when no region could be allocated, which happens when the server has run out
-     * of region slots. There is nothing to clean up in that case - nothing was created.
+     * Returns `null` when there is nothing to enter for: the trial is already finished, or the
+     * server has run out of region slots. Neither case leaves anything to clean up.
      */
-    fun enter(access: ProtectedAccess): Boolean {
-        val region = regionRepo.add(KnightWavesArena.template) ?: return false
+    fun enter(access: ProtectedAccess): Region? {
+        // Nothing left to face. Guarded here as well as in the conversation because `wavesCleared`
+        // saturates at `TOTAL_WAVES`, so a finished player would otherwise index past the last
+        // knight.
+        if (access.player.trialComplete) {
+            return null
+        }
+        val region = regionRepo.add(KnightWavesArena.template) ?: return null
         val entrance = region.normal[KnightWavesArena.entrance]
         val arenaTile = region.normal[KnightWavesArena.knightSpawn]
 
         access.telejump(entrance)
         access.rebuildAppearance()
         spawnKnight(arenaTile, wave = access.player.wavesCleared)
-        return true
+        return region
     }
 
     /**
@@ -93,7 +100,6 @@ constructor(
         // The prayers unlock, but they still have their own levels. Saying so here saves the
         // player opening the book and finding them just as grey as before.
         val player = access.player
-        check(player.trialComplete) { "Trial did not record as complete: $player" }
         if (player.basePrayerLvl < CHIVALRY_PRAYER || player.baseDefenceLvl < CHIVALRY_DEFENCE) {
             access.mes(
                 "You will need $CHIVALRY_PRAYER Prayer and $CHIVALRY_DEFENCE Defence " +

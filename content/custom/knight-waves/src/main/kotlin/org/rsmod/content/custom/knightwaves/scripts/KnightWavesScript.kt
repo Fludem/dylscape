@@ -100,7 +100,7 @@ constructor(
             chatPlayer(neutral, "Not right now.")
             return
         }
-        if (!trial.enter(access)) {
+        if (trial.enter(access) == null) {
             chatNpc(sad, "The hall is in use. Give it a moment and ask me again.")
         }
     }

@@ -107,7 +107,7 @@ internal object PrayerTabObjEditor : ObjEditor() {
             defenceReq = 65,
             "You need a <col=000080>Prayer</col> level of 60, a " +
                 "<col=000080>Defence</col> level of 65, and to have<br>" +
-                "completed the <col=000080>King's Ransom</col> quest in " +
+                "bested the <col=000080>Knight Waves</col> in " +
                 "order to use <col=000080>Chivalry</col>.",
         )
         prayer(
@@ -119,7 +119,7 @@ internal object PrayerTabObjEditor : ObjEditor() {
             defenceReq = 70,
             "You need a <col=000080>Prayer</col> level of 70, a " +
                 "<col=000080>Defence</col> level of 70, and to have<br>" +
-                "completed the <col=000080>King's Ransom</col> quest in " +
+                "bested the <col=000080>Knight Waves</col> in " +
                 "order to use <col=000080>Piety</col>.",
         )
         prayer(

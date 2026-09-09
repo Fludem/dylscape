@@ -125,13 +125,19 @@ class KnightWavesTrialTest {
             )
         }
 
+    /**
+     * Drives the real entry path rather than reproducing it, so a broken template or a destination
+     * the engine rejects ("Invalid teleport!") fails here rather than in game.
+     */
     private fun GameTestScope.enterArena(trial: KnightWavesTrial): Region {
-        val region = createRegion(KnightWavesArena.template)
-        player.telejump(region.normal[KnightWavesArena.entrance])
+        var region: Region? = null
+        player.withProtectedAccess { region = trial.enter(this) }
         advance(1)
-        player.withProtectedAccess { trial.spawnKnight(region.arenaTile, player.wavesCleared) }
-        advance(1)
-        return region
+        val entered = checkNotNull(region) { "The trial refused to start." }
+        assertEquals(entered.normal[KnightWavesArena.entrance], player.coords) {
+            "The player was not moved into the arena."
+        }
+        return entered
     }
 
     /** Kills [knight] with the player credited, the way the trial's death handler expects. */
