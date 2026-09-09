@@ -10,6 +10,7 @@ import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.vars.boolVarBit
 import org.rsmod.api.player.vars.enumVarp
 import org.rsmod.api.script.onIfOverlayButton
+import org.rsmod.api.script.onPlayerInit
 import org.rsmod.api.utils.vars.VarEnumDelegate
 import org.rsmod.content.interfaces.settings.configs.setting_components
 import org.rsmod.game.entity.Player
@@ -23,8 +24,11 @@ constructor(private val protectedAccess: ProtectedAccessLauncher) : PluginScript
     private var Player.skullPrevention by boolVarBit(varbits.skull_prevent)
     private var Player.priorityPlayer by enumVarp<PlayerPriority>(varps.option_attackpriority)
     private var Player.priorityNpc by enumVarp<NpcPriority>(varps.option_attackpriority_npc)
+    private val Player.newAccount by boolVarBit(varbits.new_player_account)
 
     override fun ScriptContext.startup() {
+        onPlayerInit { player.setDefaultAttackPriority() }
+
         onIfOverlayButton(setting_components.skull_prevention) { player.toggleSkullPrevention() }
 
         onIfOverlayButton(setting_components.attack_priority_player_buttons) {
@@ -38,6 +42,29 @@ constructor(private val protectedAccess: ProtectedAccessLauncher) : PluginScript
         onIfOverlayButton(setting_components.acceptaid) { player.toggleAcceptAid() }
         onIfOverlayButton(setting_components.houseoptions) { player.selectHouseOptions() }
         onIfOverlayButton(setting_components.bondoptions) { player.selectBondPouch() }
+    }
+
+    /**
+     * Starts a fresh account on `Left-click where available` for both players and npcs, rather than
+     * on whatever the varps' zero value happens to mean.
+     *
+     * Zero is [PlayerPriority.CombatLevel] and [NpcPriority.CombatLevel], which hide the left-click
+     * `Attack` on anything whose combat level is far enough from yours — which, on a server where
+     * the interesting fights are against things you are not level-matched with, just reads as the
+     * option being missing.
+     *
+     * Gated on [varbits.new_player_account] for the same reason `InitialStatsScript` is: that
+     * varbit is rewritten from the login response on every login, so it is only ever true on the
+     * very first one. A returning player's own choice is never overwritten — including a deliberate
+     * choice of `CombatLevel`, which is indistinguishable from "unset" and would be clobbered by
+     * anything less careful than a first-login check.
+     */
+    private fun Player.setDefaultAttackPriority() {
+        if (!newAccount) {
+            return
+        }
+        priorityPlayer = PlayerPriority.LeftClick
+        priorityNpc = NpcPriority.LeftClick
     }
 
     private fun Player.toggleSkullPrevention() {
