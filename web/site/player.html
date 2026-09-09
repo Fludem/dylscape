@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Player — Onyx</title>
+<meta name="description" content="Look up a player's skills, ranks and account on the Onyx server.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/assets/onyx.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0c0e'/%3E%3Cpath d='M16 6l8 10-8 10-8-10z' fill='%23d4a437'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="gem"></span>Onyx</a>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/hiscores.html">Hiscores</a>
+      <a href="/guides/">Guides</a>
+      <a href="/play.html">Play</a>
+    </nav>
+    <span class="status-pill" data-status-pill><span class="dot"></span><span>checking…</span></span>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <form data-search class="controls" style="margin-bottom:22px">
+      <input type="search" name="name" placeholder="Player name" aria-label="Player name" style="flex:1;max-width:340px">
+      <button class="btn btn-primary" type="submit">Look up</button>
+    </form>
+
+    <div data-player><p class="faint">Loading…</p></div>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <span>Onyx · a private Old School RuneScape server · <span data-year></span></span>
+    <span>Built on <a href="https://github.com/rsmod/rsmod">RS Mod</a>. Not affiliated with Jagex.</span>
+  </div>
+</footer>
+
+<script src="/assets/app.js"></script>
+<script>
+(function () {
+  var O = window.Onyx, el = O.el;
+  var host = document.querySelector("[data-player]");
+  var form = document.querySelector("[data-search]");
+  var name = new URLSearchParams(location.search).get("name");
+
+  form.elements.name.value = name || "";
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var value = ev.target.elements.name.value.trim();
+    if (value) location.href = "/player.html?name=" + encodeURIComponent(value);
+  });
+
+  if (!name) {
+    host.innerHTML = "";
+    host.appendChild(el("div", { class: "card empty" }, [
+      el("p", { text: "Search for a player to see their skills and ranks." }),
+    ]));
+    return;
+  }
+
+  document.title = name + " — Onyx";
+
+  O.get("/player?name=" + encodeURIComponent(name)).then(render).catch(function (err) {
+    host.innerHTML = "";
+    host.appendChild(el("div", { class: "card empty" }, [
+      el("h2", { text: "No such player" }),
+      el("p", { class: "faint", text: "Nobody on Onyx is called \u201c" + name + "\u201d." }),
+      el("p", { style: "margin-top:14px" }, [el("a", { href: "/hiscores.html", text: "Browse the hiscores \u2192" })]),
+    ]));
+  });
+
+  function render(p) {
+    host.innerHTML = "";
+
+    var meta = el("div", { class: "player-meta" }, [
+      el("span", { class: "badge rate", text: p.xp_rate ? p.xp_rate + " experience" : "rate not chosen" }),
+      O.modeBadge(p.mode),
+      p.modlevel && p.modlevel !== "player"
+        ? el("span", { class: "badge " + p.modlevel, text: p.modlevel }) : null,
+      p.online ? el("span", { class: "badge online", text: "online" }) : null,
+    ]);
+
+    var head = el("div", { class: "card" }, [
+      el("div", { class: "player-head" }, [
+        el("div", null, [el("h1", { text: p.name }), meta]),
+        el("div", { class: "grid cols-3", style: "gap:10px;min-width:min(100%,420px);flex:1" }, [
+          tile("Total level", O.num(p.total_level)),
+          tile("Combat level", O.num(p.combat_level)),
+          tile("Overall rank", p.overall_rank ? "#" + O.num(p.overall_rank) : "—"),
+        ]),
+      ]),
+    ]);
+    host.appendChild(head);
+
+    var freshness = p.online
+      ? "Online now. These are the levels from their last logout — the server saves a character "
+        + "when they log out, so this will catch up when they do."
+      : "Last saved " + O.ago(p.updated_at) + ".";
+    host.appendChild(el("p", { class: "faint", style: "margin:14px 0 22px", text: freshness }));
+
+    host.appendChild(el("h2", { style: "margin-bottom:12px", text: "Skills" }));
+    var grid = el("div", { class: "skill-grid" });
+    p.skills.forEach(function (s) {
+      var bar = el("div", { class: "bar" }, [
+        el("i", { style: "width:" + Math.round((s.progress || 0) * 100) + "%" }),
+      ]);
+      grid.appendChild(el("div", { class: "skill-tile" }, [
+        el("div", { class: "top" }, [
+          el("span", { class: "name", text: s.label }),
+          el("span", { class: "lvl", text: s.level }),
+        ]),
+        el("div", { class: "sub" }, [
+          el("span", { text: O.num(s.xp) + " xp" }),
+          el("span", { text: s.rank ? "#" + O.num(s.rank) : "unranked" }),
+        ]),
+        bar,
+      ]));
+    });
+    host.appendChild(grid);
+
+    host.appendChild(el("div", { class: "card", style: "margin-top:22px" }, [
+      el("h3", { text: "Account" }),
+      el("div", { class: "table-wrap", style: "margin-top:10px" }, [
+        el("table", null, [el("tbody", null, [
+          row("Account type", p.mode_label),
+          row("Experience rate", p.xp_rate || "not chosen yet"),
+          row("Total experience", O.num(p.total_xp)),
+          row("Created", p.created_at ? O.ago(p.created_at) : "unknown"),
+          row("Last login", p.last_login ? O.ago(p.last_login) : "never"),
+          row("Last logout", p.last_logout ? O.ago(p.last_logout) : "never"),
+        ])]),
+      ]),
+    ]));
+  }
+
+  function tile(label, value) {
+    return el("div", { class: "card stat-card", style: "padding:14px 10px" }, [
+      el("div", { class: "value", style: "font-size:26px", text: value }),
+      el("div", { class: "label", text: label }),
+    ]);
+  }
+
+  function row(label, value) {
+    return el("tr", null, [
+      el("td", { class: "muted", text: label }),
+      el("td", { class: "num", text: String(value) }),
+    ]);
+  }
+})();
+</script>
+</body>
+</html>

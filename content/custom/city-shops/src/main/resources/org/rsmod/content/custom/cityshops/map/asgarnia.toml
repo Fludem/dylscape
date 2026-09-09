@@ -10,14 +10,18 @@ coords = '0_46_52_14_59'
 npc = 'generalassistant3'
 coords = '0_46_52_14_60'
 
-# Edgeville general store (3080, 3510), assistant offset east.
+# Edgeville general store, behind the counter at (3080, 3511) and (3081, 3511). The wiki marks
+# this shop at (3080, 3510), which is the counter itself; both staff used to sit south of it, on
+# the customer's side, because that was the nearest standable tile once `world-spawns` had already
+# taken the two north of it with a duplicate pair that opened no shop. Those are gone, so they now
+# stand where vanilla puts them. Primula shares this counter -- see `misthalin.toml`.
 [[spawn]]
 npc = 'generalshopkeeper6'
-coords = '0_48_54_8_53'
+coords = '0_48_54_8_55'
 
 [[spawn]]
 npc = 'generalassistant6'
-coords = '0_48_54_10_53'
+coords = '0_48_54_9_55'
 
 # Rimmington general store (2949, 3215), assistant offset east.
 [[spawn]]

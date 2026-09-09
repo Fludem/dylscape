@@ -1,0 +1,53 @@
+# Onyx — the whole public web configuration for rsps.onyxleeds.co.uk.
+#
+# Checked in because it used to exist only on the VPS. Caddy provisions and renews TLS by itself;
+# there is no certbot and no other web server on the box.
+#
+# The two .ws files are load-bearing: every handed-out client fetches jav_config.ws at startup and
+# worldlist.ws from it, and the worldlist's host must equal the codebase host. They keep their own
+# root so that deploying the website can never touch them. Do not fold them into the site root.
+
+rsps.onyxleeds.co.uk {
+	encode gzip zstd
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		# The site is for a private group of friends; keep it out of search results.
+		X-Robots-Tag "noindex, nofollow"
+	}
+
+	# --- client configuration (do not break) ---------------------------------------------------
+	handle /jav_config.ws {
+		root * /var/www/rsps
+		file_server
+	}
+	handle /worldlist.ws {
+		root * /var/www/rsps
+		file_server
+	}
+
+	# --- website API ---------------------------------------------------------------------------
+	# onyx-web.service, bound to localhost only. No firewall change is needed or wanted: ufw
+	# allows 22/80/443/43594 and nothing else.
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8081
+	}
+
+	# --- website -------------------------------------------------------------------------------
+	# Nothing here is content-hashed, so a long cache would leave friends looking at a stale page
+	# after a deploy with no way to know. Caddy serves ETags, so "no-cache" costs a 304 rather than
+	# a re-download: the browser must revalidate, but only refetches what actually changed.
+	#
+	# Matching by exclusion rather than by extension, so directory indexes like /guides/ are covered
+	# too. The API sets its own Cache-Control in Python, and the two .ws files are the client's, not
+	# the website's - leave all three alone.
+	@website not path /jav_config.ws /worldlist.ws /api/*
+	header @website Cache-Control "no-cache"
+
+	handle {
+		root * /var/www/onyx
+		try_files {path} {path}/ {path}.html
+		file_server
+	}
+}

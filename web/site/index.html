@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onyx — Old School RuneScape, privately</title>
+<meta name="description" content="Onyx is a small, private Old School RuneScape server for friends. Twenty skills, wiki-accurate drops, ironman modes and hiscores.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/assets/onyx.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0c0e'/%3E%3Cpath d='M16 6l8 10-8 10-8-10z' fill='%23d4a437'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="gem"></span>Onyx</a>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/hiscores.html">Hiscores</a>
+      <a href="/guides/">Guides</a>
+      <a href="/play.html">Play</a>
+    </nav>
+    <span class="status-pill" data-status-pill><span class="dot"></span><span>checking…</span></span>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap">
+    <p class="eyebrow">Old School RuneScape · Revision 233</p>
+    <h1>Onyx</h1>
+    <p class="tagline">
+      A small, private server for friends. Twenty skills, wiki-accurate drop tables, ironman
+      modes and a choice of experience rate — no donations, no adverts, no strangers.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="/play.html">How to play</a>
+      <a class="btn btn-ghost" href="/hiscores.html">View hiscores</a>
+    </div>
+    <p style="margin-top:26px">
+      <span class="address"><span class="muted">world</span> rsps.onyxleeds.co.uk<span class="muted">:</span>43594</span>
+    </p>
+  </section>
+
+  <section class="wrap" style="margin-top:14px">
+    <div class="grid cols-4" data-stats>
+      <div class="card stat-card"><div class="value">—</div><div class="label">Loading</div></div>
+    </div>
+  </section>
+
+  <section class="wrap" style="margin-top:34px">
+    <div class="grid cols-2">
+      <div class="card">
+        <h2>Top players</h2>
+        <p class="faint" style="margin-top:-4px">Ranked by total level.</p>
+        <div data-top-players><p class="faint">Loading…</p></div>
+        <p style="margin:14px 0 0"><a href="/hiscores.html">Full hiscores →</a></p>
+      </div>
+      <div class="card">
+        <h2>Recently online</h2>
+        <p class="faint" style="margin-top:-4px">The last few people to log in.</p>
+        <div data-recent><p class="faint">Loading…</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" style="margin-top:34px">
+    <h2 style="margin-bottom:6px">What's in the game</h2>
+    <p class="faint" style="margin-bottom:16px">
+      Read from the server's own content modules, so this list cannot drift from what is actually
+      running.
+    </p>
+    <div data-features><p class="faint">Loading…</p></div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <span>Onyx · a private Old School RuneScape server · <span data-year></span></span>
+    <span>Built on <a href="https://github.com/rsmod/rsmod">RS Mod</a>. Not affiliated with Jagex.</span>
+  </div>
+</footer>
+
+<script src="/assets/app.js"></script>
+<script>
+(function () {
+  var O = window.Onyx, el = O.el;
+
+  // The skill count comes from the generated data, not a literal: it was hardcoded at 15, which
+  // counted content/skills/ directories and so left out the five combat skills.
+  var skillCount = O.getJson("/data/features.json");
+
+  Promise.all([O.get("/status"), skillCount]).then(function (both) {
+    var s = both[0], features = both[1];
+    var host = document.querySelector("[data-stats]");
+    host.innerHTML = "";
+    [
+      { value: s.online, label: "Online now", note: "estimated from login times" },
+      { value: s.accounts, label: "Accounts" },
+      { value: s.characters, label: "Characters" },
+      { value: features.skills.length, label: "Skills live" },
+    ].forEach(function (stat) {
+      host.appendChild(el("div", { class: "card stat-card" }, [
+        el("div", { class: "value", text: O.num(stat.value) }),
+        el("div", { class: "label", text: stat.label }),
+        stat.note ? el("div", { class: "note", text: stat.note }) : null,
+      ]));
+    });
+
+    var recent = document.querySelector("[data-recent]");
+    recent.innerHTML = "";
+    if (!s.recent.length) {
+      recent.appendChild(el("p", { class: "faint", text: "Nobody has logged in yet." }));
+      return;
+    }
+    var list = el("div", { class: "table-wrap" });
+    var table = el("table");
+    table.appendChild(el("tbody", null, s.recent.map(function (r) {
+      return el("tr", null, [
+        el("td", null, [O.playerLink(r.name)]),
+        el("td", { class: "num faint", text: O.ago(r.last_login) }),
+      ]);
+    })));
+    list.appendChild(table);
+    recent.appendChild(list);
+  }).catch(function (err) {
+    O.fail(document.querySelector("[data-stats]"), err);
+    O.fail(document.querySelector("[data-recent]"), err);
+  });
+
+  O.get("/hiscores?skill=overall&limit=5").then(function (data) {
+    var host = document.querySelector("[data-top-players]");
+    host.innerHTML = "";
+    if (!data.entries.length) {
+      host.appendChild(el("p", { class: "faint", text: "No ranked players yet." }));
+      return;
+    }
+    var wrap = el("div", { class: "table-wrap" });
+    var table = el("table");
+    table.appendChild(el("thead", null, [el("tr", null, [
+      el("th", { text: "#" }), el("th", { text: "Player" }), el("th", { class: "num", text: "Total" }),
+    ])]));
+    table.appendChild(el("tbody", null, data.entries.map(function (e) {
+      return el("tr", null, [
+        el("td", { class: "rank", text: e.rank }),
+        el("td", null, [O.playerLink(e.name), " ", O.modeBadge(e.mode)]),
+        el("td", { class: "num", text: O.num(e.level) }),
+      ]);
+    })));
+    wrap.appendChild(table);
+    host.appendChild(wrap);
+  }).catch(function (err) { O.fail(document.querySelector("[data-top-players]"), err); });
+
+  O.getJson("/data/features.json").then(function (data) {
+    var host = document.querySelector("[data-features]");
+    host.innerHTML = "";
+    host.appendChild(el("div", { class: "card" }, [
+      el("h3", { text: "Skills" }),
+      el("div", { class: "chips" }, data.skills.map(function (s) {
+        return el("span", { class: "chip", text: s.label });
+      })),
+    ]));
+    var grid = el("div", { class: "grid cols-3", style: "margin-top:16px" });
+    data.features.forEach(function (f) {
+      grid.appendChild(el("div", { class: "card" }, [
+        el("h3", { text: f.name }),
+        f.blurb ? el("p", { class: "faint", style: "margin:6px 0 0", text: f.blurb }) : null,
+      ]));
+    });
+    host.appendChild(grid);
+  }).catch(function (err) { O.fail(document.querySelector("[data-features]"), err); });
+})();
+</script>
+</body>
+</html>

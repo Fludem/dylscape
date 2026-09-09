@@ -1,0 +1,12 @@
+# Misthalin's shopkeepers, at their spawn tiles.
+#
+# Edgeville's general store keeper and assistant are not here -- they were first authored in
+# `asgarnia.toml` and stay there rather than move between files for the sake of geography.
+
+# Primula's Herblore Supplies (3082, 3511), third along the Edgeville general store counter,
+# east of the keeper and assistant. `myths_guild_herbalist` is the Myths' Guild herbalist type,
+# reused because nothing spawns her there and her ops are already `Talk-to` on op1 and `Trade`
+# on op3. The only other unspawned herbalist in the cache is `prif_herbstore`, who is an elf.
+[[spawn]]
+npc = 'myths_guild_herbalist'
+coords = '0_48_54_10_55'

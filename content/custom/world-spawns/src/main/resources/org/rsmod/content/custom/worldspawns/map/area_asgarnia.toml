@@ -566,14 +566,6 @@ npc = 'cow2_calf'  # void: cow_calf
 coords = '0_45_51_53_12'
 
 [[spawn]]
-npc = 'fortis_shop_general_1'  # void: shopkeeper_falador
-coords = '0_46_52_13_58'
-
-[[spawn]]
-npc = 'generalassistant1'  # void: shop_assistant_falador
-coords = '0_46_52_11_61'
-
-[[spawn]]
 npc = 'squire'  # void: squire_asrol
 coords = '0_46_52_31_15'
 
@@ -2212,14 +2204,6 @@ coords = '2_45_50_43_45'
 [[spawn]]
 npc = 'rat'
 coords = '2_45_50_44_40'
-
-[[spawn]]
-npc = 'fortis_shop_general_1'  # void: shopkeeper_rimmington
-coords = '0_46_50_3_17'
-
-[[spawn]]
-npc = 'generalassistant1'  # void: shop_assistant_rimmington
-coords = '0_46_50_4_17'
 
 [[spawn]]
 npc = 'butterfly'  # void: butterfly_1

@@ -41,5 +41,6 @@ object CityShopNpcSpawns : MapNpcSpawnBuilder() {
             "asgarnia.toml",
             "kandarin.toml",
             "karamja.toml",
+            "misthalin.toml",
         )
 }

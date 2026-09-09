@@ -55,7 +55,16 @@ class Handler(BaseHTTPRequestHandler):
         if STATIC_ROOT:
             self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
-        self.wfile.write(body)
+        # A HEAD must send the same headers and no body. Without this the base class answers 501,
+        # which any uptime check would read as the site being down.
+        if not self.head_only:
+            self.wfile.write(body)
+
+    head_only = False
+
+    def do_HEAD(self) -> None:  # noqa: N802
+        self.head_only = True
+        self.do_GET()
 
     def do_GET(self) -> None:  # noqa: N802
         url = urlparse(self.path)

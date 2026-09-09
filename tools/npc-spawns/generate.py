@@ -9,8 +9,9 @@ back into an internal name via `.data/symbols/npc.sym` (which is what the toml w
 
 Spawns are dropped when the name does not bridge (almost always RS-only content such as
 Dungeoneering), when the mapsquare is absent from our cache, when the mapsquare is already
-covered by an existing spawn builder, or when an existing builder already places the same
-npc within `DEDUPE_RADIUS` tiles.
+covered by an existing spawn builder, or when an existing builder already places the same npc
+nearby -- "the same npc" meaning the same id within `DEDUPE_RADIUS` tiles, or a member of the
+same `DEDUPE_FAMILIES` role within `DEDUPE_FAMILY_RADIUS`.
 
 Inputs are produced by `DumpNpcTypes.java` / `DumpMapSquares.java` in this directory; see
 README.md for the full run.
@@ -25,6 +26,37 @@ import sys
 SPAWN_RE = re.compile(r'\{\s*id\s*=\s*"([^"]+)"([^}]*)\}')
 FIELD_RE = re.compile(r'(\w+)\s*=\s*("?)([^,"}]+)\2')
 DEDUPE_RADIUS = 3
+
+# Npcs that fill the same role under different ids, and the radius the dedupe below uses for them.
+#
+# Void's general-store staff bridge onto `fortis_shop_general_1` and `generalassistant1`, but
+# `city-shops` staffs every store with the numbered `generalshopkeeperN` / `generalassistantN` pair
+# its shop invs are keyed to. Those are *different ids*, so the `near-existing` check never fired
+# and six towns ended up with two shopkeepers and two assistants -- one pair that trades and one
+# pair that is scenery. Al Kharid's void assistant landed on the working one's exact tile.
+#
+# Radius 6 rather than `DEDUPE_RADIUS`: shop staff are spread across a room, not stacked. Varrock's
+# void assistant stands four tiles from the working keeper and survives at 3. Nothing legitimate is
+# caught -- the general stores `city-shops` does not staff (Port Khazard, the combat training camp,
+# Zanaris' fairy shop) have no existing spawn within any radius.
+DEDUPE_FAMILY_RADIUS = 6
+DEDUPE_FAMILIES = {
+    "general_store_staff": re.compile(
+        r"^(fortis_shop_general_\d+|generalshopkeeper\d*|generalassistant\d*)$"
+    )
+}
+
+
+def dedupe_key(name, npc_id):
+    """What the `near-existing` check matches on: a family token, or the raw id."""
+    for family, pattern in DEDUPE_FAMILIES.items():
+        if name is not None and pattern.match(name):
+            return family
+    return npc_id
+
+
+def dedupe_radius(key):
+    return DEDUPE_FAMILY_RADIUS if key in DEDUPE_FAMILIES else DEDUPE_RADIUS
 
 # Ops that mean "stands at a post and serves whoever walks up". Everything in this revision's
 # cache wanders five tiles by default, which is how bankers end up strolling around the lobby
@@ -209,7 +241,8 @@ def read_existing(repo, symbols):
                 level, msx, msz, lx, lz = (
                     int(part) for part in line.split("=", 1)[1].strip().strip("'\"").split("_")
                 )
-                existing.append((names.get(name), level, msx * 64 + lx, msz * 64 + lz))
+                key = dedupe_key(name, names.get(name))
+                existing.append((key, level, msx * 64 + lx, msz * 64 + lz))
                 name = None
     return existing
 
@@ -381,12 +414,14 @@ def main():
                 continue
             seen.add(key)
             npc_id = ids[name]
+            family = dedupe_key(name, npc_id)
+            radius = dedupe_radius(family)
             if any(
-                other_id == npc_id
+                other_key == family
                 and other_level == level
-                and abs(other_x - x) <= DEDUPE_RADIUS
-                and abs(other_y - y) <= DEDUPE_RADIUS
-                for other_id, other_level, other_x, other_y in existing
+                and abs(other_x - x) <= radius
+                and abs(other_y - y) <= radius
+                for other_key, other_level, other_x, other_y in existing
             ):
                 stats["near-existing"] += 1
                 continue

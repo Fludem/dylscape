@@ -58,14 +58,6 @@ npc = 'kebab_seller'  # void: karim
 coords = '0_51_49_8_46'
 
 [[spawn]]
-npc = 'fortis_shop_general_1'  # void: shopkeeper_al_kharid
-coords = '0_51_49_52_48'
-
-[[spawn]]
-npc = 'generalassistant1'  # void: shop_assistant_al_kharid
-coords = '0_51_49_52_46'
-
-[[spawn]]
 npc = 'banker1'  # void: banker_al_kharid
 coords = '0_51_49_3_33'
 

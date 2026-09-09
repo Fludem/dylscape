@@ -1,0 +1,47 @@
+# The website's JSON API. Read-only over the game's save database.
+#
+# Runs as `rsmod` deliberately. The database is WAL, and a read-only SQLite connection to a WAL
+# database still needs write access to the -shm sidecar, which is owned by rsmod. Running as any
+# other user fails at connect time with "unable to open database file".
+#
+# Install: /opt/onyx-web/, unit at /etc/systemd/system/onyx-web.service. See web/README.md.
+
+[Unit]
+Description=Onyx website API
+After=network.target
+# Not Requires=: the site should still answer, and say the database is unavailable, when the game
+# server is down.
+Wants=rsmod.service
+
+[Service]
+Type=simple
+User=rsmod
+Group=rsmod
+# .data paths in the game are CWD-relative; this service uses an absolute path but shares the
+# working directory so the two agree about where the save file lives.
+WorkingDirectory=/opt/rsmod
+Environment=ONYX_DB=/opt/rsmod/.data/saves/game.db
+Environment=ONYX_REALM=2
+Environment=ONYX_BIND=127.0.0.1
+Environment=ONYX_PORT=8081
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /opt/onyx-web/hiscores.py
+Restart=on-failure
+RestartSec=5
+
+# The service reads one file and answers HTTP on loopback. Nothing else is needed.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/opt/onyx-web
+# Read-write because SQLite must create and map the -shm/-wal sidecars even to read.
+ReadWritePaths=/opt/rsmod/.data/saves
+RestrictAddressFamilies=AF_INET AF_INET6
+MemoryMax=256M
+
+StandardOutput=append:/var/log/onyx-web.log
+StandardError=append:/var/log/onyx-web.log
+
+[Install]
+WantedBy=multi-user.target

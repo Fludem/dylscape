@@ -64,6 +64,10 @@ object ShopInvs : InvReferences() {
     val hunting_shop_yanille = find("hunting_shop_yanille")
     val cookeryshop = find("cookeryshop")
     val amuletshop = find("amuletshop")
+
+    // Edgeville. `herbloreshop2` is a cache-named inv vanilla never stocks, so nothing else can
+    // be holding it -- which is what `no inv is shared by two different shops` wants.
+    val herbloreshop2 = find("herbloreshop2")
 }
 
 internal object ShopInvBuilder : InvEditor() {

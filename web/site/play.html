@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play — Onyx</title>
+<meta name="description" content="How to get the Onyx client and start playing.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/assets/onyx.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0c0e'/%3E%3Cpath d='M16 6l8 10-8 10-8-10z' fill='%23d4a437'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="gem"></span>Onyx</a>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/hiscores.html">Hiscores</a>
+      <a href="/guides/">Guides</a>
+      <a href="/play.html">Play</a>
+    </nav>
+    <span class="status-pill" data-status-pill><span class="dot"></span><span>checking…</span></span>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>Play on Onyx</h1>
+      <p>
+        You do not need a proxy, a loopback alias, or a copy of the game cache. The client is stock
+        RuneLite with a handful of byte-level patches so it talks to our world instead of Jagex's,
+        and the ~190&nbsp;MB cache streams from the server the first time you launch it.
+      </p>
+    </div>
+
+    <div class="grid cols-2" style="margin-bottom:26px">
+      <div class="card">
+        <h3>World address</h3>
+        <p style="margin:10px 0 0"><span class="address">rsps.onyxleeds.co.uk<span class="muted">:</span>43594</span></p>
+      </div>
+      <div class="card">
+        <h3>Requirements</h3>
+        <p class="faint" style="margin:8px 0 0">
+          Java 17 or newer, about 400&nbsp;MB of disk for the cache, and a Windows or macOS machine.
+        </p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:30px">
+      <h2>Download</h2>
+      <div class="notice" style="margin-top:12px">
+        <strong>The installer is still being built.</strong>
+        Until it lands, ask Dylan for the client directly — the patched client is not published
+        here. Once the installer exists, the download link will appear on this page.
+      </div>
+    </div>
+
+    <h2 style="margin-bottom:18px">Getting started</h2>
+    <ol class="steps prose">
+      <li>
+        <h3>Get the client</h3>
+        <p>
+          Ask Dylan for the current build. It is a patched RuneLite pinned to the exact version
+          that matches this server, so a newer RuneLite from the official site will not connect.
+        </p>
+      </li>
+      <li>
+        <h3>Launch it</h3>
+        <p>
+          The client points itself at Onyx. If you are running it from the jar directory rather
+          than an installer, the launch command is in
+          <code class="inline">docs/CLIENT.md</code> — it sets a separate
+          <code class="inline">user.home</code> so Onyx never touches your real RuneLite
+          configuration, profiles, plugins or cache.
+        </p>
+      </li>
+      <li>
+        <h3>Make an account</h3>
+        <p>
+          There is no registration page. Type any username and password at the login screen and
+          the account is created on the spot, with the password hashed the same way a real one
+          would be. Choose carefully — the username is yours.
+        </p>
+      </li>
+      <li>
+        <h3>Choose your account type and rate</h3>
+        <p>
+          The first time you log in you pick an account type and an experience rate. Both are
+          <strong>permanent</strong>. The faster the experience, the smaller the drop-rate bonus.
+        </p>
+        <div data-choices class="grid cols-2" style="margin-top:14px"></div>
+      </li>
+      <li>
+        <h3>Play</h3>
+        <p>
+          Twenty of the game's twenty-three skills are live, monsters use wiki-accurate drop
+          tables, and there is a teleport menu to get you around. Herblore, Slayer and Runecraft
+          are not implemented — see the <a href="/guides/">guides</a> for the full picture.
+        </p>
+      </li>
+    </ol>
+
+    <div class="notice" style="margin-top:26px">
+      <strong>A note on the cache.</strong> The first launch downloads about 190&nbsp;MB from the
+      server before you reach the login screen. It only happens once.
+    </div>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <span>Onyx · a private Old School RuneScape server · <span data-year></span></span>
+    <span>Built on <a href="https://github.com/rsmod/rsmod">RS Mod</a>. Not affiliated with Jagex.</span>
+  </div>
+</footer>
+
+<script src="/assets/app.js"></script>
+<script>
+(function () {
+  var O = window.Onyx, el = O.el;
+  O.getJson("/data/features.json").then(function (data) {
+    var host = document.querySelector("[data-choices]");
+    host.appendChild(el("div", { class: "card" }, [
+      el("h3", { text: "Account types" }),
+      el("div", { class: "table-wrap", style: "margin-top:10px" }, [
+        el("table", null, [el("tbody", null, data.account_modes.map(function (m) {
+          return el("tr", null, [
+            el("td", { style: "white-space:nowrap", text: m.label }),
+            el("td", { class: "faint", text: m.blurb }),
+          ]);
+        }))]),
+      ]),
+    ]));
+    host.appendChild(el("div", { class: "card" }, [
+      el("h3", { text: "Experience rates" }),
+      el("div", { class: "table-wrap", style: "margin-top:10px" }, [
+        el("table", null, [el("tbody", null, data.xp_tiers.map(function (t) {
+          return el("tr", null, [
+            el("td", null, [el("span", { class: "badge rate", text: t.label })]),
+            el("td", { class: "faint", text: t.blurb }),
+          ]);
+        }))]),
+      ]),
+    ]));
+  }).catch(function (err) { O.fail(document.querySelector("[data-choices]"), err); });
+})();
+</script>
+</body>
+</html>

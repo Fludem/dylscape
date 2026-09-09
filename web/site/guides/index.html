@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guides — Onyx</title>
+<meta name="description" content="What is implemented on Onyx: skills, features, drop tables and teleports.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/assets/onyx.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0c0e'/%3E%3Cpath d='M16 6l8 10-8 10-8-10z' fill='%23d4a437'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="gem"></span>Onyx</a>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/hiscores.html">Hiscores</a>
+      <a href="/guides/">Guides</a>
+      <a href="/play.html">Play</a>
+    </nav>
+    <span class="status-pill" data-status-pill><span class="dot"></span><span>checking…</span></span>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>Guides</h1>
+      <p>
+        Everything on these pages is read out of the server's own data files when the site is
+        built, so a guide cannot quietly disagree with what the game actually does.
+      </p>
+    </div>
+
+    <div class="grid cols-2" style="margin-bottom:34px">
+      <a class="card link-card" href="/guides/drops.html">
+        <h3>Drop tables</h3>
+        <p>What every monster drops, and how often. Search by name.</p>
+      </a>
+      <a class="card link-card" href="/guides/teleports.html">
+        <h3>Teleports</h3>
+        <p>Every destination in the teleport menu, by category.</p>
+      </a>
+    </div>
+
+    <h2 style="margin-bottom:6px">Skills</h2>
+    <p class="faint" style="margin-bottom:14px">
+      Trainable means the game actually grants experience in it. Read from the server's
+      experience-granting code, not from a hand-kept list.
+    </p>
+    <div class="grid cols-2" style="margin-bottom:30px">
+      <div class="card">
+        <h3 style="margin-bottom:10px">Trainable <span class="faint" data-skill-count></span></h3>
+        <div class="chips" data-skills></div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:10px">Not implemented <span class="faint" data-missing-count></span></h3>
+        <div class="chips" data-missing-skills></div>
+        <p class="faint" style="margin:12px 0 0">
+          No experience can be gained in these. Slayer helmets and herb drops exist as items, but
+          there are no slayer tasks, no potion mixing and no runecrafting altars.
+        </p>
+      </div>
+    </div>
+
+    <h2 style="margin-bottom:6px">Features</h2>
+    <p class="faint" style="margin-bottom:14px">Content modules running on the live server.</p>
+    <div class="grid cols-3" data-features style="margin-bottom:34px"></div>
+
+    <h2 style="margin-bottom:14px">Account types and rates</h2>
+    <div class="grid cols-2" data-choices></div>
+
+    <div class="notice" style="margin-top:30px">
+      <strong>Also not in yet.</strong> The Theatre&nbsp;of&nbsp;Blood, Tombs of Amascut and the
+      Grand Exchange are not in the game, and quests are not implemented.
+    </div>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <span>Onyx · a private Old School RuneScape server · <span data-year></span></span>
+    <span>Built on <a href="https://github.com/rsmod/rsmod">RS Mod</a>. Not affiliated with Jagex.</span>
+  </div>
+</footer>
+
+<script src="/assets/app.js"></script>
+<script>
+(function () {
+  var O = window.Onyx, el = O.el;
+  O.getJson("/data/features.json").then(function (data) {
+    var skills = document.querySelector("[data-skills]");
+    data.skills.forEach(function (s) {
+      skills.appendChild(el("span", { class: "chip", text: s.label }));
+    });
+    document.querySelector("[data-skill-count]").textContent = "(" + data.skills.length + ")";
+
+    var missing = document.querySelector("[data-missing-skills]");
+    (data.missing_skills || []).forEach(function (s) {
+      missing.appendChild(el("span", { class: "chip", text: s.label }));
+    });
+    document.querySelector("[data-missing-count]").textContent =
+      "(" + (data.missing_skills || []).length + ")";
+
+    var features = document.querySelector("[data-features]");
+    data.features.forEach(function (f) {
+      features.appendChild(el("div", { class: "card" }, [
+        el("h3", { text: f.name }),
+        f.blurb ? el("p", { class: "faint", style: "margin:6px 0 0", text: f.blurb }) : null,
+      ]));
+    });
+
+    var choices = document.querySelector("[data-choices]");
+    choices.appendChild(el("div", { class: "card" }, [
+      el("h3", { text: "Account types" }),
+      el("p", { class: "faint", style: "margin:6px 0 10px",
+                text: "Chosen at first login, and permanent." }),
+      el("div", { class: "table-wrap" }, [
+        el("table", null, [el("tbody", null, data.account_modes.map(function (m) {
+          return el("tr", null, [
+            el("td", { style: "white-space:nowrap", text: m.label }),
+            el("td", { class: "faint", text: m.blurb }),
+          ]);
+        }))]),
+      ]),
+    ]));
+    choices.appendChild(el("div", { class: "card" }, [
+      el("h3", { text: "Experience rates" }),
+      el("p", { class: "faint", style: "margin:6px 0 10px",
+                text: "Faster levelling trades away drop-rate bonus." }),
+      el("div", { class: "table-wrap" }, [
+        el("table", null, [el("tbody", null, data.xp_tiers.map(function (t) {
+          return el("tr", null, [
+            el("td", null, [el("span", { class: "badge rate", text: t.label })]),
+            el("td", { class: "faint", text: t.blurb }),
+          ]);
+        }))]),
+      ]),
+    ]));
+  }).catch(function (err) {
+    O.fail(document.querySelector("[data-features]"), err);
+  });
+})();
+</script>
+</body>
+</html>

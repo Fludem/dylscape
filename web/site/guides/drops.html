@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drop tables — Onyx</title>
+<meta name="description" content="What every monster on Onyx drops, and how often.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/assets/onyx.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0c0e'/%3E%3Cpath d='M16 6l8 10-8 10-8-10z' fill='%23d4a437'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="gem"></span>Onyx</a>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/hiscores.html">Hiscores</a>
+      <a href="/guides/">Guides</a>
+      <a href="/play.html">Play</a>
+    </nav>
+    <span class="status-pill" data-status-pill><span class="dot"></span><span>checking…</span></span>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>Drop tables</h1>
+      <p>
+        Generated from the tables the server actually rolls, which were built from the Old School
+        wiki. <span data-total></span> Pick a monster to see its drops.
+      </p>
+    </div>
+
+    <div class="controls">
+      <input type="search" data-search placeholder="Search monsters" aria-label="Search monsters" style="flex:1;max-width:340px" autocomplete="off">
+      <span class="faint" data-hits></span>
+    </div>
+
+    <div class="grid" style="grid-template-columns:minmax(0,260px) minmax(0,1fr);align-items:start" data-layout>
+      <div class="card" style="padding:8px;max-height:70vh;overflow:auto">
+        <div data-list><p class="faint" style="padding:12px">Loading…</p></div>
+      </div>
+      <div data-detail>
+        <div class="card empty"><p>Choose a monster from the list.</p></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <span>Onyx · a private Old School RuneScape server · <span data-year></span></span>
+    <span>Built on <a href="https://github.com/rsmod/rsmod">RS Mod</a>. Not affiliated with Jagex.</span>
+  </div>
+</footer>
+
+<script src="/assets/app.js"></script>
+<script>
+(function () {
+  var O = window.Onyx, el = O.el;
+  var list = document.querySelector("[data-list]");
+  var detail = document.querySelector("[data-detail]");
+  var search = document.querySelector("[data-search]");
+  var hits = document.querySelector("[data-hits]");
+  var sources = [];
+  var shards = {};
+
+  // The full set is ~24000 drop rows. The index is small; a letter shard is fetched only when a
+  // monster from it is actually opened, and cached after that.
+  O.getJson("/data/drops-index.json").then(function (data) {
+    sources = data.sources;
+    document.querySelector("[data-total]").textContent =
+      data.count.toLocaleString("en-GB") + " monsters have a table.";
+    renderList("");
+    var initial = new URLSearchParams(location.search).get("m");
+    if (initial) { search.value = initial; renderList(initial.toLowerCase()); open(initial); }
+  }).catch(function (err) { O.fail(list, err); });
+
+  var timer;
+  search.addEventListener("input", function () {
+    clearTimeout(timer);
+    timer = setTimeout(function () { renderList(search.value.trim().toLowerCase()); }, 120);
+  });
+
+  function renderList(term) {
+    var matches = sources.filter(function (s) {
+      return !term || s.source.toLowerCase().indexOf(term) !== -1;
+    });
+    hits.textContent = matches.length + (matches.length === 1 ? " match" : " matches");
+    list.innerHTML = "";
+    if (!matches.length) {
+      list.appendChild(el("p", { class: "faint", style: "padding:12px", text: "Nothing matches." }));
+      return;
+    }
+    // Long lists are the common case on an empty search; cap the DOM and say so.
+    matches.slice(0, 300).forEach(function (s) {
+      var link = el("a", {
+        href: "?m=" + encodeURIComponent(s.source),
+        style: "display:block;padding:7px 11px;border-radius:6px;color:var(--ink-dim);font-size:14px",
+        text: s.source,
+      });
+      link.addEventListener("click", function (ev) {
+        ev.preventDefault();
+        history.replaceState(null, "", "?m=" + encodeURIComponent(s.source));
+        open(s.source);
+      });
+      list.appendChild(link);
+    });
+    if (matches.length > 300) {
+      list.appendChild(el("p", { class: "faint", style: "padding:10px 12px",
+        text: "…and " + (matches.length - 300) + " more. Keep typing to narrow it down." }));
+    }
+  }
+
+  function open(name) {
+    var entry = sources.filter(function (s) { return s.source === name; })[0];
+    if (!entry) return;
+    detail.innerHTML = "<div class=\"card\"><p class=\"faint\">Loading…</p></div>";
+    shardFor(entry.letter).then(function (tables) {
+      var table = tables.filter(function (t) { return t.source === name; })[0];
+      if (!table) throw new Error("no table for " + name);
+      render(table);
+    }).catch(function (err) { O.fail(detail, err); });
+  }
+
+  function shardFor(letter) {
+    if (!shards[letter]) shards[letter] = O.getJson("/data/drops/" + letter + ".json");
+    return shards[letter];
+  }
+
+  function render(table) {
+    detail.innerHTML = "";
+    var card = el("div", { class: "card" }, [el("h2", { text: table.source })]);
+    section(card, "Always", table.always);
+    section(card, "Main table", table.drops);
+    section(card, "Tertiary", table.tertiary);
+    if (!table.always.length && !table.drops.length && !table.tertiary.length) {
+      card.appendChild(el("p", { class: "faint", text: "This monster drops nothing." }));
+    }
+    detail.appendChild(card);
+  }
+
+  function section(card, title, rows) {
+    if (!rows || !rows.length) return;
+    card.appendChild(el("h3", { style: "margin:20px 0 8px", text: title }));
+    var table = el("table");
+    table.appendChild(el("thead", null, [el("tr", null, [
+      el("th", { text: "Item" }),
+      el("th", { class: "num", text: "Quantity" }),
+      el("th", { class: "num", text: "Chance" }),
+    ])]));
+    table.appendChild(el("tbody", null, rows.map(function (r) {
+      return el("tr", null, [
+        el("td", { text: r.name }),
+        el("td", { class: "num", text: r.quantity }),
+        el("td", { class: "num", text: r.chance }),
+      ]);
+    })));
+    card.appendChild(el("div", { class: "table-wrap" }, [table]));
+  }
+})();
+</script>
+</body>
+</html>

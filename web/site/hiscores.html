@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hiscores — Onyx</title>
+<meta name="description" content="Skill and overall rankings for the Onyx Old School RuneScape server.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/assets/onyx.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0c0e'/%3E%3Cpath d='M16 6l8 10-8 10-8-10z' fill='%23d4a437'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="gem"></span>Onyx</a>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/hiscores.html">Hiscores</a>
+      <a href="/guides/">Guides</a>
+      <a href="/play.html">Play</a>
+    </nav>
+    <span class="status-pill" data-status-pill><span class="dot"></span><span>checking…</span></span>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>Hiscores</h1>
+      <p>
+        Rankings are read straight from the game's save file. Because the server writes a
+        character's stats when they log out, a player who is online right now still shows the
+        levels they had when they last logged off.
+      </p>
+    </div>
+
+    <div class="controls">
+      <label class="visually-hidden" for="skill">Skill</label>
+      <select id="skill" data-skill><option value="overall">Overall</option></select>
+      <div class="tabs" data-modes role="tablist">
+        <button role="tab" data-mode="all" aria-selected="true">All</button>
+        <button role="tab" data-mode="standard" aria-selected="false">Standard</button>
+        <button role="tab" data-mode="ironman" aria-selected="false">Ironman</button>
+        <button role="tab" data-mode="uim" aria-selected="false">Ultimate</button>
+        <button role="tab" data-mode="hcim" aria-selected="false">Hardcore</button>
+      </div>
+      <form data-search style="margin-left:auto;display:flex;gap:8px">
+        <input type="search" name="name" placeholder="Look up a player" aria-label="Look up a player">
+        <button class="btn btn-ghost" type="submit">Search</button>
+      </form>
+    </div>
+
+    <div data-board><p class="faint">Loading…</p></div>
+
+    <div style="display:flex;gap:10px;margin-top:16px;align-items:center">
+      <button class="btn btn-ghost" data-prev disabled>← Previous</button>
+      <button class="btn btn-ghost" data-next disabled>Next →</button>
+      <span class="faint" data-page-note></span>
+    </div>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <span>Onyx · a private Old School RuneScape server · <span data-year></span></span>
+    <span>Built on <a href="https://github.com/rsmod/rsmod">RS Mod</a>. Not affiliated with Jagex.</span>
+  </div>
+</footer>
+
+<script src="/assets/app.js"></script>
+<script>
+(function () {
+  var O = window.Onyx, el = O.el;
+  var PAGE_SIZE = 25;
+  var state = { skill: "overall", mode: "all", offset: 0 };
+
+  var params = new URLSearchParams(location.search);
+  if (params.get("skill")) state.skill = params.get("skill");
+  if (params.get("mode")) state.mode = params.get("mode");
+
+  var skillSelect = document.querySelector("[data-skill]");
+  var board = document.querySelector("[data-board]");
+  var prev = document.querySelector("[data-prev]");
+  var next = document.querySelector("[data-next]");
+  var note = document.querySelector("[data-page-note]");
+
+  O.get("/skills").then(function (data) {
+    data.skills.forEach(function (s) {
+      skillSelect.appendChild(el("option", { value: s.key, text: s.label }));
+    });
+    skillSelect.value = state.skill;
+  });
+
+  skillSelect.addEventListener("change", function () {
+    state.skill = skillSelect.value;
+    state.offset = 0;
+    load();
+  });
+
+  document.querySelectorAll("[data-modes] button").forEach(function (btn) {
+    if (btn.dataset.mode === state.mode) {
+      document.querySelectorAll("[data-modes] button").forEach(function (b) {
+        b.setAttribute("aria-selected", String(b === btn));
+      });
+    }
+    btn.addEventListener("click", function () {
+      document.querySelectorAll("[data-modes] button").forEach(function (b) {
+        b.setAttribute("aria-selected", String(b === btn));
+      });
+      state.mode = btn.dataset.mode;
+      state.offset = 0;
+      load();
+    });
+  });
+
+  prev.addEventListener("click", function () {
+    state.offset = Math.max(0, state.offset - PAGE_SIZE);
+    load();
+  });
+  next.addEventListener("click", function () {
+    state.offset += PAGE_SIZE;
+    load();
+  });
+
+  document.querySelector("[data-search]").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var name = ev.target.elements.name.value.trim();
+    if (name) location.href = "/player.html?name=" + encodeURIComponent(name);
+  });
+
+  function load() {
+    var url = "/hiscores?skill=" + encodeURIComponent(state.skill)
+      + "&mode=" + encodeURIComponent(state.mode)
+      + "&limit=" + PAGE_SIZE + "&offset=" + state.offset;
+    history.replaceState(null, "", "?skill=" + state.skill + "&mode=" + state.mode);
+    board.innerHTML = "<p class=\"faint\">Loading…</p>";
+    O.get(url).then(render).catch(function (err) { O.fail(board, err); });
+  }
+
+  function render(data) {
+    board.innerHTML = "";
+    prev.disabled = state.offset === 0;
+    next.disabled = data.entries.length < PAGE_SIZE;
+
+    if (!data.entries.length) {
+      board.appendChild(el("div", { class: "card empty" }, [
+        el("p", { text: state.offset > 0
+          ? "No more players on this page."
+          : "Nobody is ranked in this skill yet." }),
+      ]));
+      note.textContent = "";
+      return;
+    }
+
+    var isOverall = data.skill === "overall";
+    var wrap = el("div", { class: "table-wrap" });
+    var table = el("table");
+    table.appendChild(el("thead", null, [el("tr", null, [
+      el("th", { text: "Rank" }),
+      el("th", { text: "Player" }),
+      el("th", { class: "num", text: isOverall ? "Total level" : "Level" }),
+      el("th", { class: "num", text: "Experience" }),
+      el("th", { class: "num", text: "Updated" }),
+    ])]));
+
+    table.appendChild(el("tbody", null, data.entries.map(function (e) {
+      var name = el("td", null, [O.playerLink(e.name)]);
+      var badge = O.modeBadge(e.mode);
+      if (badge) { name.appendChild(document.createTextNode(" ")); name.appendChild(badge); }
+      if (e.online) {
+        name.appendChild(document.createTextNode(" "));
+        name.appendChild(el("span", { class: "badge online", title: "Online now — stats update on logout", text: "online" }));
+      }
+      return el("tr", null, [
+        el("td", { class: "rank", text: e.rank }),
+        name,
+        el("td", { class: "num", text: O.num(e.level) }),
+        el("td", { class: "num", text: O.num(e.xp) }),
+        el("td", { class: "num faint", text: O.ago(e.updated_at) }),
+      ]);
+    })));
+
+    wrap.appendChild(table);
+    board.appendChild(wrap);
+    note.textContent = "Showing " + (state.offset + 1) + "–"
+      + (state.offset + data.entries.length) + ".";
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

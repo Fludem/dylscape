@@ -2402,14 +2402,6 @@ npc = 'hundred_dave_hellrat'  # void: hellrat
 coords = '0_48_154_9_24'
 
 [[spawn]]
-npc = 'fortis_shop_general_1'  # void: shopkeeper_edgeville
-coords = '0_48_54_8_55'
-
-[[spawn]]
-npc = 'generalassistant1'  # void: shop_assistant_edgeville
-coords = '0_48_54_9_55'
-
-[[spawn]]
 npc = 'man'
 coords = '0_48_54_21_56'
 
@@ -4172,14 +4164,6 @@ coords = '0_50_52_3_16'
 [[spawn]]
 npc = 'rcu_zammy_mage1_edgeb'  # void: mage_of_zamorak_varrock
 coords = '0_50_52_59_58'
-
-[[spawn]]
-npc = 'fortis_shop_general_1'  # void: shopkeeper_varrock
-coords = '0_50_53_18_23'
-
-[[spawn]]
-npc = 'generalassistant1'  # void: shop_assistant_varrock
-coords = '0_50_53_17_19'
 
 [[spawn]]
 npc = 'death_troll_cook2'  # void: ash_cleaner

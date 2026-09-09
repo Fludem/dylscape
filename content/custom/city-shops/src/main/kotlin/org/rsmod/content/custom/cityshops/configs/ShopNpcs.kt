@@ -80,6 +80,12 @@ object ShopNpcs : NpcReferences() {
     // Brimhaven.
     val davon = find("davon")
 
+    // Edgeville. Primula is the Myths' Guild herbalist; the guild is not standable up on this
+    // server and nothing spawns her there, so she is free to keep a counter in Edgeville instead.
+    // Her cache ops are already the ones this module wants -- `Talk-to` on op1, `Trade` on op3 --
+    // and her name is left alone, since renaming a cache type is a permanent, additive edit.
+    val primula = find("myths_guild_herbalist")
+
     // General stores 2..7. Store 1 is Lumbridge's and store 8 is Zanaris', which stocks something
     // else entirely and is unreachable without Lost City — both are left alone.
     val generalshopkeeper2 = find("generalshopkeeper2")
@@ -132,6 +138,7 @@ object ShopNpcs : NpcReferences() {
             aleck,
             frenita,
             davon,
+            primula,
             generalshopkeeper2,
             generalshopkeeper3,
             generalshopkeeper4,
@@ -237,5 +244,8 @@ internal object ShopMargins {
             shop_npcs.aleck to ShopMargin(1200, 700, 20),
             shop_npcs.frenita to ShopMargin(1000, 550, 10),
             shop_npcs.davon to ShopMargin(1200, 900, 20),
+            // Jatix's margin: Primula's is the same kind of shop, and without an entry here she
+            // would silently fall back to the general-store default of 1300/400/30.
+            shop_npcs.primula to ShopMargin(1000, 700, 30),
         )
 }

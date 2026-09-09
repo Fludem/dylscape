@@ -21,6 +21,7 @@ import math
 import os
 import sqlite3
 import time
+from datetime import datetime, timezone
 from typing import Any
 
 # `.data/symbols/stat.sym`. Index is the stat id; ids at or above REAL_STAT_COUNT are excluded from
@@ -57,6 +58,41 @@ MAX_LEVEL_XP = 13_034_431  # xp at level 99
 
 def skill_label(name: str) -> str:
     return DISPLAY_NAMES.get(name, name.capitalize())
+
+
+# The schema stores every timestamp without a zone, and does not agree with itself about which zone
+# that is: `last_logout`, `created_at` and `stats.updated_at` are written by SQLite's
+# CURRENT_TIMESTAMP, which is UTC, while `characters.last_login` is bound from
+# `LocalDateTime.now()` in CharacterAccountApplier, which is the game host's local time. Reading
+# both as UTC puts "last login" an hour into the future on a machine running BST.
+#
+# Both are resolved here rather than in the browser, and every timestamp leaves this module as
+# ISO-8601 with an explicit offset. Resolving host-local time correctly relies on the web service
+# running on the same machine, in the same zone, as the game server - which it does.
+_STAMP_FORMATS = ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S")
+
+
+def _parse_stamp(stamp: str | None) -> datetime | None:
+    if not stamp:
+        return None
+    for fmt in _STAMP_FORMATS:
+        try:
+            return datetime.strptime(stamp, fmt)
+        except ValueError:
+            continue
+    return None
+
+
+def utc_iso(stamp: str | None) -> str | None:
+    """For columns written by SQLite's CURRENT_TIMESTAMP."""
+    parsed = _parse_stamp(stamp)
+    return parsed.replace(tzinfo=timezone.utc).isoformat() if parsed else None
+
+
+def host_local_iso(stamp: str | None) -> str | None:
+    """For `characters.last_login`, which carries the game host's local time and no offset."""
+    parsed = _parse_stamp(stamp)
+    return parsed.astimezone().isoformat() if parsed else None
 
 
 def combat_level(levels: dict[str, int]) -> int:
@@ -210,7 +246,9 @@ class GameDatabase:
             # leaves `last_login > last_logout` set, so this can over-report. The site says so.
             "online": row["online"] or 0,
             "online_is_estimate": True,
-            "recent": [{"name": r["name"], "last_login": r["last_login"]} for r in recent],
+            "recent": [
+                {"name": r["name"], "last_login": host_local_iso(r["last_login"])} for r in recent
+            ],
         }
 
     def hiscores(self, skill: str, mode: str, limit: int, offset: int) -> dict:
@@ -261,7 +299,7 @@ class GameDatabase:
                 "online": bool(r["online"]),
                 "level": r["level"],
                 "xp": (r["fine_xp"] or 0) // XP_PRECISION,
-                "updated_at": r["updated_at"],
+                "updated_at": utc_iso(r["updated_at"]),
             }
             for i, r in enumerate(rows)
         ]
@@ -362,10 +400,10 @@ class GameDatabase:
             "xp_rate": XP_TIERS.get(row["xp_rate_tier"]),
             "modlevel": row["modlevel"],
             "online": bool(row["online"]),
-            "created_at": row["created_at"],
-            "last_login": row["last_login"],
-            "last_logout": row["last_logout"],
-            "updated_at": updated,
+            "created_at": utc_iso(row["created_at"]),
+            "last_login": host_local_iso(row["last_login"]),
+            "last_logout": utc_iso(row["last_logout"]),
+            "updated_at": utc_iso(updated),
             "total_level": total_level,
             "total_xp": total_xp,
             "overall_rank": overall[0]["rank"] if overall else None,

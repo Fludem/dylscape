@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teleports — Onyx</title>
+<meta name="description" content="Every teleport destination available on Onyx.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/assets/onyx.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0c0e'/%3E%3Cpath d='M16 6l8 10-8 10-8-10z' fill='%23d4a437'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="gem"></span>Onyx</a>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/hiscores.html">Hiscores</a>
+      <a href="/guides/">Guides</a>
+      <a href="/play.html">Play</a>
+    </nav>
+    <span class="status-pill" data-status-pill><span class="dot"></span><span>checking…</span></span>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>Teleports</h1>
+      <p>
+        Every destination in the in-game teleport menu, parsed from the server's teleport table.
+        Coordinates are the tile you arrive on. Dungeon entries land at the surface entrance, never
+        inside, and no destination is in the Wilderness.
+      </p>
+    </div>
+
+    <div class="controls">
+      <input type="search" data-filter placeholder="Filter destinations" aria-label="Filter destinations" style="max-width:320px">
+      <span class="faint" data-count></span>
+    </div>
+
+    <div data-groups><p class="faint">Loading…</p></div>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <span>Onyx · a private Old School RuneScape server · <span data-year></span></span>
+    <span>Built on <a href="https://github.com/rsmod/rsmod">RS Mod</a>. Not affiliated with Jagex.</span>
+  </div>
+</footer>
+
+<script src="/assets/app.js"></script>
+<script>
+(function () {
+  var O = window.Onyx, el = O.el;
+  var host = document.querySelector("[data-groups]");
+  var filter = document.querySelector("[data-filter]");
+  var count = document.querySelector("[data-count]");
+  var groups = [];
+
+  O.getJson("/data/teleports.json").then(function (data) {
+    groups = data.groups;
+    count.textContent = data.count + " destinations";
+    render("");
+  }).catch(function (err) { O.fail(host, err); });
+
+  filter.addEventListener("input", function () { render(filter.value.trim().toLowerCase()); });
+
+  function render(term) {
+    host.innerHTML = "";
+    var shown = 0;
+    groups.forEach(function (group) {
+      var entries = group.entries.filter(function (e) {
+        return !term || e.label.toLowerCase().indexOf(term) !== -1;
+      });
+      if (!entries.length) return;
+      shown += entries.length;
+
+      var table = el("table");
+      table.appendChild(el("thead", null, [el("tr", null, [
+        el("th", { text: "Destination" }),
+        el("th", { class: "num", text: "X" }),
+        el("th", { class: "num", text: "Y" }),
+        el("th", { class: "num", text: "Plane" }),
+      ])]));
+      table.appendChild(el("tbody", null, entries.map(function (e) {
+        return el("tr", null, [
+          el("td", { text: e.label }),
+          el("td", { class: "num", text: e.x }),
+          el("td", { class: "num", text: e.z }),
+          el("td", { class: "num", text: e.level }),
+        ]);
+      })));
+
+      host.appendChild(el("section", { style: "margin-bottom:26px" }, [
+        el("h2", { style: "margin-bottom:10px", text: group.label }),
+        el("div", { class: "table-wrap" }, [table]),
+      ]));
+    });
+
+    if (!shown) {
+      host.appendChild(el("div", { class: "card empty" }, [
+        el("p", { text: "No destination matches that." }),
+      ]));
+    }
+  }
+})();
+</script>
+</body>
+</html>

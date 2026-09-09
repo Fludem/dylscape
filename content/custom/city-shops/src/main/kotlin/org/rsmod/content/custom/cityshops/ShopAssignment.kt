@@ -6,6 +6,7 @@ import org.rsmod.content.custom.cityshops.towns.AsgarnianShops
 import org.rsmod.content.custom.cityshops.towns.FaladorShops
 import org.rsmod.content.custom.cityshops.towns.KandarinShops
 import org.rsmod.content.custom.cityshops.towns.KaramjaShops
+import org.rsmod.content.custom.cityshops.towns.MisthalinShops
 import org.rsmod.content.custom.cityshops.towns.PortSarimShops
 import org.rsmod.content.custom.cityshops.towns.RimmingtonShops
 import org.rsmod.content.custom.cityshops.towns.VarrockExtraShops
@@ -163,7 +164,8 @@ object ShopAssignments {
             RimmingtonShops.all +
             AsgarnianShops.all +
             KandarinShops.all +
-            KaramjaShops.all
+            KaramjaShops.all +
+            MisthalinShops.all
 
     private fun generalStore(inv: InvType, vararg npcs: NpcType): ShopAssignment =
         ShopAssignment(

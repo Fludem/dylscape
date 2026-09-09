@@ -2494,10 +2494,6 @@ npc = 'oomlie_bird'  # void: oomlie_bird_kharazi_jungle
 coords = '0_45_45_57_13'
 
 [[spawn]]
-npc = 'fortis_shop_general_1'  # void: shopkeeper_musa_point
-coords = '0_45_49_22_14'
-
-[[spawn]]
 npc = 'fourdiamonds_bartender'  # void: bartender_zambo
 coords = '0_45_49_46_9'
 
@@ -2520,10 +2516,6 @@ coords = '0_46_49_10_20'
 [[spawn]]
 npc = 'fai_varrock_guard_trainer'  # void: captain_korasi_musa_point
 coords = '0_45_49_30_21'
-
-[[spawn]]
-npc = 'generalassistant1'  # void: shop_assistant_musa_point
-coords = '0_45_49_22_16'
 
 [[spawn]]
 npc = 'man4_for_musa_point'  # void: man_musa_point
