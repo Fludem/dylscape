@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
@@ -118,8 +119,11 @@
             <option value="$PROJECT_DIR$/content/custom" />
             <option value="$PROJECT_DIR$/content/custom/city-shops" />
             <option value="$PROJECT_DIR$/content/custom/drop-tables" />
+            <option value="$PROJECT_DIR$/content/custom/knight-waves" />
             <option value="$PROJECT_DIR$/content/custom/leagues" />
+            <option value="$PROJECT_DIR$/content/custom/teleports" />
             <option value="$PROJECT_DIR$/content/custom/toll-gate" />
+            <option value="$PROJECT_DIR$/content/custom/world-spawns" />
             <option value="$PROJECT_DIR$/content/generic" />
             <option value="$PROJECT_DIR$/content/generic/generic-locs" />
             <option value="$PROJECT_DIR$/content/generic/generic-npcs" />
@@ -150,8 +154,11 @@
             <option value="$PROJECT_DIR$/content/skills" />
             <option value="$PROJECT_DIR$/content/skills/construction" />
             <option value="$PROJECT_DIR$/content/skills/cooking" />
+            <option value="$PROJECT_DIR$/content/skills/crafting" />
             <option value="$PROJECT_DIR$/content/skills/firemaking" />
             <option value="$PROJECT_DIR$/content/skills/fishing" />
+            <option value="$PROJECT_DIR$/content/skills/fletching" />
+            <option value="$PROJECT_DIR$/content/skills/hunter" />
             <option value="$PROJECT_DIR$/content/skills/magic" />
             <option value="$PROJECT_DIR$/content/skills/magic/spell-attacks" />
             <option value="$PROJECT_DIR$/content/skills/mining" />

@@ -186,9 +186,33 @@ pause-button driven. Then check what the engine already does for the nearest twi
 `PauseButton` over a subcomponent range and then suspend. `if_setevents` over that range is also
 what makes `cc_find` resolve at all; nothing is created by cs2.
 
-The same suspicion applies to anything else here that was written against a cs2-driven panel
-without a real client to try it on — `Jewellery` and construction's `BuildMenu` both still grant
-`Op1`, and neither has been confirmed in game.
+### The op-name rule
+
+There is a second, blunter rule that decides whether a panel can be driven at all. **The op *name*
+can only come from the cache or from cs2 — the server cannot send one.** There is no `if_setop` in
+the protocol; `if_setevents` grants the event, never the label. And the client builds a click from
+the label, so an event without one is dead. The census that settles it: of every component in the
+rev-233 cache, 2,997 have an op1 event and *all 2,997* also have op1 text. Not one has the event
+without it. So, for any panel:
+
+| what the cache gives the component | what it is |
+| --- | --- |
+| op text **and** the op event | already clickable — open the interface and bind, grant nothing |
+| op text, no event | grant the event with `ifSetEvents(component, -1..-1, IfEvent.Op1)` |
+| neither, but cs2 does `cc_find` + `1121` on it | pause-button: grant `PauseButton` over the range and suspend |
+| neither, and no cs2 | **not drivable** — pick a different interface |
+
+`-1..-1` is the window for a press on the component itself (`ifSetPauseText` in
+`PlayerInterfaceExtensions.kt` is the proven example); `0..N` is only for a press the client
+re-targets at a subcomponent. Getting that backwards aims the client's event window at children the
+component does not have.
+
+Worked out against this cache: **446/6** (jewellery) are row one — every button ships with `op1` and
+its event, and no clientscript in the cache even mentions 446, so `Jewellery` opens the panel and
+grants nothing. **270** is row three. **324** (the tanner) is row four — blank text components, no
+ops, no events, no cs2 — so tanning goes through the make-menu instead, and interface 324 is not
+used. Construction's 458 is row four as well: not one of its components has an op or an event, so
+`BuildMenu`'s `Op1` grant cannot work either. That one is still unfixed.
 
 ## 8. Tests
 
