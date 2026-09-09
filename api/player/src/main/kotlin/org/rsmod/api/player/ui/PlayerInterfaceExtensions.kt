@@ -450,6 +450,28 @@ private fun UserInterfaceMap.translate(component: Component): Component =
  * in unwanted behavior.
  */
 
+internal fun Player.ifLevelUp(
+    skillLayer: ComponentType?,
+    text1: String,
+    text2: String,
+    pauseText: String,
+    eventBus: EventBus,
+) {
+    mes(text1, ChatType.GameMessage)
+    // Opened as an overlay rather than a modal: a modal marks the player busy, which would stop
+    // them chopping, fighting or casting until they dismissed the dialogue.
+    chatModalUnclamp = constants.modal_fixedwidthandheight
+    topLevelChatboxResetBackground(this)
+    openOverlay(interfaces.levelup_display, components.chatbox_chatmodal, eventBus)
+    // Every skill layer is hidden by default; only the levelled skill's icon is shown.
+    if (skillLayer != null) {
+        ifSetHide(skillLayer, hide = false)
+    }
+    ifSetText(components.levelup_text1, text1)
+    ifSetText(components.levelup_text2, text2)
+    ifSetPauseText(components.levelup_pbutton, pauseText)
+}
+
 internal fun Player.ifMesbox(text: String, pauseText: String, lineHeight: Int, eventBus: EventBus) {
     mes(text, ChatType.Mesbox)
     openModal(interfaces.messagebox, components.chatbox_chatmodal, eventBus)

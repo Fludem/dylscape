@@ -130,6 +130,10 @@ object BaseSpotanims : SpotanimReferences() {
     val firesurge_travel = find("firesurge_travel", 129294259)
     val firesurge_impact = find("firesurge_impact", 11638375)
 
+    val levelup_anim = find("levelup_anim", 1585223)
+    val levelup_99_anim = find("levelup_99_anim", 124000663)
+    val levelup_max = find("levelup_max", 123997004)
+
     val tumekens_shadow_casting = find("tumekens_shadow_casting", 169100896)
     val tumekens_shadow_travel = find("tumekens_shadow_travel", 168395493)
     val tumekens_shadow_impact = find("tumekens_shadow_impact", 168399276)

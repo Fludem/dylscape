@@ -48,6 +48,8 @@ object BaseInterfaces : InterfaceReferences() {
     val account_summary_sidepanel = find("account_summary_sidepanel", 1142196774)
     val area_task = find("area_task", 1628778927)
 
+    val levelup_display = find("levelup_display", 94414461)
+
     val chat_right = find("chat_right", 1128178504)
     val chat_left = find("chat_left", 430345552)
     val chatmenu = find("chatmenu", 151753214)

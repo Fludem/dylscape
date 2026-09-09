@@ -85,6 +85,7 @@ import org.rsmod.api.player.stat.statRestore
 import org.rsmod.api.player.stat.statRestoreAll
 import org.rsmod.api.player.stat.statSub
 import org.rsmod.api.player.stopInvTransmit
+import org.rsmod.api.player.ui.LevelUpComponents
 import org.rsmod.api.player.ui.ifChatNpcSpecific
 import org.rsmod.api.player.ui.ifChatPlayer
 import org.rsmod.api.player.ui.ifChoice
@@ -94,6 +95,7 @@ import org.rsmod.api.player.ui.ifConfirmDestroy
 import org.rsmod.api.player.ui.ifConfirmOverlay
 import org.rsmod.api.player.ui.ifConfirmOverlayClose
 import org.rsmod.api.player.ui.ifDoubleobjbox
+import org.rsmod.api.player.ui.ifLevelUp
 import org.rsmod.api.player.ui.ifMenu
 import org.rsmod.api.player.ui.ifMesbox
 import org.rsmod.api.player.ui.ifObjbox
@@ -122,6 +124,7 @@ import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.repo.world.WorldRepository
 import org.rsmod.api.route.RayCastValidator
 import org.rsmod.api.stats.levelmod.InvisibleLevels
+import org.rsmod.api.utils.format.addArticle
 import org.rsmod.api.utils.map.BuildAreaUtils
 import org.rsmod.coroutine.GameCoroutine
 import org.rsmod.events.EventBus
@@ -2044,6 +2047,21 @@ public class ProtectedAccess(
      * @see [await]
      */
     public suspend fun pauseButton(): ResumePauseButtonInput = await(ResumePauseButtonInput::class)
+
+    /**
+     * Shows the `levelup_display` dialogue in the chatbox - the skill icon, `Congratulations, you
+     * just advanced an Attack level.` and the player's new level in that stat.
+     *
+     * Unlike [mesbox], this does **not** suspend: the player keeps control while the dialogue is
+     * shown, and the `Click here to continue` pause button closes it.
+     */
+    public fun levelUpBox(stat: StatType) {
+        val name = stat.displayName
+        val text1 = "Congratulations, you just advanced ${name.addArticle()} level."
+        val text2 = "Your $name level is now ${statBase(stat)}."
+        val skillLayer = LevelUpComponents[stat]
+        player.ifLevelUp(skillLayer, text1, text2, constants.cm_pausebutton, context.eventBus)
+    }
 
     /**
      * @throws ProtectedAccessLostException if the player could not retain protected access after
