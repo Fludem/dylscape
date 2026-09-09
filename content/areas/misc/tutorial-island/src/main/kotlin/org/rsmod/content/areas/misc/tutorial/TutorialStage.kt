@@ -14,6 +14,7 @@ enum class TutorialStage(val value: Int) {
     SURVIVAL_CHOP(20),
     SURVIVAL_FIRE(30),
     SURVIVAL_FISH(40),
+    SURVIVAL_COOK(45),
     COOKING(50),
     QUEST(60),
     MINING_MINE(70),
@@ -21,6 +22,7 @@ enum class TutorialStage(val value: Int) {
     MINING_SMITH(90),
     COMBAT(100),
     BANK(110),
+    PRAYER(115),
     MAGIC(120),
     COMPLETE(1000);
 

@@ -51,6 +51,15 @@ internal object MiningRockLocs : LocReferences() {
 
     val spent_1 = find("rocks1")
     val spent_2 = find("rocks2")
+
+    /**
+     * Tutorial Island's copper and tin, and the spent rock they share. The island has its own
+     * models for all three, so it needs its own entries; the ore, level and xp are the ordinary
+     * ones.
+     */
+    val newbie_copper = find("newbiecopperrock")
+    val newbie_tin = find("newbietinrock")
+    val newbie_spent = find("newbierocks1")
 }
 
 /**
@@ -91,6 +100,24 @@ internal object MiningRocksEditor : LocEditor() {
         rock(rocks.copper_2, rocks.spent_2, ores.copper_ore, 1, 17.5, 4, rates.copper_tin_pickaxes)
         rock(rocks.tin_1, rocks.spent_1, ores.tin_ore, 1, 17.5, 4, rates.copper_tin_pickaxes)
         rock(rocks.tin_2, rocks.spent_2, ores.tin_ore, 1, 17.5, 4, rates.copper_tin_pickaxes)
+        rock(
+            rocks.newbie_copper,
+            rocks.newbie_spent,
+            ores.copper_ore,
+            1,
+            17.5,
+            4,
+            rates.copper_tin_pickaxes,
+        )
+        rock(
+            rocks.newbie_tin,
+            rocks.newbie_spent,
+            ores.tin_ore,
+            1,
+            17.5,
+            4,
+            rates.copper_tin_pickaxes,
+        )
         rock(rocks.iron_1, rocks.spent_1, ores.iron_ore, 15, 35.0, 9, rates.iron_pickaxes)
         rock(rocks.iron_2, rocks.spent_2, ores.iron_ore, 15, 35.0, 9, rates.iron_pickaxes)
         rock(rocks.silver_1, rocks.spent_1, ores.silver_ore, 20, 40.0, 100, rates.silver_pickaxes)

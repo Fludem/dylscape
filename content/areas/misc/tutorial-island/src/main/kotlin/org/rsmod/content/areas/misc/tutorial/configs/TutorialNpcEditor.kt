@@ -13,7 +13,7 @@ import org.rsmod.api.type.editors.npc.NpcEditor
  */
 internal object TutorialNpcEditor : NpcEditor() {
     init {
-        for (instructor in TutorialNpcs.all) {
+        for (instructor in TutorialNpcs.stationary) {
             edit(instructor) { wanderRange = 0 }
         }
     }

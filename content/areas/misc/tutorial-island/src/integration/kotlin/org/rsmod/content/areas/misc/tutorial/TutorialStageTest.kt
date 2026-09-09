@@ -35,6 +35,16 @@ class TutorialStageTest {
         assertFalse(TutorialStage.COMPLETE.isBefore(TutorialStage.MAGIC))
     }
 
+    /**
+     * The shrimp are cooked on the Survival Expert's fire, before the Master Chef is ever reached
+     * -- so the cooking step has to sit inside the survival run, not after it.
+     */
+    @Test
+    fun `cooking the shrimp comes between fishing and the Master Chef`() {
+        assertTrue(TutorialStage.SURVIVAL_COOK.atLeast(TutorialStage.SURVIVAL_FISH))
+        assertTrue(TutorialStage.SURVIVAL_COOK.isBefore(TutorialStage.COOKING))
+    }
+
     @Test
     fun `every stage value is distinct and ascending by declaration`() {
         val values = TutorialStage.entries.map { it.value }

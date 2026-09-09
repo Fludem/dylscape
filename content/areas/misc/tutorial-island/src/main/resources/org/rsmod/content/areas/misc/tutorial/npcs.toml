@@ -1,38 +1,140 @@
 # Tutorial Island instructor spawns.
 #
-# APPROXIMATE COORDINATES — verify in a running client and adjust. The cache holds no npc spawns
-# (they are server-authored), so these tiles are a best-effort placement within mapsquare 48_48,
-# the classic island. The tutorial's progression does not depend on them; only where each
-# instructor physically stands does. `npc` values are the rev 233 cache symbol names.
+# Every tile below was read out of the cache rather than guessed: the island's collision map and its
+# loc set (doors, ladders, the range, the furnace, the anvils, the ore rocks, the bank booths and the
+# altar) pin each room exactly, and each instructor is placed on an open, standable tile inside the
+# room whose lesson they teach. `TutorialMapTest` asserts that back, so a bad tile fails the build
+# rather than stranding a new account.
+#
+# Two of them are underground. The mining cave sits at the usual `+6400` z offset beneath the island
+# -- mapsquare 48_148 -- and holds the mining, smelting, smithing and combat steps; the ladder down
+# is in the Quest Guide's house at 3088,3119.
+#
+# `npc` values are the rev 233 cache symbol names.
 
+# --- Surface -----------------------------------------------------------------------------------
+
+# 3094,3110 -- the Gielinor Guide's room, north of where a new account is placed (3094,3107).
 [[spawn]]
 npc = 'newbie_basics_instructor'
-coords = '0_48_48_22_36'
+coords = '0_48_48_22_38'
 
+# 3103,3095 -- the clearing by the pond, beside the trees the player chops and the spots they fish.
 [[spawn]]
 npc = 'newbie_survival_instructor'
-coords = '0_48_48_24_44'
+coords = '0_48_48_31_23'
 
+# 3075,3083 -- the kitchen, next to the range at 3075,3081.
 [[spawn]]
 npc = 'newbie_cook_instructor'
-coords = '0_48_48_16_43'
+coords = '0_48_48_3_11'
 
+# 3086,3123 -- the trophy house, by the ladder down to the mining cave at 3088,3119.
 [[spawn]]
 npc = 'newbie_quest_instructor'
-coords = '0_48_48_16_39'
+coords = '0_48_48_14_51'
 
-[[spawn]]
-npc = 'newbie_mining_instructor'
-coords = '0_48_48_20_25'
-
-[[spawn]]
-npc = 'newbie_combat_instructor'
-coords = '0_48_48_28_22'
-
+# 3127,3123 -- the small room east of the bank, through the door at 3125,3124.
 [[spawn]]
 npc = 'newbie_account_instructor'
-coords = '0_48_48_40_30'
+coords = '0_48_48_55_51'
 
+# 3140,3089 -- the wizard's building in the south-east, inside the ring of magical symbols.
 [[spawn]]
 npc = 'newbie_magic_instructor'
-coords = '0_48_48_37_34'
+coords = '0_49_48_4_17'
+
+# --- Mining cave (mapsquare 48_148, z +6400) -----------------------------------------------------
+
+# 3081,9505 -- between the tin (3073-3077) and the copper (3083-3091), in sight of the anvils.
+[[spawn]]
+npc = 'newbie_mining_instructor'
+coords = '0_48_148_9_33'
+
+# 3105,9509 -- the near end of the combat chamber, past the gate from the mining cave at 3094,9502.
+[[spawn]]
+npc = 'newbie_combat_instructor'
+coords = '0_48_148_33_37'
+
+# 3122,3107 -- the chapel, beside the altar at 3121,3106.
+[[spawn]]
+npc = 'brother_noob'
+coords = '0_48_48_50_35'
+
+# 3119,3123 -- behind the bank counter, next to the booths at 3120/3122,3124.
+[[spawn]]
+npc = 'noobbanker'
+coords = '0_48_48_47_51'
+
+# --- Giant rats ----------------------------------------------------------------------------------
+#
+# The level-3 `newbiegiantrat`, not the level-46 `rat_boss_giant_rat` (Scurrius) that a bridge on
+# the display name "Giant rat" had put here. They fill the combat chamber north of the instructor,
+# between him at 3105,9509 and the gate out at 3111,9518.
+
+[[spawn]]
+npc = 'newbiegiantrat'
+coords = '0_48_148_26_47'
+
+[[spawn]]
+npc = 'newbiegiantrat2'
+coords = '0_48_148_27_42'
+
+[[spawn]]
+npc = 'newbiegiantrat3'
+coords = '0_48_148_28_45'
+
+[[spawn]]
+npc = 'newbiegiantrat'
+coords = '0_48_148_28_49'
+
+[[spawn]]
+npc = 'newbiegiantrat2'
+coords = '0_48_148_30_41'
+
+[[spawn]]
+npc = 'newbiegiantrat3'
+coords = '0_48_148_31_46'
+
+[[spawn]]
+npc = 'newbiegiantrat'
+coords = '0_48_148_31_49'
+
+[[spawn]]
+npc = 'newbiegiantrat2'
+coords = '0_48_148_32_40'
+
+[[spawn]]
+npc = 'newbiegiantrat3'
+coords = '0_48_148_33_42'
+
+[[spawn]]
+npc = 'newbiegiantrat'
+coords = '0_48_148_33_46'
+
+[[spawn]]
+npc = 'newbiegiantrat2'
+coords = '0_48_148_35_44'
+
+[[spawn]]
+npc = 'newbiegiantrat3'
+coords = '0_48_148_35_49'
+
+[[spawn]]
+npc = 'newbiegiantrat'
+coords = '0_48_148_37_46'
+
+# --- Fishing spots -------------------------------------------------------------------------------
+#
+# The Survival Expert's fishing step needs something to fish. The spot is an npc, not a loc, and is
+# already tagged into the fishing module's `fishing_spot` group and pinned to its tile there -- it
+# was simply never spawned, so `Net` had nothing to act on. Both tiles are pond water, reachable
+# from the standable bank at z 3094.
+
+[[spawn]]
+npc = '0_48_48_newbiefishing'
+coords = '0_48_48_30_21'
+
+[[spawn]]
+npc = '0_48_48_newbiefishing'
+coords = '0_48_48_31_21'

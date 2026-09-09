@@ -135,5 +135,13 @@ internal object FishingSpotEditor : NpcEditor() {
         for (spot in FishingSpotNpcs.all.values) {
             edit(spot) { contentGroup = FishingContent.fishing_spot }
         }
+        // Tutorial Island's spot is the one spot a player is *sent* to, by hint arrow, on a pond
+        // small enough that the cache-default five-tile wander walks it off the water entirely.
+        // Pinned here rather than in a second editor because `contentGroup` above already claims
+        // this type, and two editors on one type is what makes edits fight.
+        edit(FishingSpotNpcs.newbie) {
+            moveRestrict = nomove
+            wanderRange = 0
+        }
     }
 }

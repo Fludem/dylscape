@@ -36,22 +36,21 @@ class TutorialProgressionTest {
         }
 
     @Test
-    fun GameTestState.`a new account stays at spawn while island routing is disabled`() =
+    fun GameTestState.`a new account is put on the island at login`() =
         runGameTest(TutorialIsland::class) {
-            // TutorialConstants.ROUTE_NEW_ACCOUNTS is off until the island coordinates are
-            // verified, so a fresh account must be left exactly where the realm spawned it.
+            // The whole point of the feature, and the thing that was silently off: a brand-new
+            // account logs in at the realm's spawn and must be moved onto the island instead.
             player.newAccount = true
             player.tutorialStage = TutorialStage.NOT_STARTED
-            val spawn = CoordGrid(0, 50, 50, 21, 18)
-            player.coords = spawn
+            player.coords = CoordGrid(0, 50, 50, 21, 18)
 
             eventBus.publish(SessionStateEvent.Login(player))
 
-            assertEquals(TutorialStage.NOT_STARTED, player.tutorialStage) {
-                "The tutorial started even though new-account routing is disabled."
+            assertEquals(TutorialStage.GUIDE, player.tutorialStage) {
+                "A new account logged in without the tutorial starting."
             }
-            assertEquals(spawn, player.coords) {
-                "A new account was moved while routing is disabled."
+            assertEquals(TutorialConstants.START_COORD, player.coords) {
+                "A new account was left at the realm spawn instead of the island."
             }
         }
 
@@ -116,8 +115,8 @@ class TutorialProgressionTest {
             for (obj in objs) {
                 assertNotNull(cacheTypes.objs[obj.id]) { "Tutorial obj $obj does not resolve." }
             }
-            // The eight instructors are all distinct npc types.
-            assertEquals(8, TutorialNpcs.all.map { it.id }.toSet().size)
+            // The nine instructors are all distinct npc types.
+            assertEquals(9, TutorialNpcs.all.map { it.id }.toSet().size)
             assertNotEquals(0, TutorialConstants.START_COORD.packed)
         }
 }
