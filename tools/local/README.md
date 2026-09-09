@@ -169,6 +169,23 @@ module loaded.
   than configured per spot — see the op-pair gotcha below. **Known gap:** OSRS spots relocate
   on a timer and ours stand still, which makes fishing slightly *better* than live.
 
+- `content/skills/magic/magic-*` — the spellbooks beyond upstream's twenty elemental spells,
+  built 2026-09-09. `magic-commons` holds what the rest share: the spell reader (`MagicSpellbooks`,
+  a second reader of the cache enums because upstream's registry cannot list a book and is
+  populated by a Guice provider the test harness never installs), rune payment with xp through
+  `XpModifiers`, freezing on the engine's `frozen` walk trigger, and `MagicRuneTestSupport` for
+  tests. `magic-spellbooks` binds every teleport that carries a `spell_telecoord`, places the
+  Ancient and astral altars in the square north of the Edgeville bank at boot (ungated: there are no
+  quests), adds `::spellbook 0|1|2` and Lunar Spellbook Swap. `magic-utility-spells` is alchemy,
+  Superheat, Bones to Bananas/Peaches, the seven jewellery enchantments (authored: dbtable 86
+  `magic_enchant` has names but no data in this cache), charge orbs, Charge, Vengeance and the Lunar
+  inventory spells. `magic-combat-spells` registers the curses, binds, god spells, Iban Blast,
+  Magic Dart, Crumble Undead and all sixteen Ancient Magicks as `SpellAttack`s. Deliberately out:
+  Arceuus, Telekinetic Grab (the `OpObjT` packet is a no-op upstream), every player-targeted
+  spell, and poison (smoke spells only deal damage). The enchant sub-list opens client-side: its
+  `magic_spellbook_op` clientscript sets varbit `spellbook_sublist` locally, so the server only ever
+  sees the `enchant_N` buttons.
+
 ## Sharing this checkout with another agent
 
 Two Claude Code sessions worked in this tree at once on 2026-09-08 and collided three ways.
@@ -295,3 +312,6 @@ Kept deliberately small so rebases stay cheap:
 
 - `api/server-config/.../ServerConfig.kt` — added `port` (default 43594)
 - `api/net/.../NetworkFactory.kt` — binds `serverConfig.port` instead of a literal
+- `api/player/.../hit/processor/StandardPlayerHitProcessor.kt` — publishes `PlayerHitEvents.Impact` after
+  a hit lands, so Vengeance (and any future recoil effect) can react without owning the hit queue
+- `api/testing/.../scope/GameTestScope.kt` — `opNpcT`, `opLocT` and `ifButtonT` helpers for spell targets

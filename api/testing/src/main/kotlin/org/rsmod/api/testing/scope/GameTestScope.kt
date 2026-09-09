@@ -11,9 +11,12 @@ import kotlin.contracts.contract
 import kotlin.reflect.KClass
 import net.rsprot.protocol.game.incoming.buttons.If3Button
 import net.rsprot.protocol.game.incoming.buttons.IfButtonD
+import net.rsprot.protocol.game.incoming.buttons.IfButtonT
 import net.rsprot.protocol.game.incoming.locs.OpLoc
+import net.rsprot.protocol.game.incoming.locs.OpLocT
 import net.rsprot.protocol.game.incoming.misc.user.MoveGameClick
 import net.rsprot.protocol.game.incoming.npcs.OpNpc
+import net.rsprot.protocol.game.incoming.npcs.OpNpcT
 import net.rsprot.protocol.game.incoming.resumed.ResumePCountDialog
 import net.rsprot.protocol.game.incoming.resumed.ResumePauseButton
 import net.rsprot.protocol.game.outgoing.misc.player.MessageGame
@@ -30,9 +33,12 @@ import org.rsmod.api.market.DefaultMarketPrices
 import org.rsmod.api.market.MarketPrices
 import org.rsmod.api.net.rsprot.handlers.If3ButtonHandler
 import org.rsmod.api.net.rsprot.handlers.IfButtonDHandler
+import org.rsmod.api.net.rsprot.handlers.IfButtonTHandler
 import org.rsmod.api.net.rsprot.handlers.MoveGameClickHandler
 import org.rsmod.api.net.rsprot.handlers.OpLocHandler
+import org.rsmod.api.net.rsprot.handlers.OpLocTHandler
 import org.rsmod.api.net.rsprot.handlers.OpNpcHandler
+import org.rsmod.api.net.rsprot.handlers.OpNpcTHandler
 import org.rsmod.api.net.rsprot.handlers.ResumePCountDialogHandler
 import org.rsmod.api.net.rsprot.handlers.ResumePauseButtonHandler
 import org.rsmod.api.npc.apPlayer2
@@ -204,11 +210,14 @@ constructor(
     private val protectedAccess: ProtectedAccessLauncher,
     private val ifButtonHandler: If3ButtonHandler,
     private val ifButtonDHandler: IfButtonDHandler,
+    private val ifButtonTHandler: IfButtonTHandler,
     private val gameClickHandler: MoveGameClickHandler,
     private val resumePCountDialog: ResumePCountDialogHandler,
     private val resumePauseButton: ResumePauseButtonHandler,
     private val opLocHandler: OpLocHandler,
+    private val opLocTHandler: OpLocTHandler,
     private val opNpcHandler: OpNpcHandler,
+    private val opNpcTHandler: OpNpcTHandler,
     private val aiPlayerInteractions: AiPlayerInteractions,
     private val npcHitModifier: NpcHitModifier,
     private val regionRegistry: RegionRegistry,
@@ -413,6 +422,64 @@ constructor(
     public fun Player.opNpc5(npc: Npc, controlKey: Boolean = false) {
         val message = OpNpc(npc.slotId, controlKey, op = 5)
         captureClient.queue(opNpcHandler, message)
+    }
+
+    /**
+     * Casts the spell (or any other "target" component) on [npc], the way the client does when a
+     * spellbook button is selected and an npc is clicked. The spell component must carry the
+     * `TgtNpc` event in the cache, and the interface it lives on must be open.
+     */
+    public fun Player.opNpcT(
+        npc: Npc,
+        component: ComponentType,
+        comsub: Int = -1,
+        obj: ObjType? = null,
+        controlKey: Boolean = false,
+    ) {
+        val combinedId = CombinedId(component.interfaceId, component.component)
+        val message = OpNpcT(npc.slotId, controlKey, combinedId, comsub, obj?.id ?: -1)
+        captureClient.queue(opNpcTHandler, message)
+    }
+
+    /** Casts a "target" component on [loc]; see [opNpcT]. The component needs `TgtLoc`. */
+    public fun Player.opLocT(
+        loc: BoundLocInfo,
+        component: ComponentType,
+        comsub: Int = -1,
+        obj: ObjType? = null,
+        controlKey: Boolean = false,
+    ) {
+        val combinedId = CombinedId(component.interfaceId, component.component)
+        val message = OpLocT(loc.id, loc.x, loc.z, controlKey, combinedId, comsub, obj?.id ?: -1)
+        captureClient.queue(opLocTHandler, message)
+    }
+
+    /**
+     * Uses [selected] on [target], the way the client does for a spell cast on an inventory item
+     * (`selected` = the spell button, `target` = `components.inv_items`, `targetSub` = the slot,
+     * `targetObj` = the obj in it). The selected component needs `TgtCom` and the target needs
+     * `Target`, both of which are checked by the handler.
+     */
+    public fun Player.ifButtonT(
+        selected: ComponentType,
+        target: ComponentType,
+        targetSub: Int = -1,
+        targetObj: ObjType? = null,
+        selectedSub: Int = -1,
+        selectedObj: ObjType? = null,
+    ) {
+        val selectedId = CombinedId(selected.interfaceId, selected.component)
+        val targetId = CombinedId(target.interfaceId, target.component)
+        val message =
+            IfButtonT(
+                selectedId,
+                selectedSub,
+                selectedObj?.id ?: -1,
+                targetId,
+                targetSub,
+                targetObj?.id ?: -1,
+            )
+        captureClient.queue(ifButtonTHandler, message)
     }
 
     public fun Player.ifOpenMain(interf: InterfaceType) {

@@ -8,3 +8,9 @@
 1003	farming_sapling_growth
 1004	herblore_stamina_expire
 1010	barrows_crypt_tick
+1011	magic_frozen
+1012	magic_freeze_immunity
+1013	magic_vengeance_cooldown
+1014	magic_charge
+1015	magic_imbue
+1016	magic_spellbook_swap

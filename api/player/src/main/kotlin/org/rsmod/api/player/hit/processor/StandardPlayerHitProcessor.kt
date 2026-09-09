@@ -7,6 +7,7 @@ import org.rsmod.api.config.refs.params
 import org.rsmod.api.config.refs.queues
 import org.rsmod.api.config.refs.stats
 import org.rsmod.api.config.refs.synths
+import org.rsmod.api.player.events.PlayerHitEvents
 import org.rsmod.api.player.headbar.InternalPlayerHeadbars
 import org.rsmod.api.player.lefthand
 import org.rsmod.api.player.output.soundSynth
@@ -39,6 +40,8 @@ public object StandardPlayerHitProcessor : QueuedPlayerHitProcessor {
         if (damage > 0) {
             statSub(stats.hitpoints, constant = damage, percent = 0)
         }
+
+        publish(PlayerHitEvents.Impact(player, hit))
 
         playDefendSound(hit, random)
 
