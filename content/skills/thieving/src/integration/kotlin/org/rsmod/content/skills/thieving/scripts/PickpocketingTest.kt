@@ -170,6 +170,29 @@ class PickpocketingTest {
         }
 
     /**
+     * Draynor's Martin, who reads `Martin the Master Gardener` rather than `Master Farmer` and so
+     * slipped past the display-name rule the rest of the ladder was built from. He is the first
+     * master farmer most accounts ever click, and until he was listed that click did nothing.
+     */
+    @Test
+    fun GameTestState.`Martin the Master Gardener pays the master farmer table`() =
+        runGameTest(Pickpocketing::class) {
+            val martin = spawnTarget("martin_the_master_farmer")
+            startThieving(level = 38)
+            random.next = 0
+            random.then = 0
+            random.then = 1
+
+            player.opNpc3(martin)
+            advance(ticks = 1)
+            advance(ticks = PICKPOCKET_DELAY)
+
+            assertEquals(5, player.inv.count(ThievingSeeds.potato_seed)) {
+                "Martin paid no seeds, so his Pickpocket op is still unbound."
+            }
+        }
+
+    /**
      * The cost of paying loot instead of a purse: a rolled seed needs a slot of its own, so unlike
      * every other rung the master farmer's session ends when the bag fills. It has to say so rather
      * than silently stopping.

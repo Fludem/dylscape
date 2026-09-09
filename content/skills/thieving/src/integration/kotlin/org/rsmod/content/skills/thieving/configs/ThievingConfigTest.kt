@@ -287,6 +287,7 @@ class ThievingConfigTest {
                 "Al Kharid warrior",
                 "Rogue",
                 "Master Farmer",
+                "Martin the Master Gardener",
                 "Guard",
                 "Head Guard",
                 "Knight of Ardougne",

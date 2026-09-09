@@ -132,9 +132,18 @@ object ThievingTargetNpcs : NpcReferences() {
     /** The lone `Rogue`. */
     val rogues: List<NpcType> = refs("rogue")
 
-    /** `Master Farmer`s. They pay seeds rather than a coin pouch; see [MasterFarmerSeeds]. */
+    /**
+     * `Master Farmer`s. They pay seeds rather than a coin pouch; see [MasterFarmerSeeds].
+     *
+     * `martin_the_master_farmer` is here despite reading `Martin the Master Gardener` rather than
+     * `Master Farmer`, which is why the display-name rule alone would miss him: he is the Draynor
+     * master farmer, requires the same level 38, pays the same 43xp and rolls the same seed table.
+     * He is also the first one most accounts ever meet, so leaving him off meant clicking
+     * Pickpocket on the obvious target did nothing at all.
+     */
     val masterFarmers: List<NpcType> =
         refs(
+            "martin_the_master_farmer",
             "master_farmer_1",
             "master_farmer_2",
             "master_farmer_1_f",
