@@ -8,7 +8,7 @@ Unlike package.sh (jpackage), this cross-builds from one machine: nothing is com
 platform, the JRE is Temurin's own prebuilt one. Output lands in build/client-zip/.
 See docs/CLIENT.md.
 """
-import argparse, hashlib, io, os, shutil, stat, subprocess, sys, tarfile, time, urllib.request, zipfile
+import argparse, hashlib, io, json, os, shutil, stat, subprocess, sys, tarfile, time, urllib.request, zipfile
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 APP = "Onyx"
@@ -17,12 +17,12 @@ APP = "Onyx"
 JRE_BASE = "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.12.1%2B1/"
 TARGETS = {
     "windows": {
-        "platform": "win", "arch": "amd64",
+        "label": "Windows", "platform": "win", "arch": "amd64",
         "jre": "OpenJDK21U-jre_x64_windows_hotspot_21.0.12.1_1.zip",
         "sha256": "d35f31e712f0fcf6ac5a093edc90204fbff22f720ba3950bd09d331d5e621636",
     },
     "macos": {
-        "platform": "macos", "arch": "aarch64",
+        "label": "macOS", "platform": "macos", "arch": "aarch64",
         "jre": "OpenJDK21U-jre_aarch64_mac_hotspot_21.0.12.1_1.tar.gz",
         "sha256": "dec50fc6f9fcd4fe3ae8cabf5a5fa68f6afc48841f7698e468e9aa5d54beed84",
     },
@@ -216,9 +216,33 @@ def main():
                   newline="\r\n" if name == "windows" else "\n") as f:
             f.write(README)
 
-        dest = os.path.join(args.out, f"{APP}-{'Windows' if name == 'windows' else 'macOS'}.zip")
+        dest = os.path.join(args.out, f"{APP}-{t['label']}.zip")
         zip_dir(folder, dest)
         print(f"  {dest} ({os.path.getsize(dest) / 1e6:.0f} MB)")
+
+    write_index(args.out)
+
+
+def write_index(out):
+    """client.json, which the website's download buttons read, so the size, checksum and date
+    shown there always describe the zip actually uploaded. Lists every zip present in `out`, so
+    an --only build keeps the other platform's entry."""
+    files = []
+    for t in TARGETS.values():
+        path = os.path.join(out, f"{APP}-{t['label']}.zip")
+        if not os.path.exists(path):
+            continue
+        with open(path, "rb") as f:
+            digest = hashlib.sha256(f.read()).hexdigest()
+        files.append({
+            "platform": t["label"],
+            "name": os.path.basename(path),
+            "bytes": os.path.getsize(path),
+            "sha256": digest,
+            "built": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(os.path.getmtime(path))),
+        })
+    with open(os.path.join(out, "client.json"), "w") as f:
+        json.dump({"files": files}, f, indent=2)
 
 
 if __name__ == "__main__":

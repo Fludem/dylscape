@@ -104,6 +104,10 @@ built from this Mac — no jpackage, so no per-OS runner. Each unzips to one `On
 Verified 2026-09-10 on macOS: unzipped with `ditto` (as Finder does), launched through
 `Onyx.command`, reached the login screen. The Windows zip has not been run on Windows.
 
+Friends download them from `https://rsps.onyxleeds.co.uk/play.html`. `web/deploy-client.sh`
+rebuilds, uploads to `/var/www/downloads` and checks the served checksums; it also writes the
+`client.json` the page reads for sizes and dates. See `docs/DEPLOY.md`.
+
 ### Installer
 
 `tools/client/package.sh` produces a double-clickable installer: patched RuneLite + a launcher

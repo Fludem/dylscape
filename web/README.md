@@ -13,6 +13,7 @@ web/
   build_data.py    generates site/data/ from the repo's own content data
   deploy/          Caddyfile and onyx-web.service, as deployed
   deploy.sh        build, test, upload, restart, verify
+  deploy-client.sh build the zipped clients and publish them under /downloads/
 ```
 
 ## Deploy
@@ -83,6 +84,21 @@ needed — `ufw` still allows only 22, 80, 443 and 43594.
 ssh root@2.28.73.211 'systemctl status onyx-web; tail -20 /var/log/onyx-web.log'
 ```
 
+## The client download
+
+`play.html` links `/downloads/Onyx-Windows.zip` and `/downloads/Onyx-macOS.zip`, and reads
+`/downloads/client.json` for their sizes and build date. Those live in `/var/www/downloads`, not
+in `site/`: they are ~140 MB, gitignored build output, and published by their own script so a
+site deploy never re-uploads them.
+
+```bash
+web/deploy-client.sh              # rebuild the zips (tools/client/make_zips.py), upload, verify
+web/deploy-client.sh --no-build   # upload what is already in build/client-zip
+```
+
+The route is in `deploy/Caddyfile`, so on a fresh box run `deploy.sh` first. Client details are in
+`docs/CLIENT.md`; the deploy notes in `docs/DEPLOY.md`.
+
 ## The one rule
 
 **Never rsync `--delete` into `/var/www/rsps`.** That directory holds `jav_config.ws` and
@@ -110,8 +126,5 @@ cache and need a booted server to decode, so a handful of awkward cases are corr
 
 ## Not done
 
-- **The client download.** `play.html` has a placeholder. `tools/client/build_client.py` produces a
-  directory of jars, not an installer, and `docs/CLIENT.md` is clear that patched Jagex bytecode
-  should not be published — so nothing is hosted until the installer exists.
 - No account registration on the site; accounts auto-create at the login screen.
 - No vote, store or donation pages.

@@ -27,6 +27,15 @@ rsps.onyxleeds.co.uk {
 		file_server
 	}
 
+	# --- client downloads ----------------------------------------------------------------------
+	# The zipped clients and client.json, uploaded by web/deploy-client.sh into a root of their own
+	# so that neither deploy script can delete the other's files. /downloads/x is
+	# /var/www/downloads/x. Covered by @website below: ETags make "no-cache" a 304, not a re-download.
+	handle /downloads/* {
+		root * /var/www
+		file_server
+	}
+
 	# --- website API ---------------------------------------------------------------------------
 	# onyx-web.service, bound to localhost only. No firewall change is needed or wanted: ufw
 	# allows 22/80/443/43594 and nothing else.
