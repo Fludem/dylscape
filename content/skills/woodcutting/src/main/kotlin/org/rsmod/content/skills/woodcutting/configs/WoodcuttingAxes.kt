@@ -83,5 +83,15 @@ internal object WoodcuttingAxes : ObjEditor() {
             contentGroup = content.woodcutting_axe
             param[params.skill_anim] = seqs.human_woodcutting_crystal_axe
         }
+
+        // The league Echo axe chops as a crystal axe. Its level is 1 because the relic waives the
+        // requirement. It is deliberately *not* tagged into `woodcutting_axe`: other content walks
+        // that group expecting every member in its own rate tables (canoe shaping, for one), so
+        // `Woodcutting.findAxe` recognises the echo axe by type instead, and only for a player
+        // with `Perk.EchoAxe`.
+        edit(WoodcuttingObjs.echo_axe) {
+            param[params.skill_anim] = seqs.human_woodcutting_crystal_axe
+            param[params.levelrequire] = 1
+        }
     }
 }

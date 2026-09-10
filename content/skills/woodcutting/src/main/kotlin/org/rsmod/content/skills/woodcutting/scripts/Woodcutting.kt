@@ -7,11 +7,14 @@ import org.rsmod.api.config.locXpParam
 import org.rsmod.api.config.objParam
 import org.rsmod.api.config.refs.content
 import org.rsmod.api.config.refs.controllers
+import org.rsmod.api.config.refs.objs
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.config.refs.stats
 import org.rsmod.api.config.refs.synths
 import org.rsmod.api.config.refs.varcons
 import org.rsmod.api.controller.vars.intVarCon
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.output.ClientScripts
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.righthand
@@ -26,12 +29,14 @@ import org.rsmod.api.script.onOpLoc3
 import org.rsmod.api.script.onOpLocU
 import org.rsmod.api.stats.levelmod.InvisibleLevels
 import org.rsmod.api.stats.xpmod.XpModifiers
+import org.rsmod.content.skills.woodcutting.configs.WoodcuttingObjs
 import org.rsmod.content.skills.woodcutting.configs.WoodcuttingParams
 import org.rsmod.events.UnboundEvent
 import org.rsmod.game.MapClock
 import org.rsmod.game.entity.Controller
 import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.InvObj
+import org.rsmod.game.inv.isType
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.game.type.enums.EnumTypeList
 import org.rsmod.game.type.enums.find
@@ -41,6 +46,7 @@ import org.rsmod.game.type.loc.UnpackedLocType
 import org.rsmod.game.type.obj.ObjType
 import org.rsmod.game.type.obj.ObjTypeList
 import org.rsmod.game.type.obj.UnpackedObjType
+import org.rsmod.game.type.obj.isType
 import org.rsmod.game.type.seq.SeqType
 import org.rsmod.map.zone.ZoneKey
 import org.rsmod.plugin.scripts.PluginScript
@@ -60,6 +66,7 @@ constructor(
     private val playerRepo: PlayerRepository,
     private val xpMods: XpModifiers,
     private val invisibleLvls: InvisibleLevels,
+    private val perks: Perks,
     private val mapClock: MapClock,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
@@ -75,7 +82,7 @@ constructor(
             return
         }
 
-        if (inv.isFull()) {
+        if (inv.isFull() && !canBank()) {
             val product = objTypes[type.treeLogs]
             mes("Your inventory is too full to hold any more ${product.name.lowercase()}.")
             soundSynth(synths.pillory_wrong)
@@ -87,7 +94,7 @@ constructor(
             skillAnimDelay = mapClock + 3
             opLoc1(tree)
         } else {
-            val axe = findAxe(player, objTypes)
+            val axe = findAxe(player, objTypes, perks.has(player, Perk.EchoAxe))
             if (axe == null) {
                 mes("You need an axe to chop down this tree.")
                 mes("You do not have an axe which you have the woodcutting level to use.")
@@ -100,7 +107,7 @@ constructor(
     }
 
     private fun ProtectedAccess.cut(tree: BoundLocInfo, type: UnpackedLocType) {
-        val axe = findAxe(player, objTypes)
+        val axe = findAxe(player, objTypes, perks.has(player, Perk.EchoAxe))
         if (axe == null) {
             mes("You need an axe to chop down this tree.")
             mes("You do not have an axe which you have the woodcutting level to use.")
@@ -112,7 +119,8 @@ constructor(
             return
         }
 
-        if (inv.isFull()) {
+        val toBank = canBank()
+        if (inv.isFull() && !toBank) {
             val product = objTypes[type.treeLogs]
             mes("Your inventory is too full to hold any more ${product.name.lowercase()}.")
             soundSynth(synths.pillory_wrong)
@@ -131,7 +139,9 @@ constructor(
             actionDelay = mapClock + 3
         } else if (actionDelay == mapClock) {
             val (low, high) = cutSuccessRates(type, axe, enumTypes)
-            cutLogs = statRandom(stats.woodcutting, low, high, invisibleLvls)
+            cutLogs =
+                statRandom(stats.woodcutting, low, high, invisibleLvls) ||
+                    (perks.has(player, Perk.WoodcuttingSecondChance) && random.randomBoolean())
         }
 
         if (type.hasDespawnTimer) {
@@ -146,7 +156,10 @@ constructor(
             val xp = type.treeXp * xpMods.get(player, stats.woodcutting)
             spam("You get some ${product.name.lowercase()}.")
             statAdvance(stats.woodcutting, xp)
-            invAdd(inv, product)
+            val banked = toBank && invAdd(bank, product).success
+            if (!banked) {
+                invAdd(inv, product)
+            }
             publish(CutLogs(player, tree, product))
         }
 
@@ -160,6 +173,10 @@ constructor(
 
         opLoc3(tree)
     }
+
+    /** Under [Perk.WoodcuttingToBank] logs go straight to the bank while it has room. */
+    private fun ProtectedAccess.canBank(): Boolean =
+        perks.has(player, Perk.WoodcuttingToBank) && !bank.isFull()
 
     private fun Controller.treeDespawnTick() {
         val type = locTypes.getValue(treeLocId)
@@ -255,14 +272,23 @@ constructor(
         val UnpackedLocType.treeRespawnTimeLow: Int by locParam(params.respawn_time_low)
         val UnpackedLocType.treeRespawnTimeHigh: Int by locParam(params.respawn_time_high)
 
+        /** The crystal axe's Woodcutting level; the echo axe ranks alongside it. */
+        private const val CRYSTAL_AXE_LEVEL = 71
+
         private val UnpackedLocType.hasDespawnTimer: Boolean
             get() = hasParam(params.despawn_time)
 
-        fun findAxe(player: Player, objTypes: ObjTypeList): InvObj? {
-            val worn = player.wornAxe(objTypes)
-            val carried = player.carriedAxe(objTypes)
+        /**
+         * The best axe the player can swing, worn before carried.
+         *
+         * The echo axe only counts when [echoAllowed], and then needs no level at all but ranks as
+         * a crystal axe - its own `levelrequire` is 1, which would otherwise sort it below bronze.
+         */
+        fun findAxe(player: Player, objTypes: ObjTypeList, echoAllowed: Boolean = false): InvObj? {
+            val worn = player.wornAxe(objTypes, echoAllowed)
+            val carried = player.carriedAxe(objTypes, echoAllowed)
             if (worn != null && carried != null) {
-                if (objTypes[worn].axeWoodcuttingReq >= objTypes[carried].axeWoodcuttingReq) {
+                if (objTypes[worn].axeRank >= objTypes[carried].axeRank) {
                     return worn
                 }
                 return carried
@@ -270,18 +296,33 @@ constructor(
             return worn ?: carried
         }
 
-        private fun Player.wornAxe(objTypes: ObjTypeList): InvObj? {
+        private fun Player.wornAxe(objTypes: ObjTypeList, echoAllowed: Boolean): InvObj? {
             val righthand = righthand ?: return null
-            return righthand.takeIf { objTypes[it].isUsableAxe(woodcuttingLvl) }
+            return righthand.takeIf { objTypes[it].isUsableAxe(woodcuttingLvl, echoAllowed) }
         }
 
-        private fun Player.carriedAxe(objTypes: ObjTypeList): InvObj? {
-            return inv.filterNotNull { objTypes[it].isUsableAxe(woodcuttingLvl) }
-                .maxByOrNull { objTypes[it].axeWoodcuttingReq }
+        private fun Player.carriedAxe(objTypes: ObjTypeList, echoAllowed: Boolean): InvObj? {
+            return inv.filterNotNull { objTypes[it].isUsableAxe(woodcuttingLvl, echoAllowed) }
+                .maxByOrNull { objTypes[it].axeRank }
         }
 
-        private fun UnpackedObjType.isUsableAxe(woodcuttingLevel: Int): Boolean =
-            isContentType(content.woodcutting_axe) && woodcuttingLevel >= axeWoodcuttingReq
+        private fun UnpackedObjType.isUsableAxe(
+            woodcuttingLevel: Int,
+            echoAllowed: Boolean,
+        ): Boolean {
+            // The echo axe is not in `woodcutting_axe` (see `WoodcuttingAxes`), so it is checked
+            // by type before the group.
+            if (isType(WoodcuttingObjs.echo_axe)) {
+                return echoAllowed
+            }
+            if (!isContentType(content.woodcutting_axe)) {
+                return false
+            }
+            return woodcuttingLevel >= axeWoodcuttingReq
+        }
+
+        private val UnpackedObjType.axeRank: Int
+            get() = if (isType(WoodcuttingObjs.echo_axe)) CRYSTAL_AXE_LEVEL else axeWoodcuttingReq
 
         private fun UnpackedLocType.resolveRespawnTime(random: GameRandom): Int {
             val fixed = treeRespawnTime
@@ -297,10 +338,15 @@ constructor(
             enumTypes: EnumTypeList,
         ): Pair<Int, Int> {
             val axes = treeType.param(WoodcuttingParams.success_rates)
-            val rates = enumTypes[axes].find(axe)
+            // The rate enums are built types and only change on a `packCache`, so the echo axe
+            // borrows the crystal axe's row rather than needing one in all eleven tree enums.
+            val key = if (axe.isType(WoodcuttingObjs.echo_axe)) crystalAxe else axe
+            val rates = enumTypes[axes].find(key)
             val low = rates shr 16
             val high = rates and 0xFFFF
             return low to high
         }
+
+        private val crystalAxe by lazy { InvObj(objs.crystal_axe) }
     }
 }

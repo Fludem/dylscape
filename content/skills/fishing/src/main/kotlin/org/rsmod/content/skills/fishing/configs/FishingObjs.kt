@@ -19,6 +19,12 @@ object FishingObjs : ObjReferences() {
     val lobster_pot = find("lobster_pot")
     val harpoon = find("harpoon")
 
+    /**
+     * The Animal Wrangler league relic's "Echo harpoon". For a player holding `Perk.EchoHarpoon` it
+     * stands in for every fishing tool.
+     */
+    val echo_harpoon = find("league_trailblazer_harpoon")
+
     // Consumed one per catch, not one per attempt.
     val fishing_bait = find("fishing_bait")
     val feather = find("feather")

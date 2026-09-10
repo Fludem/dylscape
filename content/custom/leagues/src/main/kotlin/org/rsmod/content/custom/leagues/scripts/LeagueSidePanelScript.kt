@@ -3,13 +3,19 @@ package org.rsmod.content.custom.leagues.scripts
 import jakarta.inject.Inject
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
+import org.rsmod.api.player.ui.ifCloseSub
 import org.rsmod.api.player.vars.intVarBit
 import org.rsmod.api.player.vars.intVarp
+import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onIfOverlayButton
 import org.rsmod.api.script.onPlayerLogin
 import org.rsmod.content.custom.leagues.configs.league_components
+import org.rsmod.content.custom.leagues.configs.league_interfaces
 import org.rsmod.content.custom.leagues.configs.league_varbits
 import org.rsmod.content.custom.leagues.configs.league_varps
+import org.rsmod.content.custom.leagues.relics.LeaguePointsSync
+import org.rsmod.content.interfaces.levelup.LevelUpScript
+import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -26,17 +32,29 @@ import org.rsmod.plugin.scripts.ScriptContext
  * `[proc,league_world]` returns 1 *and* `league_tutorial_completed` reads 3 or higher, so
  * [enableLeagues] sets both on login. Neither is authored content: the world flag lives in a varp
  * no clientscript ever writes, and the tutorial counter is a plain varbit.
+ *
+ * League Points follow total level (see `LeaguePoints`), so they are brought up to date on login
+ * and on every level-up, which keeps the side panel's progress bar honest.
  */
 class LeagueSidePanelScript
 @Inject
-constructor(private val protectedAccess: ProtectedAccessLauncher) : PluginScript() {
+constructor(
+    private val protectedAccess: ProtectedAccessLauncher,
+    private val eventBus: EventBus,
+    private val screen: RelicScreen,
+    private val points: LeaguePointsSync,
+) : PluginScript() {
     private var Player.worldFlags by intVarp(league_varps.map_flags)
     private var Player.leagueTutorialCompleted by intVarBit(league_varbits.tutorial_completed)
     private var Player.leagueAccount by intVarBit(league_varbits.account)
     private var Player.leagueType by intVarBit(league_varbits.type)
 
     override fun ScriptContext.startup() {
-        onPlayerLogin { player.enableLeagues() }
+        onPlayerLogin {
+            player.enableLeagues()
+            points.sync(player)
+        }
+        onEvent<LevelUpScript.StatLevelUp> { points.sync(player) }
 
         // These four sit on plain components carrying Op1 in the cache, so they arrive with
         // `comsub == -1` and need no arming from us.
@@ -47,6 +65,9 @@ constructor(private val protectedAccess: ProtectedAccessLauncher) : PluginScript
         }
         onIfOverlayButton(league_components.side_mastery_button) {
             player.mes("Combat mastery is not in yet.")
+        }
+        onIfOverlayButton(league_components.tasks_close) {
+            player.ifCloseSub(league_interfaces.tasks, eventBus)
         }
     }
 
@@ -70,13 +91,13 @@ constructor(private val protectedAccess: ProtectedAccessLauncher) : PluginScript
         worldFlags = LEAGUE_WORLD_FLAGS
         leagueTutorialCompleted = TUTORIAL_COMPLETED
         leagueAccount = 1
-        if (leagueType == 0) {
-            leagueType = DEFAULT_LEAGUE_TYPE
+        if (leagueType != LEAGUE_TYPE) {
+            leagueType = LEAGUE_TYPE
         }
     }
 
     private fun Player.openRelics() {
-        if (!protectedAccess.launch(this) { openRelicsScreen() }) {
+        if (!protectedAccess.launch(this) { screen.open(this) }) {
             mes("You are busy right now.")
         }
     }
@@ -95,9 +116,9 @@ constructor(private val protectedAccess: ProtectedAccessLauncher) : PluginScript
         private const val TUTORIAL_COMPLETED = 3
 
         /**
-         * Which value maps to which league is unknown; 5 is what renders the Trailblazer Reloaded
-         * relic set. Overridable in-game with `::leagues <n>`.
+         * `enum 2670` maps this to the Raging Echoes league struct, whose tiers are the set `Relic`
+         * mirrors. Pinned rather than defaulted: the relic table only matches this set.
          */
-        private const val DEFAULT_LEAGUE_TYPE = 5
+        private const val LEAGUE_TYPE = 5
     }
 }

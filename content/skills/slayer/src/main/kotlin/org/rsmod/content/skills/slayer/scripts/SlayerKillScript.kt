@@ -4,6 +4,8 @@ import jakarta.inject.Inject
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.config.refs.stats
 import org.rsmod.api.npc.events.NpcDeathEvents
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.stat.statAdvance
 import org.rsmod.api.script.onEvent
@@ -29,18 +31,25 @@ import org.rsmod.plugin.scripts.ScriptContext
  * something else is assigned pays combat experience and nothing else. That is also what stops the
  * skill from training itself as a side effect of ordinary combat.
  */
-class SlayerKillScript @Inject constructor(private val repo: SlayerTaskRepository) :
-    PluginScript() {
+class SlayerKillScript
+@Inject
+constructor(private val repo: SlayerTaskRepository, private val perks: Perks) : PluginScript() {
     override fun ScriptContext.startup() {
         onEvent<NpcDeathEvents.Killed> { killer?.let { creditKill(npc, it) } }
     }
 
     private fun creditKill(npc: Npc, killer: Player) {
-        if (!killer.hasSlayerTask) {
+        val taskId = repo.taskIdForNpc(npc.id)
+        if (taskId == 0) {
             return
         }
-        val taskId = repo.taskIdForNpc(npc.id)
-        if (taskId == 0 || taskId != killer.slayerTask) {
+        val onTask = killer.hasSlayerTask && taskId == killer.slayerTask
+        if (!onTask) {
+            // The Slayer Master league relic counts every slayer monster as being on task for the
+            // experience. It does not touch the assignment, so the counter below is left alone.
+            if (perks.has(killer, Perk.SlayerAlwaysOnTask)) {
+                killer.statAdvance(stats.slayer, npc.slayerXp().toDouble())
+            }
             return
         }
 

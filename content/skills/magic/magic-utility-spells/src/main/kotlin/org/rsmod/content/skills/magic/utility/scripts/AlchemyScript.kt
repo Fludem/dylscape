@@ -4,6 +4,8 @@ import jakarta.inject.Inject
 import org.rsmod.api.combat.commons.magic.MagicSpell
 import org.rsmod.api.config.refs.objs
 import org.rsmod.api.config.refs.params
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.content.skills.magic.commons.MagicSpellbooks
@@ -36,6 +38,7 @@ constructor(
     private val objTypes: ObjTypeList,
     private val spellbooks: MagicSpellbooks,
     private val casting: SpellCasting,
+    private val perks: Perks,
 ) : PluginScript() {
     private class Alchemy(
         val percent: Int,
@@ -84,8 +87,11 @@ constructor(
         if (!slotHolds(slot, obj)) {
             return
         }
+        // The Golden God league relic: no runes or level, 15% more coins, and a 65% chance the
+        // item survives the cast.
+        val golden = perks.has(player, Perk.GoldenAlchemy)
         val cast =
-            casting.attemptUtility(this, spell) {
+            casting.attemptUtility(this, spell, free = golden) {
                 when {
                     obj.isType(objs.coins) -> {
                         mes("Coins are already made of gold.")
@@ -105,8 +111,12 @@ constructor(
         if (!cast) {
             return
         }
-        val value = obj.cost * alchemy.percent / 100
-        invDel(inv, obj, count = 1, slot = slot)
+        val percent = if (golden) alchemy.percent * GOLDEN_BONUS_PERCENT / 100 else alchemy.percent
+        val value = obj.cost * percent / 100
+        val keepItem = golden && random.of(100) < GOLDEN_KEEP_CHANCE
+        if (!keepItem) {
+            invDel(inv, obj, count = 1, slot = slot)
+        }
         if (value > 0) {
             invAdd(inv, objs.coins, count = value)
         }
@@ -123,5 +133,13 @@ constructor(
             return true
         }
         return !inv.isFull() || inv.count(objTypes[objs.coins]) > 0
+    }
+
+    private companion object {
+        /** Golden God pays this percentage of the spell's usual value: 15% more. */
+        const val GOLDEN_BONUS_PERCENT = 115
+
+        /** Golden God's chance, out of 100, that the item survives the cast. */
+        const val GOLDEN_KEEP_CHANCE = 65
     }
 }

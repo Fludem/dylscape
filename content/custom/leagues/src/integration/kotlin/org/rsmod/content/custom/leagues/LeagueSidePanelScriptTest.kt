@@ -34,6 +34,7 @@ class LeagueSidePanelScriptTest {
             val completed = player.vars[league_varbits.tutorial_completed]
             assert(completed >= 3) { "league_tutorial_completed was $completed, needs to be >= 3" }
             assertEquals(1, player.vars[league_varbits.account])
-            assert(player.vars[league_varbits.type] != 0) { "league_type must pick a relic set" }
+            // `Relic` mirrors the set `league_type` 5 draws; any other value shows other relics.
+            assertEquals(5, player.vars[league_varbits.type])
         }
 }

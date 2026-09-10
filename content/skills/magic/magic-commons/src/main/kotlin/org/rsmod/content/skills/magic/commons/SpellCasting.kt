@@ -53,13 +53,25 @@ constructor(
      *
      * Animations and sounds are the caller's business, since every utility spell has its own.
      *
+     * A [free] cast skips the level and rune checks and consumes nothing, but still has to be on
+     * the right spellbook, still runs [validate] and still pays the cast xp. It exists for the
+     * Golden God league relic's alchemy.
+     *
      * @return `true` if the spell was paid for and its effect should now happen.
      */
     public fun attemptUtility(
         access: ProtectedAccess,
         spell: MagicSpell,
+        free: Boolean = false,
         validate: () -> Boolean = { true },
     ): Boolean {
+        if (free) {
+            if (!onCorrectBook(access, spell) || !validate()) {
+                return false
+            }
+            giveCastXp(access, spell)
+            return true
+        }
         if (!runes.canCastSpell(access.player, spell)) {
             return false
         }

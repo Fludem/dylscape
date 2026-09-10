@@ -35,6 +35,10 @@ internal object MiningPickaxes : ObjEditor() {
         pickaxe(objs.infernal_pickaxe, anims.infernal, level = 61)
         pickaxe(objs.infernal_pickaxe_or, anims.infernal, level = 61)
         pickaxe(objs.crystal_pickaxe, anims.crystal, level = 71)
+        // The league Echo pickaxe swings as a crystal pickaxe. Its level is 1 because the relic
+        // waives the requirement; `Mining.findPickaxe` still ranks it as crystal, and only lets a
+        // player with `Perk.EchoPickaxe` use it at all.
+        pickaxe(MiningObjs.echo_pickaxe, anims.crystal, level = 1)
     }
 
     private fun pickaxe(type: ObjType, anim: SeqType, level: Int) {

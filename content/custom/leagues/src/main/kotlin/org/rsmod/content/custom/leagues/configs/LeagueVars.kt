@@ -8,6 +8,7 @@ typealias league_varps = LeagueVarps
 
 typealias league_varbits = LeagueVarBits
 
+/** Every varp here is vanilla and `Perm`, so all of it survives a relog without a migration. */
 object LeagueVarps : VarpReferences() {
     /**
      * The world's flag bitset. `[proc,league_world]` returns true when bit 30 is set and bit 29 is
@@ -17,9 +18,18 @@ object LeagueVarps : VarpReferences() {
      */
     val map_flags = find("map_flags_cached")
 
-    /** Candidates for the "N points earned" progress bar at the top of `league_relics`. */
+    /**
+     * What the relics grid compares each tier's points threshold (param 877) against. This is the
+     * varp that actually unlocks tiers on the client.
+     */
+    val points_claimed = find("league_points_claimed")
+
+    /** The progress bar varps; kept equal to [points_claimed]. */
     val points_currency = find("league_points_currency")
     val points_completed = find("league_points_completed")
+
+    /** The Total Recall relic's saved tile, as a packed coordinate; 0 when nothing is saved. */
+    val last_recall_coord = find("league_last_recall_source_coord")
 }
 
 object LeagueVarBits : VarBitReferences() {
@@ -33,8 +43,8 @@ object LeagueVarBits : VarBitReferences() {
     val type = find("league_type")
 
     /**
-     * One varbit per relic tier, holding the struct id of the relic chosen for that tier. The
-     * client's `league_relics_draw_selections` proc reads these to shade the grid.
+     * One varbit per relic tier, holding the **1-based slot** of the relic picked in that tier (the
+     * key into the tier's relic enum), or 0 for no pick. Three bits wide.
      */
     val relic_selection =
         listOf(
@@ -54,9 +64,6 @@ object LeagueVarBits : VarBitReferences() {
      * [LeagueVarps.map_flags].
      */
     val tutorial_completed = find("league_tutorial_completed")
-
-    /** Set by the client before opening the expanded view; tells us which relic is on screen. */
-    val last_viewed = find("league_relic_last_viewed")
 
     operator fun get(tier: Int): VarBitType? = relic_selection.getOrNull(tier)
 }

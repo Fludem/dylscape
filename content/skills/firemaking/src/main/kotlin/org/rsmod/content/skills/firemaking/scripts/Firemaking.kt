@@ -6,6 +6,8 @@ import org.rsmod.api.config.objXpParam
 import org.rsmod.api.config.refs.objs
 import org.rsmod.api.config.refs.params
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.firemakingLvl
 import org.rsmod.api.repo.loc.LocRepository
@@ -48,6 +50,7 @@ constructor(
     private val objRepo: ObjRepository,
     private val xpMods: XpModifiers,
     private val invisibleLvls: InvisibleLevels,
+    private val perks: Perks,
     // Named `gameClock`, not `mapClock`: `ProtectedAccess.mapClock` is an Int and would
     // shadow this inside every extension function on it.
     private val gameClock: MapClock,
@@ -80,10 +83,14 @@ constructor(
         mes("You attempt to light the logs.")
 
         var lit = false
+        val neverFail = perks.has(player, Perk.NeverFailFire)
         for (attempt in 0 until MAX_ATTEMPTS) {
             anim(FiremakingSeqs.light_fire)
             delay(ATTEMPT_TICKS)
-            if (statRandom(stats.firemaking, logs.fireRateLow, logs.fireRateHigh, invisibleLvls)) {
+            if (
+                neverFail ||
+                    statRandom(stats.firemaking, logs.fireRateLow, logs.fireRateHigh, invisibleLvls)
+            ) {
                 lit = true
                 break
             }

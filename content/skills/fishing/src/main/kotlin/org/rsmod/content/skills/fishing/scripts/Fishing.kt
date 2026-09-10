@@ -3,6 +3,8 @@ package org.rsmod.content.skills.fishing.scripts
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.stats
 import org.rsmod.api.config.refs.synths
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.righthand
 import org.rsmod.api.player.stat.fishingLvl
@@ -13,6 +15,7 @@ import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.content.skills.fishing.configs.FishingCatch
 import org.rsmod.content.skills.fishing.configs.FishingContent
 import org.rsmod.content.skills.fishing.configs.FishingMethod
+import org.rsmod.content.skills.fishing.configs.FishingObjs
 import org.rsmod.content.skills.fishing.configs.FishingSpots
 import org.rsmod.events.UnboundEvent
 import org.rsmod.game.MapClock
@@ -33,6 +36,9 @@ import org.rsmod.plugin.scripts.ScriptContext
  * Which method an op runs is decoded from the spot's own cache ops rather than configured per spot
  * — see [FishingSpots] for why the *pair* of op texts is what gets read.
  *
+ * The Animal Wrangler league relic reaches in through four [Perk]s: the echo harpoon as a universal
+ * tool, a second chance on a failed roll, one tick faster, and catches sent to the bank.
+ *
  * TODO:
  * - Spots relocate on a timer in OSRS. Ours stand still, which makes fishing slightly better than
  *   live rather than worse, so it is a fair thing to leave until spot movement is worth building.
@@ -43,6 +49,7 @@ class Fishing
 constructor(
     private val xpMods: XpModifiers,
     private val invisibleLvls: InvisibleLevels,
+    private val perks: Perks,
     private val mapClock: MapClock,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
@@ -72,42 +79,56 @@ constructor(
             return
         }
 
-        if (inv.isFull()) {
+        val toBank = perks.has(player, Perk.FishingToBank) && !bank.isFull()
+        if (inv.isFull() && !toBank) {
             mes("Your inventory is too full to hold any more fish.")
             soundSynth(synths.pillory_wrong)
             return
         }
 
+        val delay = if (perks.has(player, Perk.FishingFaster)) FISH_DELAY - 1 else FISH_DELAY
         if (skillAnimDelay <= mapClock) {
-            skillAnimDelay = mapClock + FISH_DELAY
+            skillAnimDelay = mapClock + delay
             anim(method.anim)
         }
 
         var caught: FishingCatch? = null
         if (actionDelay < mapClock) {
-            actionDelay = mapClock + FISH_DELAY
+            actionDelay = mapClock + delay
             spam(method.startMessage)
         } else if (actionDelay == mapClock) {
             // Each qualifying fish gets its own roll, best first, and the first success wins.
-            caught =
-                available.firstOrNull {
-                    statRandom(stats.fishing, it.rateLow, it.rateHigh, invisibleLvls)
-                }
+            caught = rollCatch(available)
+            if (caught == null && perks.has(player, Perk.FishingSecondChance)) {
+                caught =
+                    if (random.randomBoolean()) rollCatch(available) ?: available.last() else null
+            }
         }
 
         if (caught != null) {
-            award(spot, method, caught)
+            award(spot, method, caught, toBank)
         }
 
         // The spot is still there either way, so keep fishing.
         repeatOp(spot, op)
     }
 
-    private fun ProtectedAccess.award(spot: Npc, method: FishingMethod, caught: FishingCatch) {
+    private fun ProtectedAccess.rollCatch(available: List<FishingCatch>): FishingCatch? =
+        available.firstOrNull { statRandom(stats.fishing, it.rateLow, it.rateHigh, invisibleLvls) }
+
+    private fun ProtectedAccess.award(
+        spot: Npc,
+        method: FishingMethod,
+        caught: FishingCatch,
+        toBank: Boolean,
+    ) {
         if (method.bait != null) {
             invDel(inv, method.bait)
         }
-        invAdd(inv, caught.fish)
+        val banked = toBank && invAdd(bank, caught.fish).success
+        if (!banked) {
+            invAdd(inv, caught.fish)
+        }
         statAdvance(stats.fishing, caught.xp * xpMods.get(player, stats.fishing))
         spam(caught.message)
         publish(CaughtFish(player, spot, caught.fish))
@@ -122,9 +143,17 @@ constructor(
 
     /**
      * The tool may be carried or wielded — a wielded dragon harpoon is the normal way to fish at a
-     * harpoon spot, and the same allowance costs nothing for the rest.
+     * harpoon spot, and the same allowance costs nothing for the rest. Under [Perk.EchoHarpoon] the
+     * echo harpoon, carried or wielded, stands in for every tool.
      */
     private fun ProtectedAccess.carries(tool: ObjType): Boolean {
+        if (holds(tool)) {
+            return true
+        }
+        return perks.has(player, Perk.EchoHarpoon) && holds(FishingObjs.echo_harpoon)
+    }
+
+    private fun ProtectedAccess.holds(tool: ObjType): Boolean {
         if (player.righthand?.id == tool.id) {
             return true
         }

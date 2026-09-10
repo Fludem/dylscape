@@ -19,6 +19,12 @@ internal object MiningObjs : ObjReferences() {
     val rune_pickaxe = find("rune_pickaxe")
     val gilded_pickaxe = find("trail_gilded_pickaxe")
 
+    /**
+     * The Power Miner league relic's "Echo pickaxe". It only works as a pickaxe for a player
+     * holding `Perk.EchoPickaxe`, and then as a crystal pickaxe with no level requirement.
+     */
+    val echo_pickaxe = find("league_trailblazer_pickaxe")
+
     // Ores. `content.ore` exists upstream but nothing is tagged into it, so these are also what
     // `MiningOres` uses to populate that group.
     val clay = find("clay")

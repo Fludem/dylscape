@@ -1,7 +1,10 @@
 package org.rsmod.content.skills.agility.scripts
 
 import jakarta.inject.Inject
+import org.rsmod.api.config.refs.objs
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.agilityLvl
@@ -38,6 +41,7 @@ constructor(
     private val xpMods: XpModifiers,
     private val objRepo: ObjRepository,
     private val random: GameRandom,
+    private val perks: Perks,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         for (position in CourseRegistry.all) {
@@ -114,6 +118,8 @@ constructor(
         val bonus = if (random.randomBoolean(course.markChance)) 1 else 0
         val marks = (RooftopCourse.MARKS_PER_LAP + bonus).coerceAtMost(course.markTiles.size)
         val remaining = course.markTiles.toMutableList()
+        // The Corner Cutter league relic puts a pile of coins beside every mark.
+        val withCoins = perks.has(player, Perk.AgilityMarkCoins)
         repeat(marks) {
             val tile = remaining.removeAt(random.of(remaining.size))
             objRepo.add(
@@ -123,11 +129,23 @@ constructor(
                 duration = MARK_DURATION,
                 receiver = player,
             )
+            if (withCoins) {
+                objRepo.add(
+                    coords = tile,
+                    type = objs.coins,
+                    count = MARK_COINS,
+                    duration = MARK_DURATION,
+                    receiver = player,
+                )
+            }
         }
     }
 
     private companion object {
         /** Long enough to finish a lap of the slowest course and come back for it. */
         const val MARK_DURATION = 400
+
+        /** Coins beside each mark under [Perk.AgilityMarkCoins]. */
+        const val MARK_COINS = 10_000
     }
 }

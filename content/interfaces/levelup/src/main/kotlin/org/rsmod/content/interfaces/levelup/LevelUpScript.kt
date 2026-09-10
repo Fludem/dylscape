@@ -4,6 +4,8 @@ import jakarta.inject.Inject
 import org.rsmod.api.config.refs.spotanims
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.script.advanced.onAdvanceStat
+import org.rsmod.events.UnboundEvent
+import org.rsmod.game.entity.Player
 import org.rsmod.game.type.spot.SpotanimType
 import org.rsmod.game.type.stat.StatType
 import org.rsmod.game.type.stat.StatTypeList
@@ -18,6 +20,7 @@ class LevelUpScript @Inject constructor(private val statTypes: StatTypeList) : P
     private fun ProtectedAccess.advanceStat(stat: StatType) {
         spotanim(fireworks(stat))
         levelUpBox(stat)
+        publish(StatLevelUp(player, stat))
     }
 
     private fun ProtectedAccess.fireworks(stat: StatType): SpotanimType {
@@ -31,4 +34,13 @@ class LevelUpScript @Inject constructor(private val statTypes: StatTypeList) : P
     /** Returns `true` when every released stat sits at its max level. */
     private fun ProtectedAccess.isMaxed(): Boolean =
         statTypes.values.none { !it.unreleased && statBase(it) < it.maxLevel }
+
+    /**
+     * Published after every base-level gain.
+     *
+     * `onAdvanceStat` takes exactly one unkeyed handler and this script is it, so anything else
+     * that needs to react to a level-up - leagues recomputing its points, say - listens for this
+     * unbound event instead of competing for the engine queue.
+     */
+    data class StatLevelUp(val player: Player, val stat: StatType) : UnboundEvent
 }

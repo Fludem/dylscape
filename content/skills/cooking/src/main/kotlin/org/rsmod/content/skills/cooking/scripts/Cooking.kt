@@ -2,6 +2,8 @@ package org.rsmod.content.skills.cooking.scripts
 
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.cookingLvl
 import org.rsmod.api.repo.loc.LocRepository
@@ -54,6 +56,7 @@ constructor(
     private val locRepo: LocRepository,
     private val xpMods: XpModifiers,
     private val skillMulti: SkillMulti,
+    private val perks: Perks,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         onOpLoc1(CookingContent.cooking_range) { openMenu(it.loc, CookingHeat.Range) }
@@ -138,12 +141,13 @@ constructor(
             delay(COOK_TICKS)
 
             val burnt =
-                CookingRolls.burns(
-                    level = player.cookingLvl,
-                    levelReq = food.cookingLevel,
-                    stopBurn = heat.stopBurn(food),
-                    random = random,
-                )
+                !perks.has(player, Perk.NeverBurnFood) &&
+                    CookingRolls.burns(
+                        level = player.cookingLvl,
+                        levelReq = food.cookingLevel,
+                        stopBurn = heat.stopBurn(food),
+                        random = random,
+                    )
             val product = if (burnt) food.burntProduct else food.cookedProduct
             val replaced = invReplace(inv, replace = food, count = 1, replacement = product)
             if (!replaced.success) {

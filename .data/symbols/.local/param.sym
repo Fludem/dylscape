@@ -42,3 +42,8 @@
 # gargoyle 46, dark beast 66, smoke devil 95). Declared INT with default 0 in the cache, so an npc
 # that is nobody's task reads 0 for free.
 50	slayer_task
+
+# Vanilla param 880, named here rather than built here - the same exception as `slayer_task`
+# above. It is a league relic struct's description (the HTML the relics screen's expanded view
+# prints), and naming it is what lets `LeagueRelicDescriptions` rewrite it with a StructEditor.
+880	league_relic_description

@@ -1,0 +1,30 @@
+# Structs named by this server. Upstream `struct.sym` is empty, so nothing here can collide.
+#
+# Every entry is a **vanilla** struct: the Leagues relic definitions ship in the rev 233 cache
+# without symbol names, and `find()` can only reach a named type. These alias the real ids on
+# purpose - they mint nothing. The set is the one `league_relics` draws for `league_type` 5, read
+# from `enum 5702` (tiers) and each tier's param-878 enum (relics, 1-based). `RelicTableTest`
+# re-walks that chain against `Relic` so a cache upgrade that moves a relic fails loudly.
+1117	league_relic_power_miner
+1119	league_relic_lumberjack
+1118	league_relic_animal_wrangler
+1123	league_relic_corner_cutter
+1124	league_relic_friendly_forager
+1125	league_relic_dodgy_deals
+1120	league_relic_clue_compass
+1121	league_relic_bank_heist
+1725	league_relic_fairys_flight
+1131	league_relic_golden_god
+1127	league_relic_reloaded
+1736	league_relic_equilibrium
+1128	league_relic_treasure_arbiter
+1723	league_relic_production_master
+1129	league_relic_slayer_master
+1130	league_relic_total_recall
+4719	league_relic_bankers_note
+1126	league_relic_pocket_kingdom
+1132	league_relic_grimoire
+1133	league_relic_overgrown
+1134	league_relic_specialist
+4728	league_relic_guardian
+1135	league_relic_last_stand
