@@ -2,6 +2,8 @@ package org.rsmod.content.custom.cluechest.scripts
 
 import jakarta.inject.Inject
 import org.rsmod.api.invtx.invAdd
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.output.mes
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.startInvTransmit
@@ -30,6 +32,9 @@ import org.rsmod.plugin.scripts.ScriptContext
  * Nothing implements treasure trails, so the drop tables hand out keys where vanilla hands out clue
  * scrolls (`tools/drop-tables/generate.py`, `CLUE_KEYS`) and this chest skips the trail.
  *
+ * A player with [Perk.ClueChestAnyTier] (the Fairy's Flight league relic) chooses which tier's
+ * casket to open, whatever key they spend.
+ *
  * ### Driving the reward screen
  *
  * `trail_rewardscreen` (73) component 0 carries `onLoad=[trail_rewardscreen_init, ...]`, and that
@@ -44,6 +49,7 @@ constructor(
     private val casket: ClueCasket,
     private val invTypes: InvTypeList,
     private val objTypes: ObjTypeList,
+    private val perks: Perks,
 ) : PluginScript() {
     private val Player.rewardInv: Inventory
         get() = invMap.getOrPut(invTypes[ClueChestInvs.reward])
@@ -55,7 +61,7 @@ constructor(
     }
 
     /** `Loot`: spends the highest-tier key the player holds. */
-    private fun ProtectedAccess.lootChest() {
+    private suspend fun ProtectedAccess.lootChest() {
         if (handBackLeftovers()) {
             return
         }
@@ -67,7 +73,7 @@ constructor(
         openWith(slot)
     }
 
-    private fun ProtectedAccess.useOnChest(obj: UnpackedObjType, slot: Int) {
+    private suspend fun ProtectedAccess.useOnChest(obj: UnpackedObjType, slot: Int) {
         if (obj.id !in ClueKeys.tiers) {
             mes("Nothing interesting happens.")
             return
@@ -81,6 +87,9 @@ constructor(
     /**
      * Reopens the reward screen over a reward inv that still holds loot, rather than rolling a
      * second casket into it. Barrows borrows the same inv, so the leftovers may be its own.
+     *
+     * Both callers run this before [openWith], so a player never picks a tier from the
+     * [Perk.ClueChestAnyTier] menu only to be handed their old loot.
      */
     private fun ProtectedAccess.handBackLeftovers(): Boolean {
         if (player.rewardInv.isEmpty()) {
@@ -91,9 +100,21 @@ constructor(
         return true
     }
 
-    private fun ProtectedAccess.openWith(slot: Int) {
+    private suspend fun ProtectedAccess.openWith(slot: Int) {
         val key = inv[slot] ?: return
-        val tier = ClueKeys.tiers[key.id] ?: return
+        val keyTier = ClueKeys.tiers[key.id] ?: return
+        val tier =
+            if (perks.has(player, Perk.ClueChestAnyTier)) {
+                val picked = chooseTier()
+                // The menu gave the player time to move, drop or bank the key.
+                if (inv[slot]?.id != key.id) {
+                    mes("You need to keep hold of your clue key to open the chest.")
+                    return
+                }
+                picked
+            } else {
+                keyTier
+            }
 
         // Rolled before the key goes, so a casket table that failed to load costs nothing.
         val drops = casket.roll(tier)
@@ -112,6 +133,22 @@ constructor(
         mes("You unlock the chest with your key.")
         showReward()
     }
+
+    /** [Perk.ClueChestAnyTier]'s menu: every tier, lowest first. */
+    private suspend fun ProtectedAccess.chooseTier(): ClueTier =
+        choice5(
+            "Beginner rewards",
+            ClueTier.Beginner,
+            "Easy rewards",
+            ClueTier.Easy,
+            "Medium rewards",
+            ClueTier.Medium,
+            "Hard rewards",
+            ClueTier.Hard,
+            "Elite rewards",
+            ClueTier.Elite,
+            "Which rewards would you like?",
+        )
 
     private fun ProtectedAccess.showReward() {
         player.startInvTransmit(player.rewardInv)
