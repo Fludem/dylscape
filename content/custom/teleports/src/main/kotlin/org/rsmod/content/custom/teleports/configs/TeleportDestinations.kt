@@ -2,7 +2,7 @@ package org.rsmod.content.custom.teleports.configs
 
 import org.rsmod.map.CoordGrid
 
-/** The groups the destination picker offers, in the order their rows are drawn. */
+/** The groups the destination picker offers, in the order their tabs are drawn. */
 enum class TeleportCategory(val label: String) {
     Cities("Cities"),
     Skilling("Skilling"),
@@ -28,7 +28,7 @@ data class TeleportDestination(
 )
 
 /**
- * The destination table behind the Home Teleport menu.
+ * The destination table behind the Home Teleport panel.
  *
  * Every coordinate here is taken from data rather than from memory of the live game. In order of
  * preference: the vetted `params.spell_telecoord` values in `api/spells/.../configs/SpellObjs.kt`,
@@ -41,8 +41,8 @@ data class TeleportDestination(
  * 3-argument form used here is `(x, z, level)`, which is what the loc dump reports directly.
  */
 object TeleportDestinations {
-    /** A category's rows plus the trailing "Back", against `menu`'s hard cap of 127. */
-    private const val MAX_CATEGORY_SIZE = 126
+    /** One panel tile per destination; the tiles are fixed in the cache. */
+    private const val MAX_CATEGORY_SIZE = TeleportPanelLayout.SLOT_COUNT
 
     private val KEY_PATTERN = Regex("^[a-z0-9_]+$")
 
@@ -93,10 +93,11 @@ object TeleportDestinations {
             require(labels.size == labels.toSet().size) {
                 "Duplicate destination label in $category: ${labels.duplicates()}"
             }
-            // The category menu is its destinations plus a trailing "Back", and `menu` refuses
-            // more than 127 choices.
+            // A destination past the last tile would simply never be shown. Growing past this
+            // means a bigger grid in `TeleportPanelLayout` and a repack, or a new category.
             require(destinations.size <= MAX_CATEGORY_SIZE) {
-                "Category $category has ${destinations.size} entries, over the menu cap."
+                "Category $category has ${destinations.size} entries, more than the panel's " +
+                    "$MAX_CATEGORY_SIZE tiles."
             }
             require(home !in destinations) { "Home must not sit inside category $category." }
         }

@@ -9,6 +9,8 @@ kotlin {
 dependencies {
     implementation(libs.fastutil)
     implementation(libs.guice)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.module.kotlin)
     implementation(projects.api.cache)
     implementation(projects.api.parsers.toml)
     implementation(projects.api.type.typeScriptDsl)

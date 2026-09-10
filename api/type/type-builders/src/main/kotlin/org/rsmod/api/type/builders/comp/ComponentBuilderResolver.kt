@@ -25,11 +25,19 @@ constructor(private val types: ComponentTypeList, private val nameMapping: NameM
 
     override fun resolve(
         builders: TypeBuilder<ComponentTypeBuilder, UnpackedComponentType>
-    ): List<TypeBuilderResult> = builders.cache.map { it.resolve() }
+    ): List<TypeBuilderResult> {
+        val declared = mutableMapOf<String, Int>()
+        return builders.cache.map { type ->
+            val interfaceName = type.internalName.orEmpty().substringBefore(':')
+            val position = declared.merge(interfaceName, 1, Int::plus)!! - 1
+            type.resolve(position)
+        }
+    }
 
-    private fun UnpackedComponentType.resolve(): TypeBuilderResult {
+    private fun UnpackedComponentType.resolve(position: Int): TypeBuilderResult {
         val internalId = names[internalName] ?: return err(NameNotFound(internalName))
 
+        checkDeclaredAtChildIndex(internalId, position)
         TypeResolver[this] = internalId
 
         val resolved = withPackedLayer(internalId)
@@ -65,6 +73,26 @@ constructor(private val types: ComponentTypeList, private val nameMapping: NameM
         }
         val packedParent = (internalId and -0x10000) or childIndex
         return if (packedParent == layer) this else copy(layer = packedParent)
+    }
+
+    /**
+     * Every component builder declares an interface's components in child-index order: parents are
+     * passed to [ComponentBuilder.child] as that index. If `component.sym` numbers a component
+     * differently from where it was declared, each `layer` would point at whatever sits at that
+     * index instead of the intended parent, and the panel would pack scrambled without any error.
+     *
+     * The realistic way to get here is a `DesignedComponentBuilder` file whose layers were
+     * reordered without saving through `tools/interface-designer`, which rewrites the symbol block
+     * on save.
+     */
+    private fun UnpackedComponentType.checkDeclaredAtChildIndex(internalId: Int, position: Int) {
+        val childIndex = internalId and 0xFFFF
+        check(childIndex == position) {
+            "`$internalName` is declared at position $position of its interface, but " +
+                "component.sym gives it child index $childIndex. Declaration order is the child " +
+                "index, so the symbol block is out of step with the builder (save the design " +
+                "through tools/interface-designer, or fix the block by hand)."
+        }
     }
 
     /**

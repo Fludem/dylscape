@@ -9,3 +9,4 @@
 # Unlike timers and controllers, interfaces DO have a cache encoder: a new id here
 # is inert until `./gradlew packCache` writes its components into js5 archive 3.
 1000	first_login_setup
+1001	teleport_panel

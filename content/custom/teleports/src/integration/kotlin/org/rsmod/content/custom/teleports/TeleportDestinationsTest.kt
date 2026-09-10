@@ -40,10 +40,10 @@ class TeleportDestinationsTest {
     /**
      * The one test that makes a fifty-row table safe to extend.
      *
-     * `TeleportMenuScript` falls back to `telejump(… ?: dest)`, so a coordinate typed one mapsquare
-     * out does not fail loudly -- it drops the player inside a wall. Every `GameTestScope` is
-     * handed a copy of the real game collision map, so the whole table can be checked against it
-     * here.
+     * `TeleportPanelScript` falls back to `telejump(… ?: dest)`, so a coordinate typed one
+     * mapsquare out does not fail loudly -- it drops the player inside a wall. Every
+     * `GameTestScope` is handed a copy of the real game collision map, so the whole table can be
+     * checked against it here.
      */
     @Test
     fun GameTestState.`every destination lands on a tile a player can stand on`() =
@@ -74,7 +74,7 @@ class TeleportDestinationsTest {
     @Test
     fun `keys are unique and round-trip back to their destination`() {
         // The registry stores a key, so a key that does not resolve is a silently dead
-        // "Previous" row.
+        // "Previous" button.
         val keys = TeleportDestinations.all.map(TeleportDestination::key)
         assertEquals(keys.size, keys.toSet().size, "Two destinations share a key.")
         for (destination in TeleportDestinations.all) {
@@ -96,8 +96,8 @@ class TeleportDestinationsTest {
 
     @Test
     fun `category order is deliberate`() {
-        // The rows are drawn in this order and their hotkeys follow it, so a reorder should be a
-        // conscious edit rather than a side effect.
+        // The panel's tabs are packed in this order, so a reorder should be a conscious edit (and a
+        // repack) rather than a side effect.
         assertEquals(
             listOf(TeleportCategory.Cities, TeleportCategory.Skilling, TeleportCategory.Dungeons),
             TeleportCategory.entries.toList(),

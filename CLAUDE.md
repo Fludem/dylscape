@@ -20,6 +20,7 @@ Read these before doing real work — they are long, current, and written for th
 | `docs/DEPLOY.md` | The live VPS: deploying, the realm lockdown, and the two rules that brick clients. **Not in git** (gitignored: it carries the host address and access details) |
 | `docs/CLIENT.md` | The friend-facing client: patched RuneLite, no RSProx, no cache to ship |
 | `web/README.md` | The website: hiscores off the save DB, generated guides, and its own deploy |
+| `tools/interface-designer/README.md` | The visual interface editor: design files, `DesignedComponentBuilder`, and implementing a design Dylan hands over |
 
 ## Commands
 

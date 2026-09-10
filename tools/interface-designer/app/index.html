@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Interface designer</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="designer.js"></script>
+</head>
+<body>
+  <header class="toolbar">
+    <strong class="brand">Interface designer</strong>
+    <select id="open" title="Open a design"></select>
+    <button id="new">New</button>
+    <button id="save" title="Ctrl+S">Save</button>
+    <span class="sep"></span>
+    <button id="undo" title="Ctrl+Z">Undo</button>
+    <button id="redo" title="Ctrl+Shift+Z">Redo</button>
+    <span class="sep"></span>
+    <label>Zoom
+      <select id="zoom">
+        <option value="1">1x</option>
+        <option value="2" selected>2x</option>
+        <option value="3">3x</option>
+        <option value="4">4x</option>
+      </select>
+    </label>
+    <label title="Apply each component's hover value while the mouse is over it"><input type="checkbox" id="hover-preview"> Preview hover</label>
+    <label title="Draw components that start hidden"><input type="checkbox" id="show-hidden"> Show hidden</label>
+    <span class="sep"></span>
+    <button id="export">Export PNG</button>
+    <span id="status" class="status"></span>
+  </header>
+
+  <main class="workspace">
+    <aside class="left">
+      <section>
+        <h2>Add</h2>
+        <div id="palette" class="palette"></div>
+      </section>
+      <section class="tree-section">
+        <h2>Components <span class="hint">drag onto a layer to move it inside</span></h2>
+        <div id="tree" class="tree"></div>
+      </section>
+    </aside>
+
+    <section class="stage">
+      <div id="empty" class="empty">
+        <p>Open a design or start a new one.</p>
+        <p class="hint">Everything drawn here uses the real sprites and fonts from your cache, and
+          saves as a design file Claude turns into a packed interface.</p>
+      </div>
+      <div class="canvas-wrap" hidden><canvas id="canvas"></canvas></div>
+      <p class="hint stage-hint">Click to select; click again to reach what is underneath. Drag to move,
+        drag the handles to resize. Arrows nudge (Shift for 10). Esc selects the parent.</p>
+    </section>
+
+    <aside class="right" id="props"></aside>
+  </main>
+
+  <footer class="issues">
+    <h2>Checks <span id="issue-count"></span></h2>
+    <ul id="issues"></ul>
+  </footer>
+
+  <dialog id="ask">
+    <form method="dialog">
+      <h3 id="ask-title"></h3>
+      <p id="ask-text"></p>
+      <input id="ask-input" autocomplete="off" spellcheck="false">
+      <p id="ask-error" class="error"></p>
+      <menu>
+        <!-- type="button": Enter submits with the first submit button, which must be OK. -->
+        <button type="button" id="ask-cancel">Cancel</button>
+        <button value="ok" id="ask-ok" class="primary">OK</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <dialog id="picker" class="picker">
+    <form method="dialog">
+      <header>
+        <h3>Choose a sprite</h3>
+        <input id="picker-search" placeholder="id, range (990-1010) or size (85x22)" autocomplete="off">
+        <button type="button" id="picker-close">Close</button>
+      </header>
+      <div id="picker-grid" class="picker-grid"></div>
+      <p id="picker-more" class="hint"></p>
+    </form>
+  </dialog>
+</body>
+</html>

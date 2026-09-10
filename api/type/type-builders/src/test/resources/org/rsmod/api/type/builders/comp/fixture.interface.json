@@ -1,0 +1,13 @@
+{
+  "format": 1,
+  "interface": "fixture_panel",
+  "notes": "Covers every field the designer can write.",
+  "components": [
+    {"name": "root", "type": "layer", "w": 488, "h": 320, "xMode": "centre", "yMode": "centre", "clickThrough": false},
+    {"name": "frame", "parent": "root", "type": "layer", "wMode": "minus", "hMode": "minus", "frame": "Fixture"},
+    {"name": "well", "parent": "root", "type": "rect", "x": 8, "y": 36, "w": 16, "h": 44, "wMode": "minus", "hMode": "minus", "colour": "0e0e0c", "filled": true, "trans": 190, "hover": {"trans": 150}},
+    {"name": "button", "parent": "root", "type": "layer", "x": 8, "y": 8, "w": 150, "h": 22, "xMode": "end", "yMode": "end", "hidden": true, "ops": ["Buy", "", "Examine"], "opBase": "<col=ff9040>Sword</col>", "notes": "Buys one sword."},
+    {"name": "button_label", "parent": "button", "type": "text", "wMode": "minus", "hMode": "minus", "colour": "ff981f", "text": "Buy", "font": 496, "alignH": "centre", "alignV": "centre", "lineHeight": 12, "shadow": true, "hover": {"colour": "ffffff"}},
+    {"name": "icon", "parent": "root", "type": "graphic", "w": 85, "h": 22, "sprite": 812, "tiling": true, "trans": 10, "hover": {"sprite": 813}}
+  ]
+}

@@ -1,0 +1,48 @@
+text slot_0_label Lumbridge
+show slot_0
+text slot_1_label Varrock
+show slot_1
+text slot_2_label Grand Exchange
+show slot_2
+text slot_3_label Falador
+show slot_3
+text slot_4_label Draynor Village
+show slot_4
+text slot_5_label Edgeville
+show slot_5
+text slot_6_label Al Kharid
+show slot_6
+text slot_7_label Port Sarim
+show slot_7
+text slot_8_label Rimmington
+show slot_8
+text slot_9_label Camelot
+show slot_9
+text slot_10_label Seers' Village
+show slot_10
+text slot_11_label Catherby
+show slot_11
+text slot_12_label Ardougne
+show slot_12
+text slot_13_label West Ardougne
+show slot_13
+text slot_14_label Yanille
+show slot_14
+text slot_15_label Canifis
+show slot_15
+text slot_16_label Burthorpe
+show slot_16
+text slot_17_label Rellekka
+show slot_17
+text slot_18_label Kourend Castle
+show slot_18
+text slot_19_label Civitas illa Fortis
+show slot_19
+show tab_0_on
+hide tab_0_off
+hide tab_1_on
+show tab_1_off
+hide tab_2_on
+show tab_2_off
+show previous
+text previous_label Previous: Seers' Village
