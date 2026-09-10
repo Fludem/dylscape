@@ -3,7 +3,7 @@ package org.rsmod.content.custom.leagues.relics.effects
 import kotlin.math.abs
 import kotlin.math.max
 import org.rsmod.api.config.refs.stats
-import org.rsmod.api.player.stat.agilityLvl
+import org.rsmod.api.player.stat.baseAgilityLvl
 import org.rsmod.api.player.stat.statAdvance
 import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onPlayerLogin
@@ -20,21 +20,23 @@ import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 /**
- * Corner Cutter's Sage's greaves: a little Agility experience for every tick spent running in them,
- * scaled by Agility level.
+ * Corner Cutter's Sage's greaves: every [TICKS_PER_PAYOUT] ticks spent running in them pays a
+ * [SmallXpLamp]'s worth of Agility experience at the player's base Agility level.
  *
  * "Running" is read off movement - two tiles covered in one tick - rather than the run toggle, so
- * standing still with run on pays nothing. The amount is deliberately small: it is multiplied by
- * the player's xp rate like everything else.
+ * standing still with run on pays nothing. The running ticks need not be consecutive; they carry
+ * over until the next payout, but not across a logout. The lamp amount is the base, and
+ * `statAdvance` multiplies it by the player's xp rate (x10, x16 or x30) like everything else.
  */
 class SageGreavesScript : PluginScript() {
     private val lastCoords = HashMap<Player, CoordGrid>()
+    private val runningTicks = HashMap<Player, Int>()
 
     override fun ScriptContext.startup() {
         onPlayerLogin { startIfHeld(player) }
         onEvent<RelicUnlocked> { startIfHeld(player) }
         onPlayerSoftTimer(league_timers.sage_greaves) { tick(player) }
-        onEvent<SessionStateEvent.Delete> { lastCoords.remove(player) }
+        onEvent<SessionStateEvent.Delete> { forget(player) }
     }
 
     private fun startIfHeld(player: Player) {
@@ -43,10 +45,15 @@ class SageGreavesScript : PluginScript() {
         }
     }
 
+    private fun forget(player: Player) {
+        lastCoords.remove(player)
+        runningTicks.remove(player)
+    }
+
     private fun tick(player: Player) {
         if (!player.hasRelic(Relic.CornerCutter)) {
             player.clearSoftTimer(league_timers.sage_greaves)
-            lastCoords.remove(player)
+            forget(player)
             return
         }
         val previous = lastCoords.put(player, player.coords)
@@ -57,13 +64,20 @@ class SageGreavesScript : PluginScript() {
             return
         }
         val distance = max(abs(previous.x - player.coords.x), abs(previous.z - player.coords.z))
-        if (distance == RUN_STEP) {
-            player.statAdvance(stats.agility, player.agilityLvl * XP_PER_LEVEL)
+        if (distance != RUN_STEP) {
+            return
         }
+        val ticks = (runningTicks[player] ?: 0) + 1
+        if (ticks < TICKS_PER_PAYOUT) {
+            runningTicks[player] = ticks
+            return
+        }
+        runningTicks.remove(player)
+        player.statAdvance(stats.agility, SmallXpLamp.xp(player.baseAgilityLvl))
     }
 
     private companion object {
         const val RUN_STEP = 2
-        const val XP_PER_LEVEL = 0.01
+        const val TICKS_PER_PAYOUT = 10
     }
 }
