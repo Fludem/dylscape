@@ -14,7 +14,8 @@ import unittest
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from build_data import (
-    ENTRY_RE, pretty_chance, pretty_obj, pretty_source, render_drop, trainable_skills,
+    ENTRY_RE, human_minutes, pretty_chance, pretty_crop, pretty_obj, pretty_source, render_drop,
+    trainable_skills,
 )
 
 
@@ -40,6 +41,39 @@ class ObjNameTest(unittest.TestCase):
 
     def test_empty_obj_is_a_nothing_drop(self):
         self.assertEqual(pretty_obj(""), "Nothing")
+
+
+class CropNameTest(unittest.TestCase):
+    def test_the_herb_prefix_is_dropped(self):
+        self.assertEqual(pretty_crop("herb_ranarr_weed"), "Ranarr weed")
+
+    def test_a_plain_crop_is_capitalised(self):
+        self.assertEqual(pretty_crop("apple_tree"), "Apple tree")
+
+    def test_awkward_names_are_corrected(self):
+        self.assertEqual(pretty_crop("poisonivy_bush"), "Poison ivy bush")
+        self.assertEqual(pretty_crop("crystal_tree_tree"), "Crystal tree")
+
+    def test_internal_suffixes_are_stripped(self):
+        self.assertEqual(pretty_crop("grapevine_clickzone"), "Grapevine")
+        self.assertEqual(pretty_crop("hespori_patch"), "Hespori")
+
+
+class GrowthTimeTest(unittest.TestCase):
+    """Growth times span two and a half minutes to over half a day, so every unit gets used."""
+
+    def test_under_a_minute_is_seconds(self):
+        self.assertEqual(human_minutes(0.5), "30s")
+
+    def test_a_fractional_minute_keeps_its_seconds(self):
+        self.assertEqual(human_minutes(2.5), "2m 30s")
+
+    def test_a_whole_minute_drops_them(self):
+        self.assertEqual(human_minutes(10), "10m")
+
+    def test_an_hour_or_more_is_hours(self):
+        self.assertEqual(human_minutes(120), "2h")
+        self.assertEqual(human_minutes(320), "5h 20m")
 
 
 class ChanceTest(unittest.TestCase):
@@ -130,8 +164,10 @@ class TrainableSkillsTest(unittest.TestCase):
         for skill in ("attack", "defence", "strength", "hitpoints", "ranged"):
             self.assertIn(skill, self.trainable, skill)
 
-    def test_the_three_known_gaps(self):
-        self.assertEqual(sorted(self.missing), ["herblore", "runecrafting", "slayer"])
+    def test_the_known_gaps(self):
+        # Herblore and Slayer were gaps until their modules landed; this list is expected to
+        # shrink, and is asserted exactly so that it is updated deliberately rather than drifting.
+        self.assertEqual(sorted(self.missing), ["runecrafting"])
 
     def test_a_skill_with_a_module_is_trainable(self):
         for skill in ("mining", "thieving", "construction", "farming"):
@@ -156,6 +192,16 @@ class RealDataTest(unittest.TestCase):
 
         teleports = json.loads((root / "teleports.json").read_text())
         self.assertGreater(teleports["count"], 20)
+
+        farming = json.loads((root / "farming.json").read_text())
+        self.assertGreater(farming["count"], 60)
+        self.assertGreater(farming["speedup"], 1)
+        names = [c["name"] for g in farming["groups"] for c in g["crops"]]
+        self.assertIn("Ranarr weed", names)
+        self.assertIn("Magic tree", names)
+        # A guam is eighty vanilla minutes; at the live speedup that is the number on the page.
+        guam = [c for g in farming["groups"] for c in g["crops"] if c["name"] == "Guam leaf"][0]
+        self.assertEqual(guam["grow_seconds"], 80 * 60 // farming["speedup"])
 
         features = json.loads((root / "features.json").read_text())
         self.assertEqual(len(features["skills"]) + len(features["missing_skills"]), 23)

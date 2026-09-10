@@ -98,6 +98,10 @@ uses `--delete` against `/var/www/onyx` and `/opt/onyx-web`.
   rendered as `1/N`; the raw weights use denominators from 512 to 10,000,000 and are unreadable.
 - **Teleports** — parsed out of `TeleportTable.kt`. It is a regex over Kotlin source, so it exits
   non-zero if it ever matches nothing rather than publishing an empty page.
+- **Farming** — `FarmingCrops.kt` for the crop table and `FarmingRates.kt` for `GROWTH_SPEEDUP`.
+  The page does the division itself, so changing the speedup re-times every row without an edit
+  here. Growth times are the only numbers on the site that are deliberately not vanilla, so the
+  real game's time is printed next to ours.
 - **Features and skills** — the directory listing under `content/`.
 
 Item names come from symbol names (`wolf_bones` → "Wolf bones"). The real display names live in the

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Farming — Onyx</title>
+<meta name="description" content="Every crop on Onyx, with the real growth time at this server's rate.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/assets/onyx.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b0c0e'/%3E%3Cpath d='M16 6l8 10-8 10-8-10z' fill='%23d4a437'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/"><span class="gem"></span>Onyx</a>
+    <nav class="site-nav">
+      <a href="/">Home</a>
+      <a href="/hiscores.html">Hiscores</a>
+      <a href="/guides/">Guides</a>
+      <a href="/play.html">Play</a>
+    </nav>
+    <span class="status-pill" data-status-pill><span class="dot"></span><span>checking…</span></span>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>Farming</h1>
+      <p data-intro>
+        Every crop that can go in the ground, with how long it actually takes here.
+      </p>
+    </div>
+
+    <div class="grid cols-3" style="margin-bottom:26px">
+      <div class="card">
+        <h3 style="margin-bottom:6px">Growth</h3>
+        <p class="faint" style="margin:0" data-speedup></p>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:6px">Weeds</h3>
+        <p class="faint" style="margin:0" data-weeds></p>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:6px">Offline</h3>
+        <p class="faint" style="margin:0">
+          Crops grow on the clock, not on ticks. A patch keeps growing while you are logged out.
+        </p>
+      </div>
+    </div>
+
+    <div class="notice" style="margin-bottom:26px">
+      <strong>No disease, and no dead crops.</strong> Anything planted here reaches maturity, so
+      there is nothing to cure, no plant cure to buy and no farmer to pay. Tree patches want a
+      sapling rather than a seed: pot the seed with a trowel, water it, and it sprouts shortly.
+    </div>
+
+    <div class="controls">
+      <input type="search" data-filter placeholder="Filter crops" aria-label="Filter crops" style="max-width:320px">
+      <span class="faint" data-count></span>
+    </div>
+
+    <div data-groups><p class="faint">Loading…</p></div>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <span>Onyx · a private Old School RuneScape server · <span data-year></span></span>
+    <span>Built on <a href="https://github.com/rsmod/rsmod">RS Mod</a>. Not affiliated with Jagex.</span>
+  </div>
+</footer>
+
+<script src="/assets/app.js"></script>
+<script>
+(function () {
+  var O = window.Onyx, el = O.el;
+  var host = document.querySelector("[data-groups]");
+  var filter = document.querySelector("[data-filter]");
+  var count = document.querySelector("[data-count]");
+  var groups = [];
+
+  O.getJson("/data/farming.json").then(function (data) {
+    groups = data.groups;
+    count.textContent = data.count + " crops";
+    document.querySelector("[data-intro]").textContent =
+      "Every crop that can go in the ground, with how long it actually takes here. Crops grow " +
+      data.speedup + " times faster than in Old School RuneScape; the vanilla time is shown " +
+      "alongside so the two can be compared.";
+    document.querySelector("[data-speedup]").textContent =
+      data.speedup + "x faster than the real game. Every crop is re-timed by the same number, " +
+      "so nothing is out of proportion with anything else.";
+    document.querySelector("[data-weeds]").textContent =
+      "Left at the real game's pace: " + data.weed_cycle_minutes + " minutes a stage, so an " +
+      "emptied patch is fully overgrown again " + data.weed_regrow + " later. Speeding decay up " +
+      "would only mean more raking.";
+    render("");
+  }).catch(function (err) { O.fail(host, err); });
+
+  filter.addEventListener("input", function () { render(filter.value.trim().toLowerCase()); });
+
+  function yieldText(crop) {
+    if (crop.model === "Lives") {
+      return crop.yield + (crop.yield === 1 ? " harvest" : " harvests");
+    }
+    if (crop.model === "Counted") {
+      return crop.yield + (crop.regrow ? " at a time" : " total");
+    }
+    return "—";
+  }
+
+  function render(term) {
+    host.innerHTML = "";
+    var shown = 0;
+    groups.forEach(function (group) {
+      var crops = group.crops.filter(function (c) {
+        return !term || c.name.toLowerCase().indexOf(term) !== -1
+          || group.label.toLowerCase().indexOf(term) !== -1;
+      });
+      if (!crops.length) return;
+      shown += crops.length;
+
+      var table = el("table");
+      table.appendChild(el("thead", null, [el("tr", null, [
+        el("th", { text: "Crop" }),
+        el("th", { class: "num", text: "Level" }),
+        el("th", { class: "num", text: "Grows in" }),
+        el("th", { class: "num", text: "Vanilla" }),
+        el("th", { class: "num", text: "Regrow" }),
+        el("th", { class: "num", text: "Yield" }),
+        el("th", { class: "num", text: "Plant xp" }),
+        el("th", { class: "num", text: "Harvest xp" }),
+      ])]));
+      table.appendChild(el("tbody", null, crops.map(function (c) {
+        return el("tr", null, [
+          el("td", { text: c.name }),
+          el("td", { class: "num", text: c.level }),
+          el("td", { class: "num", text: c.grow }),
+          el("td", { class: "num faint", text: c.vanilla }),
+          el("td", { class: "num", text: c.regrow || "—" }),
+          el("td", { class: "num", text: yieldText(c) }),
+          el("td", { class: "num", text: c.plant_xp }),
+          el("td", { class: "num", text: c.check_xp ? c.check_xp + " (check)" : c.harvest_xp }),
+        ]);
+      })));
+
+      host.appendChild(el("section", { style: "margin-bottom:26px" }, [
+        el("h2", { style: "margin-bottom:4px", text: group.label }),
+        el("p", { class: "faint", style: "margin:0 0 10px",
+                  text: group.rakes ? group.rakes + " rakes to clear when overgrown." : "" }),
+        el("div", { class: "table-wrap" }, [table]),
+      ]));
+    });
+
+    if (!shown) {
+      host.appendChild(el("div", { class: "card empty" }, [
+        el("p", { text: "No crop matches that." }),
+      ]));
+    }
+  }
+})();
+</script>
+</body>
+</html>
