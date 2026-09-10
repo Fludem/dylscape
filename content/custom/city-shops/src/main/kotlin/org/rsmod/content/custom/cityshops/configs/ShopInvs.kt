@@ -68,6 +68,14 @@ object ShopInvs : InvReferences() {
     // Edgeville. `herbloreshop2` is a cache-named inv vanilla never stocks, so nothing else can
     // be holding it -- which is what `no inv is shared by two different shops` wants.
     val herbloreshop2 = find("herbloreshop2")
+
+    // Edgeville's skillcape counter. `omnishop_inv_temp` is a leftover from Jagex's own tooling:
+    // the cache names it, no shop in the game stocks it, and nothing on this server ever will --
+    // which is exactly what a shop that has no vanilla counterpart needs. Building a properly
+    // named `skillcapeshop` inv is possible but would mean hand-adding an id to
+    // `.data/symbols/.local/inv.sym` and a `packCache` before the shop existed at all; reusing a
+    // dead cache name is the same trade `herbloreshop2` above already makes.
+    val omnishop_inv_temp = find("omnishop_inv_temp")
 }
 
 internal object ShopInvBuilder : InvEditor() {

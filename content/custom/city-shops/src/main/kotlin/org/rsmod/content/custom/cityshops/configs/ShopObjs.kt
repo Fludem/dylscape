@@ -293,4 +293,43 @@ object ShopObjs : ObjReferences() {
     val wooden_shield = find("wooden_shield")
     val xbows_silver_bolt_mould = find("xbows_silver_bolt_mould")
     val yew_roots = find("yew_roots")
+
+    // Jack's skillcape counter, in skill order rather than alphabetically, because that is the
+    // order the shop is stocked in and the order a player reads a skill list.
+    //
+    // Untrimmed only. A trimmed cape means a second 99 in OSRS, and every `*_trimmed` type here
+    // carries the same single `statreq1` as its untrimmed twin -- so stocking one would sell a
+    // trim that the equip check could not gate.
+    //
+    // Hoods are left out as well. 23 capes plus 23 hoods is 46 lines of stock, and a shop that
+    // long is untested ground: `Constants.shop_default_size` is 40, which is what the vanilla
+    // shop panel shows, and nothing here has ever asked it to draw more.
+    //
+    // `skillcape_ranging`, `skillcape_runecrafting` and `skillcape_hunting` are the cache's names
+    // for the Ranged, Runecraft and Hunter capes; `skillcape_qp` (quest point), `skillcape_ad`
+    // (achievement diary) and `skillcape_max` are deliberately absent, since none of them carries
+    // a stat requirement and nothing on this server tracks what they are meant to gate.
+    val skillcape_attack = find("skillcape_attack")
+    val skillcape_defence = find("skillcape_defence")
+    val skillcape_strength = find("skillcape_strength")
+    val skillcape_hitpoints = find("skillcape_hitpoints")
+    val skillcape_ranging = find("skillcape_ranging")
+    val skillcape_prayer = find("skillcape_prayer")
+    val skillcape_magic = find("skillcape_magic")
+    val skillcape_cooking = find("skillcape_cooking")
+    val skillcape_woodcutting = find("skillcape_woodcutting")
+    val skillcape_fletching = find("skillcape_fletching")
+    val skillcape_fishing = find("skillcape_fishing")
+    val skillcape_firemaking = find("skillcape_firemaking")
+    val skillcape_crafting = find("skillcape_crafting")
+    val skillcape_smithing = find("skillcape_smithing")
+    val skillcape_mining = find("skillcape_mining")
+    val skillcape_herblore = find("skillcape_herblore")
+    val skillcape_agility = find("skillcape_agility")
+    val skillcape_thieving = find("skillcape_thieving")
+    val skillcape_slayer = find("skillcape_slayer")
+    val skillcape_farming = find("skillcape_farming")
+    val skillcape_runecrafting = find("skillcape_runecrafting")
+    val skillcape_hunting = find("skillcape_hunting")
+    val skillcape_construction = find("skillcape_construction")
 }

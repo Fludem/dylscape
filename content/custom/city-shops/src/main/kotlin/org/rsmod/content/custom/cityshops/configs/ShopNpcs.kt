@@ -86,6 +86,12 @@ object ShopNpcs : NpcReferences() {
     // and her name is left alone, since renaming a cache type is a permanent, additive edit.
     val primula = find("myths_guild_herbalist")
 
+    // Jack is the Myths' Guild cape seller, borrowed on the same terms as Primula above: the
+    // guild is unreachable here, nothing spawns him there, and his cache ops are already
+    // `Talk-to` on op1 and `Trade` on op3. He is the only npc in the cache whose whole job is
+    // selling capes, which makes him the natural face for the skillcape counter.
+    val jack = find("myths_guild_cape_seller")
+
     // General stores 2..7. Store 1 is Lumbridge's and store 8 is Zanaris', which stocks something
     // else entirely and is unreachable without Lost City — both are left alone.
     val generalshopkeeper2 = find("generalshopkeeper2")
@@ -139,6 +145,7 @@ object ShopNpcs : NpcReferences() {
             frenita,
             davon,
             primula,
+            jack,
             generalshopkeeper2,
             generalshopkeeper3,
             generalshopkeeper4,
@@ -247,5 +254,9 @@ internal object ShopMargins {
             // Jatix's margin: Primula's is the same kind of shop, and without an entry here she
             // would silently fall back to the general-store default of 1300/400/30.
             shop_npcs.primula to ShopMargin(1000, 700, 30),
+            // Jack's skillcape counter. `change = 0` is the point of this entry: every other shop
+            // here drifts its price with stock, and a cape whose price wanders off 100,000gp the
+            // moment somebody buys one is exactly what a fixed-price shop must not do.
+            shop_npcs.jack to ShopMargin(sell = 1000, buy = 600, change = 0),
         )
 }

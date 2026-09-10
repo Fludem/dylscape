@@ -1,0 +1,9 @@
+# Akutha's Teleport Tablets (3096, 3505), in the open square north of the Edgeville bank that also
+# holds the spellbook altars. He closes the east end of the slayer masters' row (x 3090, 3092 and
+# 3094 on the same z) and stands clear of both altars: the ancient altar's row is z 3503, and the
+# astral altar starts at x 3099.
+#
+# `magic_store_owner` is Wizard Akutha, "A Supplier of Magical items." Nothing else spawns him.
+[[spawn]]
+npc = 'magic_store_owner'
+coords = '0_48_54_24_49'

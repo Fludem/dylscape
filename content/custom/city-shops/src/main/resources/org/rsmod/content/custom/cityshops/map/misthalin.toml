@@ -10,3 +10,13 @@
 [[spawn]]
 npc = 'myths_guild_herbalist'
 coords = '0_48_54_10_55'
+
+# Jack's Capes of Accomplishment (3083, 3511), fourth along the same Edgeville general store
+# counter, east of Primula. `myths_guild_cape_seller` is the Myths' Guild cape seller, reused
+# because nothing spawns him there and his ops are already `Talk-to` on op1 and `Trade` on op3.
+#
+# (3084, 3511) is the last tile before the east wall, but (3084, 3510) and (3084, 3512) are both
+# crates, so standing him there would wedge him into the corner. 3083 keeps the row even.
+[[spawn]]
+npc = 'myths_guild_cape_seller'
+coords = '0_48_54_11_55'
