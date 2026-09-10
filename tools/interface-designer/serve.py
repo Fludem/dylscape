@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 """Local server for the interface designer. Standard library only, like web/api.
 
-Serves the editor (app/) and the exported cache art (assets/), and reads and writes design files:
-drafts in tools/interface-designer/designs/, and implemented designs in any content module's
-src/main/resources/. Nothing else on disk is reachable through it.
+Serves both editors (app/) and the exported cache art (assets/), and reads and writes two kinds
+of file, in tools/interface-designer/designs/ (drafts) or any content module's
+src/main/resources/ (implemented). Nothing else on disk is reachable through it.
+
+- <name>.panel.json: a panel and its widgets, what the simple editor edits. Every save also
+  writes the compiled <name>.interface.json beside it.
+- <name>.interface.json: components, what DesignedComponentBuilder packs. The advanced editor
+  edits it directly.
 
 Saving an implemented design also rewrites that interface's block in
 .data/symbols/.local/component.sym. A design's component order is its child-index order, so
@@ -33,6 +38,7 @@ DRAFTS = HERE / "designs"
 CONTENT = REPO / "content"
 LOCAL_SYMBOLS = REPO / ".data" / "symbols" / ".local"
 SUFFIX = ".interface.json"
+PANEL_SUFFIX = ".panel.json"
 
 FORMAT = 1
 NAME = re.compile(r"[a-z0-9_]+")
@@ -63,8 +69,13 @@ TYPE_FIELDS = {
     "rect": COMMON | {"colour", "filled", "trans"},
     "text": COMMON | {"colour", "text", "font", "alignH", "alignV", "lineHeight", "shadow"},
     "graphic": COMMON | {"sprite", "tiling", "trans"},
+    # An empty model component the server fills with ifSetObj; nothing of it is authored.
+    "item": COMMON,
 }
-HOVER_BY_TYPE = {"text": {"colour"}, "rect": {"trans"}, "graphic": {"trans", "sprite"}, "layer": set()}
+HOVER_BY_TYPE = {
+    "text": {"colour"}, "rect": {"trans"}, "graphic": {"trans", "sprite"}, "layer": set(),
+    "item": set(),
+}
 WORDS = {
     "xMode": {"start", "centre", "end"}, "yMode": {"start", "centre", "end"},
     "wMode": {"fixed", "minus"}, "hMode": {"fixed", "minus"},
@@ -74,6 +85,11 @@ INTS = {"x", "y", "w", "h", "trans", "sprite", "font", "lineHeight"}
 BOOLS = {"hidden", "clickThrough", "filled", "tiling", "shadow"}
 STRINGS = {"name", "parent", "type", "frame", "text", "opBase", "notes"}
 MAX_OPS = 10
+
+# Panel files: only the shape is checked here. What each widget means is compile.js's business,
+# and its output is validated in full by normalise() before anything is written.
+PANEL_HEAD = ["format", "kind", "interface", "title", "w", "h", "notes"]
+WIDGET_TYPES = {"button", "heading", "text", "tabs", "grid", "icon", "item", "box"}
 
 
 class DesignError(ValueError):
@@ -210,9 +226,55 @@ def format_design(design: dict) -> str:
     return "{\n" + ",\n".join(head) + ',\n  "components": [\n' + body + "\n  ]\n}\n"
 
 
-def interface_ids(symbols: Path = LOCAL_SYMBOLS) -> dict[str, int]:
+def check_panel(panel: object) -> dict:
+    """Checks a panel file's shape: header fields, and widgets with ids, types and geometry."""
+    if not isinstance(panel, dict):
+        raise DesignError("a panel is a JSON object")
+    if panel.get("format") != FORMAT or panel.get("kind") != "panel":
+        raise DesignError(f'a panel has format {FORMAT} and kind "panel"')
+    interface = panel.get("interface")
+    if not isinstance(interface, str) or not NAME.fullmatch(interface):
+        raise DesignError("interface must be a [a-z0-9_] name")
+    if not isinstance(panel.get("title"), str):
+        raise DesignError("title must be a string")
+    for key in ("w", "h"):
+        value = panel.get(key)
+        if not isinstance(value, int) or isinstance(value, bool) or value < 32:
+            raise DesignError(f"panel {key} must be an integer of at least 32")
+    unknown = set(panel) - set(PANEL_HEAD) - {"widgets"}
+    if unknown:
+        raise DesignError(f"unknown panel keys: {sorted(unknown)}")
+    widgets = panel.get("widgets")
+    if not isinstance(widgets, list):
+        raise DesignError("widgets must be a list")
+    seen = set()
+    for widget in widgets:
+        if not isinstance(widget, dict):
+            raise DesignError("each widget is an object")
+        wid = widget.get("id")
+        if not isinstance(wid, str) or not NAME.fullmatch(wid) or wid in seen:
+            raise DesignError(f"widget id `{wid}` must be a unique [a-z0-9_] name")
+        seen.add(wid)
+        if widget.get("type") not in WIDGET_TYPES:
+            raise DesignError(f"widget `{wid}` has unknown type `{widget.get('type')}`")
+        for key in ("x", "y", "w", "h"):
+            value = widget.get(key)
+            if not isinstance(value, int) or isinstance(value, bool):
+                raise DesignError(f"widget `{wid}`: {key} must be an integer")
+    return panel
+
+
+def format_panel(panel: dict) -> str:
+    """Header fields first, then one widget per line, like format_design."""
+    head = [f'  "{k}": {json.dumps(panel[k], ensure_ascii=False)}' for k in PANEL_HEAD if k in panel]
+    body = ",\n".join("    " + json.dumps(w, ensure_ascii=False) for w in panel["widgets"])
+    widgets = '  "widgets": [\n' + body + "\n  ]" if body else '  "widgets": []'
+    return "{\n" + ",\n".join(head + [widgets]) + "\n}\n"
+
+
+def interface_ids(symbols: Path | None = None) -> dict[str, int]:
     ids = {}
-    path = symbols / "interface.sym"
+    path = (symbols or LOCAL_SYMBOLS) / "interface.sym"
     if path.exists():
         for line in path.read_text().splitlines():
             parts = line.split("\t")
@@ -249,11 +311,12 @@ def sync_symbols(design: dict, component_sym: Path, source: str) -> bool:
     return True
 
 
-def resolve_design(relative: str, repo: Path = REPO) -> Path:
-    """Maps a repo-relative path to a design file, refusing anything outside the two roots."""
+def resolve_design(relative: str, repo: Path | None = None, suffixes=(SUFFIX,)) -> Path:
+    """Maps a repo-relative path to a design or panel file, refusing anything outside the roots."""
+    repo = repo or REPO
     path = (repo / relative).resolve()
-    if not path.name.endswith(SUFFIX):
-        raise DesignError(f"not a design file: {relative}")
+    if not path.name.endswith(tuple(suffixes)):
+        raise DesignError(f"not a {' or '.join(suffixes)} file: {relative}")
     drafts = (repo / "tools" / "interface-designer" / "designs").resolve()
     content = (repo / "content").resolve()
     if path.parent == drafts:
@@ -266,16 +329,16 @@ def resolve_design(relative: str, repo: Path = REPO) -> Path:
     raise DesignError(f"designs live in designs/ or a content module's resources: {relative}")
 
 
-def is_implemented(path: Path, interface: str, ids: dict[str, int], repo: Path = REPO) -> bool:
+def is_implemented(path: Path, interface: str, ids: dict[str, int], repo: Path | None = None) -> bool:
     """A design is implemented once it is packed from a content module under an allocated id."""
-    return path.is_relative_to((repo / "content").resolve()) and interface in ids
+    return path.is_relative_to(((repo or REPO) / "content").resolve()) and interface in ids
 
 
-def referenced_names(interface: str, content: Path = CONTENT) -> list[str]:
-    """Component names Kotlin code refers to, so the editor can warn before a rename breaks boot."""
+def referenced_names(interface: str, content: Path | None = None) -> list[str]:
+    """Component names Kotlin code refers to, so the editors can warn before a change breaks boot."""
     pattern = re.compile(re.escape(f'"{interface}:') + r"([a-z0-9_]+)\"")
     names: set[str] = set()
-    for source in content.rglob("*.kt"):
+    for source in (content or CONTENT).rglob("*.kt"):
         if "build" in source.parts:
             continue
         text = source.read_text(errors="ignore")
@@ -284,20 +347,30 @@ def referenced_names(interface: str, content: Path = CONTENT) -> list[str]:
     return sorted(names)
 
 
-def list_designs() -> list[dict]:
+def list_files(suffix: str) -> list[dict]:
     ids = interface_ids()
-    found = sorted(DRAFTS.glob(f"*{SUFFIX}")) + sorted(
-        p for p in CONTENT.rglob(f"*{SUFFIX}") if "build" not in p.relative_to(CONTENT).parts
+    found = sorted(DRAFTS.glob(f"*{suffix}")) + sorted(
+        p for p in CONTENT.rglob(f"*{suffix}") if "build" not in p.relative_to(CONTENT).parts
     )
-    designs = []
+    out = []
     for path in found:
-        interface = path.name[: -len(SUFFIX)]
-        designs.append({
+        interface = path.name[: -len(suffix)]
+        out.append({
             "path": str(path.relative_to(REPO)),
             "interface": interface,
             "implemented": is_implemented(path.resolve(), interface, ids),
         })
-    return designs
+    return out
+
+
+def list_panels() -> list[dict]:
+    panels = list_files(PANEL_SUFFIX)
+    for entry in panels:
+        try:
+            entry["title"] = json.loads((REPO / entry["path"]).read_text()).get("title", "")
+        except (OSError, ValueError):
+            entry["title"] = ""
+    return panels
 
 
 def save(relative: str, design: dict) -> dict:
@@ -312,6 +385,28 @@ def save(relative: str, design: dict) -> dict:
     synced = False
     if is_implemented(path, canonical["interface"], interface_ids()):
         synced = sync_symbols(canonical, LOCAL_SYMBOLS / "component.sym", relative)
+    return {"ok": True, "symbolsSynced": synced}
+
+
+def save_panel(relative: str, body: dict) -> dict:
+    """Writes a panel and the design compiled from it, side by side."""
+    path = resolve_design(relative, suffixes=(PANEL_SUFFIX,))
+    if not path.exists() and path.parent != DRAFTS.resolve():
+        raise DesignError("new panels start as drafts in designs/")
+    panel = check_panel(body.get("panel"))
+    if path.name != panel["interface"] + PANEL_SUFFIX:
+        raise DesignError(f"file name must be {panel['interface']}{PANEL_SUFFIX}")
+    design = normalise(body.get("design"))
+    if design["interface"] != panel["interface"]:
+        raise DesignError("the compiled design names a different interface")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    design_path = path.with_name(panel["interface"] + SUFFIX)
+    path.write_text(format_panel(panel))
+    design_path.write_text(format_design(design))
+    synced = False
+    if is_implemented(design_path, design["interface"], interface_ids()):
+        source = str(design_path.relative_to(REPO))
+        synced = sync_symbols(design, LOCAL_SYMBOLS / "component.sym", source)
     return {"ok": True, "symbolsSynced": synced}
 
 
@@ -337,20 +432,26 @@ class Handler(SimpleHTTPRequestHandler):
         elif url.path.startswith(("/app/", "/assets/")) and ".." not in url.path:
             super().do_GET()
         elif url.path == "/api/designs":
-            self._json({"designs": list_designs(), "interfaces": interface_ids()})
+            self._json({"designs": list_files(SUFFIX), "interfaces": interface_ids()})
+        elif url.path == "/api/panels":
+            self._json({"panels": list_panels(), "interfaces": interface_ids()})
         elif url.path == "/api/design":
             self._guard(lambda: self._read(parse_qs(url.query)["path"][0]))
+        elif url.path == "/api/panel":
+            self._guard(lambda: self._read_panel(parse_qs(url.query)["path"][0]))
         else:
             self.send_error(HTTPStatus.NOT_FOUND)
 
     def do_PUT(self):
         url = urlparse(self.path)
-        if url.path != "/api/design":
+        handlers = {"/api/design": save, "/api/panel": save_panel}
+        if url.path not in handlers:
             self.send_error(HTTPStatus.NOT_FOUND)
             return
         length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(length)
-        self._guard(lambda: self._json(save(parse_qs(url.query)["path"][0], json.loads(body))))
+        relative = parse_qs(url.query).get("path", [""])[0]
+        self._guard(lambda: self._json(handlers[url.path](relative, json.loads(body))))
 
     def _read(self, relative: str) -> None:
         path = resolve_design(relative)
@@ -361,6 +462,19 @@ class Handler(SimpleHTTPRequestHandler):
             "design": design,
             "implemented": is_implemented(path, interface, interface_ids()),
             "referenced": referenced_names(interface) if interface in interface_ids() else [],
+        })
+
+    def _read_panel(self, relative: str) -> None:
+        path = resolve_design(relative, suffixes=(PANEL_SUFFIX,))
+        panel = json.loads(path.read_text())
+        interface = panel.get("interface", "")
+        ids = interface_ids()
+        self._json({
+            "path": relative,
+            "panel": panel,
+            "designPath": str(path.with_name(interface + SUFFIX).relative_to(REPO)),
+            "implemented": is_implemented(path, interface, ids),
+            "referenced": referenced_names(interface) if interface in ids else [],
         })
 
     def _guard(self, action) -> None:
@@ -415,7 +529,7 @@ def main() -> int:
         return 1
 
     server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
-    print(f"Interface designer: http://127.0.0.1:{args.port}/")
+    print(f"Interface designer: http://127.0.0.1:{args.port}/", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

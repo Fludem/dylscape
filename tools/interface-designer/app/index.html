@@ -4,88 +4,72 @@
   <meta charset="utf-8">
   <title>Interface designer</title>
   <link rel="stylesheet" href="style.css">
-  <script type="module" src="designer.js"></script>
+  <link rel="stylesheet" href="simple.css">
+  <script type="module" src="simple.js"></script>
 </head>
-<body>
-  <header class="toolbar">
-    <strong class="brand">Interface designer</strong>
-    <select id="open" title="Open a design"></select>
-    <button id="new">New</button>
-    <button id="save" title="Ctrl+S">Save</button>
-    <span class="sep"></span>
-    <button id="undo" title="Ctrl+Z">Undo</button>
-    <button id="redo" title="Ctrl+Shift+Z">Redo</button>
-    <span class="sep"></span>
-    <label>Zoom
-      <select id="zoom">
-        <option value="1">1x</option>
-        <option value="2" selected>2x</option>
-        <option value="3">3x</option>
-        <option value="4">4x</option>
-      </select>
-    </label>
-    <label title="Apply each component's hover value while the mouse is over it"><input type="checkbox" id="hover-preview"> Preview hover</label>
-    <label title="Draw components that start hidden"><input type="checkbox" id="show-hidden"> Show hidden</label>
-    <span class="sep"></span>
-    <button id="export">Export PNG</button>
-    <span id="status" class="status"></span>
-  </header>
+<body class="simple">
+  <section id="start" class="start">
+    <header>
+      <h1>Interface designer</h1>
+      <p class="hint">Lay out a panel with real game art. Claude turns it into a real in-game interface.</p>
+    </header>
 
-  <main class="workspace">
-    <aside class="left">
-      <section>
+    <h2>1. What is it called?</h2>
+    <input id="new-title" placeholder="e.g. Bank tabs" autocomplete="off" spellcheck="false">
+
+    <h2>2. Pick a starting point</h2>
+    <div id="templates" class="cards"></div>
+
+    <div id="saved" hidden>
+      <h2>Or carry on with one you've made</h2>
+      <div id="panel-list" class="cards"></div>
+    </div>
+
+    <p class="hint footer-link"><a href="advanced.html">Advanced editor</a>: every setting, mostly for Claude.</p>
+  </section>
+
+  <section id="editor" class="editor" hidden>
+    <header class="toolbar">
+      <button id="back">← All panels</button>
+      <strong id="panel-title" class="panel-title"></strong>
+      <span class="sep"></span>
+      <button id="undo" title="Ctrl+Z">Undo</button>
+      <button id="redo" title="Ctrl+Shift+Z">Redo</button>
+      <label>Zoom
+        <select id="zoom">
+          <option value="1">1x</option>
+          <option value="2" selected>2x</option>
+          <option value="3">3x</option>
+        </select>
+      </label>
+      <button id="export">Save picture</button>
+      <a id="advanced" class="hint" target="_blank">Advanced editor</a>
+      <span id="status" class="status"></span>
+    </header>
+
+    <main class="simple-workspace">
+      <aside class="palette-panel">
         <h2>Add</h2>
-        <div id="palette" class="palette"></div>
+        <p class="hint">Click one, or drag it onto the panel.</p>
+        <div id="palette" class="widget-palette"></div>
+      </aside>
+
+      <section class="stage">
+        <div class="canvas-wrap"><canvas id="canvas"></canvas></div>
+        <p class="hint">Drag things to move them, and the blue squares to resize. Delete removes, Ctrl+Z
+          undoes. Everything saves by itself.</p>
       </section>
-      <section class="tree-section">
-        <h2>Components <span class="hint">drag onto a layer to move it inside</span></h2>
-        <div id="tree" class="tree"></div>
-      </section>
-    </aside>
 
-    <section class="stage">
-      <div id="empty" class="empty">
-        <p>Open a design or start a new one.</p>
-        <p class="hint">Everything drawn here uses the real sprites and fonts from your cache, and
-          saves as a design file Claude turns into a packed interface.</p>
-      </div>
-      <div class="canvas-wrap" hidden><canvas id="canvas"></canvas></div>
-      <p class="hint stage-hint">Click to select; click again to reach what is underneath. Drag to move,
-        drag the handles to resize. Arrows nudge (Shift for 10). Esc selects the parent.</p>
-    </section>
+      <aside id="inspector" class="inspector"></aside>
+    </main>
+  </section>
 
-    <aside class="right" id="props"></aside>
-  </main>
-
-  <footer class="issues">
-    <h2>Checks <span id="issue-count"></span></h2>
-    <ul id="issues"></ul>
-  </footer>
-
-  <dialog id="ask">
-    <form method="dialog">
-      <h3 id="ask-title"></h3>
-      <p id="ask-text"></p>
-      <input id="ask-input" autocomplete="off" spellcheck="false">
-      <p id="ask-error" class="error"></p>
-      <menu>
-        <!-- type="button": Enter submits with the first submit button, which must be OK. -->
-        <button type="button" id="ask-cancel">Cancel</button>
-        <button value="ok" id="ask-ok" class="primary">OK</button>
-      </menu>
-    </form>
-  </dialog>
-
-  <dialog id="picker" class="picker">
-    <form method="dialog">
-      <header>
-        <h3>Choose a sprite</h3>
-        <input id="picker-search" placeholder="id, range (990-1010) or size (85x22)" autocomplete="off">
-        <button type="button" id="picker-close">Close</button>
-      </header>
-      <div id="picker-grid" class="picker-grid"></div>
-      <p id="picker-more" class="hint"></p>
-    </form>
+  <dialog id="confirm">
+    <p id="confirm-text"></p>
+    <menu>
+      <button type="button" id="confirm-no">Cancel</button>
+      <button type="button" id="confirm-yes" class="primary">OK</button>
+    </menu>
   </dialog>
 </body>
 </html>

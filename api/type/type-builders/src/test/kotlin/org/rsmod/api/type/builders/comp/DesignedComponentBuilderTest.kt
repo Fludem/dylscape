@@ -27,7 +27,7 @@ class DesignedComponentBuilderTest {
     fun `components are declared in file order, which is child-index order`() {
         assertEquals("fixture_panel", FixtureBuilder.interfaceName)
         assertEquals(
-            listOf("root", "frame", "well", "button", "button_label", "icon"),
+            listOf("root", "frame", "well", "button", "button_label", "icon", "slot"),
             FixtureBuilder.componentNames,
         )
         assertEquals(
@@ -110,6 +110,19 @@ class DesignedComponentBuilderTest {
         assertEquals(10, icon.trans1)
         assertArrayEquals(arrayOf<Any>(44, EVENT_COM, 813), icon.onMouseOver)
         assertArrayEquals(arrayOf<Any>(44, EVENT_COM, 812), icon.onMouseLeave)
+    }
+
+    @Test
+    fun `an item slot is an empty model component for the server to fill`() {
+        val slot = component("slot")
+        assertEquals(6, slot.type)
+        assertEquals(36, slot.width)
+        assertEquals(32, slot.height)
+        // Nothing is authored into it; ifSetObj supplies the obj at runtime.
+        assertEquals(-1, slot.model)
+        assertEquals(-1, slot.graphic)
+        assertArrayEquals(arrayOf("Value"), slot.op)
+        assertEquals(1 shl 1, slot.events)
     }
 
     @Test

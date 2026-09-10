@@ -1,0 +1,15 @@
+{
+  "format": 1,
+  "kind": "panel",
+  "interface": "blank",
+  "title": "Blank",
+  "w": 400,
+  "h": 260,
+  "notes": "",
+  "widgets": [
+    {"id": "heading_1", "type": "heading", "x": 20, "y": 48, "w": 160, "h": 16, "text": "Heading", "align": "left"},
+    {"id": "icon_1", "type": "icon", "x": 8, "y": 88, "w": 72, "h": 36, "sprite": 295},
+    {"id": "tabs_1", "type": "tabs", "x": 12, "y": 36, "w": 360, "h": 20, "labels": ["Tab 1", "Tab 2", "Tab 3"], "action": ""},
+    {"id": "button_1", "type": "button", "x": 132, "y": 124, "w": 58, "h": 24, "style": "dark", "label": "Button", "action": ""}
+  ]
+}

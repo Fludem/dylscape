@@ -9,7 +9,8 @@ import {
   Assets, CANVAS, CONTAINER, DEFAULTS, MODAL, hex, inside, intersect, invPos, layout, render,
   stripDefaults, withDefaults,
 } from './render.js';
-import { FAVOURITE_SPRITES, PARTS } from './parts.js';
+import { PARTS } from './parts.js';
+import { pickSprite as pickSpriteDialog } from './picker.js';
 
 const $ = (selector) => document.querySelector(selector);
 const NAME = /^[a-z0-9_]+$/;
@@ -976,7 +977,7 @@ function buildProps() {
   }
   if (look.children.length > 1) panel.append(look);
 
-  if (c.type !== 'layer') panel.append(hoverSection(c));
+  if (c.type !== 'layer' && c.type !== 'item') panel.append(hoverSection(c));
   panel.append(menuSection(c));
 
   const behaviour = el('section');
@@ -1162,67 +1163,9 @@ function ask({ title, text: body, value, ok = 'OK', validate: check }) {
   });
 }
 
+/** The shared sprite picker (picker.js), bound to this editor's art. */
 function pickSprite(current) {
-  const dialog = $('#picker');
-  const search = $('#picker-search');
-  const grid = $('#picker-grid');
-  const more = $('#picker-more');
-  const LIMIT = 400;
-  let finish = () => {}; // set below, once the promise exists
-
-  const tile = (id, label) => {
-    const meta = assets.spriteIndex.get(id);
-    const b = el('button', { type: 'button', title: label ?? '' });
-    b.append(
-      el('img', { src: assets.spriteUrl(id), loading: 'lazy', alt: '' }),
-      el('span', { className: 'label', textContent: `${id}  ${meta ? `${meta.w}x${meta.h}` : '?'}${label ? `\n${label}` : ''}` }),
-    );
-    if (id === current) b.style.borderColor = 'var(--accent)';
-    b.addEventListener('click', () => finish(id));
-    return b;
-  };
-
-  const show = () => {
-    const q = search.value.trim().toLowerCase();
-    grid.innerHTML = '';
-    let ids = [...assets.spriteIndex.keys()];
-    const range = q.match(/^(\d+)\s*-\s*(\d+)$/);
-    const sizeQuery = q.match(/^(\d+)\s*x\s*(\d+)$/);
-    if (range) ids = ids.filter((id) => id >= +range[1] && id <= +range[2]);
-    else if (sizeQuery) ids = ids.filter((id) => {
-      const m = assets.spriteIndex.get(id);
-      return m.w === +sizeQuery[1] && m.h === +sizeQuery[2];
-    });
-    else if (/^\d+$/.test(q)) ids = ids.filter((id) => String(id).startsWith(q));
-    if (!q) {
-      grid.append(el('div', { className: 'fav', textContent: 'Proven in server-authored panels' }));
-      for (const [id, label] of FAVOURITE_SPRITES) grid.append(tile(id, label));
-      grid.append(el('div', { className: 'fav', textContent: 'Everything in the cache' }));
-    }
-    for (const id of ids.slice(0, LIMIT)) grid.append(tile(id));
-    more.textContent = ids.length > LIMIT ? `Showing ${LIMIT} of ${ids.length}; narrow the search to see the rest.` : `${ids.length} sprites`;
-  };
-
-  search.value = '';
-  search.oninput = show;
-  show();
-  return new Promise((resolve) => {
-    // As in ask(): resolved directly, never from the queued `close` event.
-    const cancel = (e) => {
-      e.preventDefault();
-      finish(null);
-    };
-    finish = (id) => {
-      dialog.removeEventListener('cancel', cancel);
-      $('#picker-close').onclick = null;
-      if (dialog.open) dialog.close();
-      resolve(id);
-    };
-    dialog.addEventListener('cancel', cancel);
-    $('#picker-close').onclick = () => finish(null);
-    dialog.showModal();
-    search.focus();
-  });
+  return pickSpriteDialog(assets, current);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -1243,11 +1186,6 @@ function exportPng() {
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   });
   draw();
-}
-
-function bindDialogs() {
-  // Enter in the search box would otherwise submit the form and close the picker.
-  $('#picker form').addEventListener('submit', (e) => e.preventDefault());
 }
 
 function bindToolbar() {
@@ -1290,7 +1228,6 @@ async function boot() {
     return;
   }
   assets.onchange = () => draw();
-  bindDialogs();
   bindToolbar();
   bindCanvas();
   bindKeys();

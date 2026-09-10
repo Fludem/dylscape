@@ -18,7 +18,7 @@ import org.rsmod.game.type.comp.ComponentTypeBuilder
  * object BankTabsBuilder : DesignedComponentBuilder("bank_tabs.interface.json")
  * ```
  *
- * The file speaks in a deliberately small vocabulary: four component types, words for position and
+ * The file speaks in a deliberately small vocabulary: five component types, words for position and
  * size modes, and *semantic* hooks (`frame`, `hover`) instead of raw clientscript arrays.
  * Everything it can say is known to render in rev 233, and anything it cannot say fails here, at
  * boot, rather than packing something the client draws wrongly:
@@ -155,7 +155,12 @@ public abstract class DesignedComponentBuilder(resource: String) : ComponentBuil
 internal object InterfaceDesigns {
     const val FORMAT: Int = 1
 
-    val TYPES: Map<String, Int> = mapOf("layer" to 0, "rect" to 3, "text" to 4, "graphic" to 5)
+    /**
+     * `item` is an empty model component (type 6). Nothing is authored into it: the server fills it
+     * at runtime with `ifSetObj`, the way the vanilla guide-prices panel shows its items.
+     */
+    val TYPES: Map<String, Int> =
+        mapOf("layer" to 0, "rect" to 3, "text" to 4, "graphic" to 5, "item" to 6)
     val POS_MODES: Map<String, Int> = mapOf("start" to 0, "centre" to 1, "end" to 2)
     val SIZE_MODES: Map<String, Int> = mapOf("fixed" to 0, "minus" to 1)
     val ALIGN_H: Map<String, Int> = mapOf("left" to 0, "centre" to 1, "right" to 2)

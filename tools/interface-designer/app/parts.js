@@ -70,6 +70,11 @@ export const PARTS = [
     make: (n, p) => [{ name: n, parent: p, type: 'graphic', x: 8, y: 40, w: 36, h: 32, sprite: 535 }],
   },
   {
+    group: 'Basic', id: 'item', label: 'Item slot', base: 'item',
+    hint: 'An empty slot the server fills with an item at runtime (ifSetObj).',
+    make: (n, p) => [{ name: n, parent: p, type: 'item', x: 8, y: 40, w: 36, h: 32 }],
+  },
+  {
     group: 'Vanilla', id: 'frame', label: 'Steelborder frame', base: 'frame',
     hint: 'Stone background, steel edges, orange title and a working close button (127 vanilla panels).',
     make: (n, p) => [{ name: n, parent: p, type: 'layer', ...fill, frame: 'Title' }],

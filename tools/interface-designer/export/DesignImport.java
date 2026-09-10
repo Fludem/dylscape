@@ -83,6 +83,9 @@ public class DesignImport {
             case 3 -> "rect";
             case 4 -> "text";
             case 5 -> "graphic";
+            // Only an empty model component, the kind ifSetObj fills; requireUnused rejects any
+            // authored model.
+            case 6 -> "item";
             default -> throw fail(c, "has type " + c.getType() + ", which designs cannot express");
         };
         m.put("type", type);

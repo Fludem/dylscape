@@ -256,6 +256,14 @@ function draw(ctx, c, r, assets, hover) {
       ctx.globalAlpha = 1;
       break;
     }
+    case 'item':
+      // Empty in the client until the server pushes an obj; drawn as a faint slot so it can be
+      // placed at all. The editors label it with the example item on top.
+      ctx.fillStyle = 'rgba(0,0,0,.35)';
+      ctx.fillRect(r.x, r.y, r.w, r.h);
+      ctx.fillStyle = '#474745';
+      outline(ctx, r.x, r.y, r.w, r.h);
+      break;
   }
 }
 

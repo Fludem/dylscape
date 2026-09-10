@@ -15,6 +15,8 @@
 }
 
 * { box-sizing: border-box; }
+/* Author `display` rules (.editor is a grid) would otherwise beat the attribute's own hiding. */
+[hidden] { display: none !important; }
 body { margin: 0; height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
 h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 6px; }
 h3 { margin: 0 0 8px; }
@@ -72,6 +74,7 @@ textarea { width: 100%; resize: vertical; min-height: 48px; }
 .type-rect { color: #7fb6ff; }
 .type-text { color: var(--accent); }
 .type-graphic { color: #7fd37f; }
+.type-item { color: #d38fff; }
 .node .name { flex: 1; overflow: hidden; text-overflow: ellipsis; }
 .node .eye { border: none; background: none; padding: 0 2px; color: var(--muted); }
 .node .lock { color: var(--warn); font-size: 10px; }

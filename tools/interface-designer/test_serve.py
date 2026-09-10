@@ -153,5 +153,84 @@ class PathTest(unittest.TestCase):
             self.assertEqual(serve.referenced_names("demo", Path(root)), ["close", "slot_0"])
 
 
+PANEL = {
+    "format": 1, "kind": "panel", "interface": "demo", "title": "Demo", "w": 300, "h": 200,
+    "notes": "", "widgets": [{"id": "button_1", "type": "button", "x": 8, "y": 40, "w": 120, "h": 24}],
+}
+
+
+class PanelTest(unittest.TestCase):
+    def test_a_panel_is_formatted_one_widget_per_line_and_round_trips(self):
+        text = serve.format_panel(serve.check_panel(json.loads(json.dumps(PANEL))))
+        self.assertEqual(json.loads(text), PANEL)
+        self.assertIn('    {"id": "button_1", "type": "button", "x": 8', text)
+        empty = dict(PANEL, widgets=[])
+        self.assertEqual(json.loads(serve.format_panel(empty)), empty)
+
+    def test_panel_rejections(self):
+        cases = {
+            "wrong kind": dict(PANEL, kind="design"),
+            "bad interface": dict(PANEL, interface="Demo"),
+            "tiny panel": dict(PANEL, w=10),
+            "unknown key": dict(PANEL, colour="red"),
+            "unknown widget": dict(PANEL, widgets=[{"id": "a", "type": "slider", "x": 0, "y": 0, "w": 1, "h": 1}]),
+            "duplicate id": dict(PANEL, widgets=PANEL["widgets"] * 2),
+            "float position": dict(PANEL, widgets=[{"id": "a", "type": "box", "x": 1.5, "y": 0, "w": 1, "h": 1}]),
+        }
+        for label, panel in cases.items():
+            with self.subTest(label), self.assertRaises(DesignError):
+                serve.check_panel(panel)
+
+
+class SavePanelTest(unittest.TestCase):
+    """save_panel against a throwaway repo, so real designs and symbols are never touched."""
+
+    def setUp(self):
+        self.dir = tempfile.TemporaryDirectory()
+        root = Path(self.dir.name).resolve()
+        (root / "tools/interface-designer/designs").mkdir(parents=True)
+        (root / "content/custom/x/src/main/resources").mkdir(parents=True)
+        (root / ".data/symbols/.local").mkdir(parents=True)
+        (root / ".data/symbols/.local/interface.sym").write_text("1002\tdemo\n")
+        (root / ".data/symbols/.local/component.sym").write_text("")
+        self.saved = {k: getattr(serve, k) for k in ("REPO", "DRAFTS", "CONTENT", "LOCAL_SYMBOLS")}
+        serve.REPO = root
+        serve.DRAFTS = root / "tools/interface-designer/designs"
+        serve.CONTENT = root / "content"
+        serve.LOCAL_SYMBOLS = root / ".data/symbols/.local"
+        self.root = root
+
+    def tearDown(self):
+        for key, value in self.saved.items():
+            setattr(serve, key, value)
+        self.dir.cleanup()
+
+    def body(self, interface="demo"):
+        return {"panel": dict(PANEL), "design": design(ROOT, interface=interface)}
+
+    def test_a_draft_writes_the_panel_and_its_design_but_no_symbols(self):
+        result = serve.save_panel("tools/interface-designer/designs/demo.panel.json", self.body())
+        self.assertFalse(result["symbolsSynced"])
+        drafts = self.root / "tools/interface-designer/designs"
+        self.assertEqual(json.loads((drafts / "demo.panel.json").read_text()), PANEL)
+        self.assertEqual(json.loads((drafts / "demo.interface.json").read_text())["interface"], "demo")
+        self.assertEqual((self.root / ".data/symbols/.local/component.sym").read_text(), "")
+
+    def test_an_implemented_panel_syncs_the_symbols_of_its_design(self):
+        panel = self.root / "content/custom/x/src/main/resources/demo.panel.json"
+        panel.write_text("{}")  # implemented panels already exist; new ones start as drafts
+        result = serve.save_panel(str(panel.relative_to(self.root)), self.body())
+        self.assertTrue(result["symbolsSynced"])
+        self.assertIn("demo:0\tdemo:root", (self.root / ".data/symbols/.local/component.sym").read_text())
+
+    def test_mismatches_and_new_panels_outside_drafts_are_refused(self):
+        with self.assertRaises(DesignError):
+            serve.save_panel("tools/interface-designer/designs/demo.panel.json", self.body("other"))
+        with self.assertRaises(DesignError):
+            serve.save_panel("tools/interface-designer/designs/wrong.panel.json", self.body())
+        with self.assertRaises(DesignError):
+            serve.save_panel("content/custom/x/src/main/resources/demo.panel.json", self.body())
+
+
 if __name__ == "__main__":
     unittest.main()
