@@ -82,6 +82,30 @@ build-time patch self-contained.
 
 ## Packaging
 
+### Zipped folder (what we hand out today)
+
+```bash
+python3 tools/client/make_zips.py --javac /opt/homebrew/opt/openjdk@21/bin/javac
+```
+
+Writes `build/client-zip/Onyx-Windows.zip` and `Onyx-macOS.zip` (arm64), ~69 MB each, both
+built from this Mac — no jpackage, so no per-OS runner. Each unzips to one `Onyx/` folder:
+`Onyx.bat` / `Onyx.command`, `README.txt` (friend-facing steps), `Onyx.jar`, `lib/`, `jre/`.
+
+- `Onyx.jar` is just the launcher below; its manifest `Class-Path` lists every `lib/*.jar`,
+  and carries `Add-Opens: java.desktop/com.apple.eawt`, so `java -jar Onyx.jar` (or a
+  double-click, with a system Java 11+) works even without the script.
+- `jre/` is Temurin 21's prebuilt JRE, pinned by SHA-256 in the script. The script fails if it
+  lacks `jdk.httpserver`.
+- The zip keeps Unix modes, so `Onyx.command` and `jre/bin/java` stay executable after Finder
+  unzips it. Gatekeeper still blocks the first double-click of the `.command`; the README
+  walks through "Open Anyway".
+
+Verified 2026-09-10 on macOS: unzipped with `ditto` (as Finder does), launched through
+`Onyx.command`, reached the login screen. The Windows zip has not been run on Windows.
+
+### Installer
+
 `tools/client/package.sh` produces a double-clickable installer: patched RuneLite + a launcher
 + a jlink'd JRE, so **friends install nothing else**.
 
