@@ -1,12 +1,15 @@
 package org.rsmod.content.custom.leagues.relics
 
+import jakarta.inject.Inject
 import org.rsmod.api.config.refs.stats
 import org.rsmod.api.perks.Perk
 import org.rsmod.api.perks.PerkSource
+import org.rsmod.api.player.stat.statBase
 import org.rsmod.api.stats.xpmod.XpMod
 import org.rsmod.content.custom.leagues.configs.league_objs
 import org.rsmod.game.entity.Player
 import org.rsmod.game.type.stat.StatType
+import org.rsmod.game.type.stat.StatTypeList
 
 /**
  * Which relic grants which [Perk].
@@ -38,6 +41,28 @@ class RelicPerkSource : PerkSource {
             Perk.AgilityMarkCoins -> hasRelic(Relic.CornerCutter)
             Perk.SlayerAlwaysOnTask -> hasRelic(Relic.SlayerMaster)
             Perk.GoldenAlchemy -> hasRelic(Relic.GoldenGod)
+
+            Perk.CleanAllHerbs,
+            Perk.SaveSecondary -> hasRelic(Relic.FriendlyForager)
+
+            Perk.ThievingNeverFails,
+            Perk.PickpocketCrowd,
+            Perk.StallDoubleLoot -> hasRelic(Relic.DodgyDeals)
+
+            Perk.ClueChestAnyTier -> hasRelic(Relic.FairysFlight)
+
+            Perk.DoubleLoot,
+            Perk.NotedLoot -> hasRelic(Relic.TreasureArbiter)
+
+            Perk.InstantProduction -> hasRelic(Relic.ProductionMaster)
+
+            Perk.SeedSaver,
+            Perk.HalfGrownCrops,
+            Perk.HarvestSaver -> hasRelic(Relic.Overgrown)
+
+            Perk.CheapSpecials,
+            Perk.AccurateSpecials,
+            Perk.FastSpecRegen -> hasRelic(Relic.Specialist)
         }
 }
 
@@ -48,5 +73,36 @@ class CornerCutterXp : XpMod {
 
     private companion object {
         const val BONUS = 0.25
+    }
+}
+
+/**
+ * Equilibrium's catch-up experience: skills below the player's average base level gain double, the
+ * lowest skill (or skills, on a tie) triple, and everything else a tenth more.
+ *
+ * Levels are read fresh on every drop - 23 lookups - so a skill leaves the bonus the moment it
+ * catches up.
+ */
+class EquilibriumXp @Inject constructor(private val statTypes: StatTypeList) : XpMod {
+    override fun Player.modifier(stat: StatType): Double {
+        if (!hasRelic(Relic.Equilibrium)) {
+            return 0.0
+        }
+        val levels = statTypes.values.filterNot { it.unreleased }.map { statBase(it) }
+        if (levels.isEmpty()) {
+            return 0.0
+        }
+        val level = statBase(stat)
+        return when {
+            level <= levels.min() -> LOWEST_BONUS
+            level < levels.average() -> BELOW_AVERAGE_BONUS
+            else -> BASE_BONUS
+        }
+    }
+
+    private companion object {
+        const val LOWEST_BONUS = 2.0
+        const val BELOW_AVERAGE_BONUS = 1.0
+        const val BASE_BONUS = 0.1
     }
 }

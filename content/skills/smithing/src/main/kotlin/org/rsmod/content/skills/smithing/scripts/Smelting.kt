@@ -3,6 +3,8 @@ package org.rsmod.content.skills.smithing.scripts
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.content
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.smithingLvl
 import org.rsmod.api.script.onOpLoc1
@@ -37,6 +39,7 @@ constructor(
     private val objTypes: ObjTypeList,
     private val xpMods: XpModifiers,
     private val skillMulti: SkillMulti,
+    private val perks: Perks,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         // Furnaces carry `Smelt` on op2, not op1 -- decoded from the cache, and not uniform:
@@ -98,10 +101,13 @@ constructor(
         }
 
         val bar = objTypes[recipe.bar]
+        val instant = perks.has(player, Perk.InstantProduction)
         var made = 0
         while (made < count && canAfford(recipe)) {
             anim(SmithingSeqs.smelt)
-            delay(SMELT_TICKS)
+            if (made == 0 || !instant) {
+                delay(SMELT_TICKS)
+            }
 
             // Re-checked after the delay: the ore could have been banked or dropped mid-animation.
             if (!canAfford(recipe)) {

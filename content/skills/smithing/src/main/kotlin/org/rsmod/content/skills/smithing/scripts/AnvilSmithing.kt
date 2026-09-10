@@ -3,6 +3,8 @@ package org.rsmod.content.skills.smithing.scripts
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.objs
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.smithingLvl
 import org.rsmod.api.script.onIfModalButton
@@ -50,6 +52,7 @@ constructor(
     private val objTypes: ObjTypeList,
     private val enumTypes: EnumTypeList,
     private val xpMods: XpModifiers,
+    private val perks: Perks,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         // Anvils carry `Smith` on op1; verified against the cache in SmithingConfigTest.
@@ -131,10 +134,14 @@ constructor(
             return
         }
 
+        val instant = perks.has(player, Perk.InstantProduction)
+
         var made = 0
         while (made < requested && invTotal(inv, bar) >= barsRequired) {
             anim(SmithingSeqs.smith)
-            delay(SMITH_TICKS)
+            if (made == 0 || !instant) {
+                delay(SMITH_TICKS)
+            }
 
             // Re-checked after the delay; the bars may be gone by now.
             if (invTotal(inv, bar) < barsRequired) {

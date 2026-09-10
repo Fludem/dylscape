@@ -65,5 +65,23 @@ object LeagueVarBits : VarBitReferences() {
      */
     val tutorial_completed = find("league_tutorial_completed")
 
+    /**
+     * The Reloaded relic's extra pick: one varbit per tier, holding the 1-based slot of the relic
+     * re-picked from that tier, or 0. At most one is ever set. They sit in `league_relics_other`,
+     * which is `Perm`, and `[proc,league_relic_active]` reads them, so the grid shades a reloaded
+     * relic as active without any server drawing.
+     */
+    val relic_selection_other =
+        listOf(
+            find("league_relic_selection_other_0"),
+            find("league_relic_selection_other_1"),
+            find("league_relic_selection_other_2"),
+            find("league_relic_selection_other_3"),
+            find("league_relic_selection_other_4"),
+            find("league_relic_selection_other_5"),
+            find("league_relic_selection_other_6"),
+            find("league_relic_selection_other_7"),
+        )
+
     operator fun get(tier: Int): VarBitType? = relic_selection.getOrNull(tier)
 }

@@ -2,6 +2,8 @@ package org.rsmod.content.skills.fletching.scripts
 
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.fletchingLvl
 import org.rsmod.api.script.onOpHeldU
@@ -31,6 +33,7 @@ constructor(
     private val objTypes: ObjTypeList,
     private val xpMods: XpModifiers,
     private val skillMulti: SkillMulti,
+    private val perks: Perks,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         for (recipe in FletchingRecipes.attaching) {
@@ -62,6 +65,8 @@ constructor(
             return
         }
 
+        val instant = perks.has(player, Perk.InstantProduction)
+
         var made = 0
         while (made < batches) {
             val size = affordable(recipe).coerceAtMost(recipe.batch)
@@ -69,7 +74,9 @@ constructor(
                 break
             }
             anim(recipe.seq)
-            delay(ATTACH_TICKS)
+            if (made == 0 || !instant) {
+                delay(ATTACH_TICKS)
+            }
 
             // Re-measured rather than re-checked: the batch is only as big as what is still held
             // once the animation has played.

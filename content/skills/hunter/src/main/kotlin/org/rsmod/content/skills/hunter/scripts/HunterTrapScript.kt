@@ -28,7 +28,9 @@ import org.rsmod.content.skills.hunter.configs.HunterLocs
 import org.rsmod.content.skills.hunter.configs.HunterObjs
 import org.rsmod.content.skills.hunter.configs.HunterParams
 import org.rsmod.content.skills.hunter.configs.HunterSeqs
+import org.rsmod.events.UnboundEvent
 import org.rsmod.game.entity.Controller
+import org.rsmod.game.entity.Player
 import org.rsmod.game.loc.BoundLocInfo
 import org.rsmod.game.loc.LocEntity
 import org.rsmod.game.loc.LocInfo
@@ -37,6 +39,7 @@ import org.rsmod.game.type.loc.LocType
 import org.rsmod.game.type.loc.LocTypeList
 import org.rsmod.game.type.loc.UnpackedLocType
 import org.rsmod.game.type.npc.NpcTypeList
+import org.rsmod.game.type.obj.ObjType
 import org.rsmod.game.type.obj.ObjTypeList
 import org.rsmod.game.type.obj.UnpackedObjType
 import org.rsmod.plugin.scripts.PluginScript
@@ -267,6 +270,7 @@ constructor(
         if (product != null) {
             invAdd(inv, product)
             spam("You catch a ${objTypes[product].name.lowercase()}.")
+            publish(CaughtCreature(player, product))
         } else {
             spam("You catch a ${creature.name.lowercase()}, and it wriggles free.")
         }
@@ -283,6 +287,9 @@ constructor(
         returnTrapKit(trap)
         traps.collapse(trap)
     }
+
+    /** A creature came out of a trap and [product] went into the player's inventory. */
+    data class CaughtCreature(val player: Player, val product: ObjType) : UnboundEvent
 
     private fun ProtectedAccess.returnTrapKit(trap: Controller) {
         val obj =

@@ -53,6 +53,12 @@ object LeagueObjs : ObjReferences() {
     val crystal_of_echoes = find("league_trailblazer_last_recall_teleport")
     val bankers_note = find("league_bankers_note")
     val arcane_grimoire = find("league_3_magic_book")
+    val foragers_pouch = find("foragers_pouch")
+    val clue_compass = find("league_clue_compass_teleport")
+    val fairy_mushroom = find("league_trailblazer_fairys_flight_teleport")
+    val pocket_kingdom = find("league_relic_pocket_kingdom_item")
+    val leprechauns_vault = find("leprechauns_vault")
+    val guardian_horn = find("league_guardian_summon")
 }
 
 object LeagueParams : ParamReferences() {
@@ -66,4 +72,10 @@ object LeagueTimers : TimerReferences() {
 
     /** Pays Sage's greaves' running experience. */
     val sage_greaves = find("league_sage_greaves")
+
+    /** Brings the Pocket Kingdom's tribute every 10 minutes. */
+    val pocket_kingdom = find("league_pocket_kingdom")
+
+    /** Drives the Guardian's attacks and its 30-minute lifetime. */
+    val guardian = find("league_guardian")
 }

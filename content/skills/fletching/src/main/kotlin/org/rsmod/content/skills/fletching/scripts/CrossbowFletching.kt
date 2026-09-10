@@ -2,6 +2,8 @@ package org.rsmod.content.skills.fletching.scripts
 
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.fletchingLvl
 import org.rsmod.api.script.onOpHeldU
@@ -27,6 +29,7 @@ constructor(
     private val objTypes: ObjTypeList,
     private val xpMods: XpModifiers,
     private val skillMulti: SkillMulti,
+    private val perks: Perks,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         for (recipe in FletchingRecipes.crossbows) {
@@ -57,10 +60,14 @@ constructor(
             return
         }
 
+        val instant = perks.has(player, Perk.InstantProduction)
+
         var made = 0
         while (made < count && affordable(recipe) > 0) {
             anim(recipe.seq)
-            delay(ASSEMBLE_TICKS)
+            if (made == 0 || !instant) {
+                delay(ASSEMBLE_TICKS)
+            }
 
             // Re-checked after the delay: either part could have left the inventory.
             if (affordable(recipe) == 0) {

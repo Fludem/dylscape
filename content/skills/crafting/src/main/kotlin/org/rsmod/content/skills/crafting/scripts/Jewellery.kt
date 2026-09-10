@@ -2,6 +2,8 @@ package org.rsmod.content.skills.crafting.scripts
 
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.craftingLvl
 import org.rsmod.api.script.onEvent
@@ -53,7 +55,11 @@ import org.rsmod.plugin.scripts.ScriptContext
  */
 class Jewellery
 @Inject
-constructor(private val objTypes: ObjTypeList, private val xpMods: XpModifiers) : PluginScript() {
+constructor(
+    private val objTypes: ObjTypeList,
+    private val xpMods: XpModifiers,
+    private val perks: Perks,
+) : PluginScript() {
     /** The quantity each player last pressed, mirroring the client's own varc. */
     private val pending = HashMap<Player, Int>()
 
@@ -101,10 +107,14 @@ constructor(private val objTypes: ObjTypeList, private val xpMods: XpModifiers) 
             return
         }
 
+        val instant = perks.has(player, Perk.InstantProduction)
+
         var made = 0
         while (made < count && canAfford(recipe)) {
             anim(CraftingSeqs.furnace)
-            delay(CAST_TICKS)
+            if (made == 0 || !instant) {
+                delay(CAST_TICKS)
+            }
 
             // Re-checked after the delay: the bar or the gem could have been banked.
             if (!canAfford(recipe)) {

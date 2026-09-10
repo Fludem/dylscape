@@ -13,6 +13,7 @@ dependencies {
     implementation(projects.api.combat.combatManager)
     implementation(projects.api.combat.combatWeapon)
     implementation(projects.api.npc)
+    implementation(projects.api.perks)
     implementation(projects.api.player)
     implementation(projects.api.script)
     implementation(projects.api.type.typeBuilders)

@@ -17,8 +17,11 @@ import org.rsmod.content.custom.leagues.relics.LeaguePointsSync
 import org.rsmod.content.custom.leagues.relics.Relic
 import org.rsmod.content.custom.leagues.relics.RelicUnlocked
 import org.rsmod.content.custom.leagues.relics.clearRelic
+import org.rsmod.content.custom.leagues.relics.clearReloadedRelic
 import org.rsmod.content.custom.leagues.relics.relicIn
+import org.rsmod.content.custom.leagues.relics.reloadedRelic
 import org.rsmod.content.custom.leagues.relics.setRelic
+import org.rsmod.content.custom.leagues.relics.setReloadedRelic
 import org.rsmod.events.EventBus
 import org.rsmod.game.cheat.Cheat
 import org.rsmod.game.entity.Player
@@ -133,6 +136,11 @@ constructor(
             return
         }
 
+        if (reloads(player, relic)) {
+            reload(relic)
+            return
+        }
+
         val previous = player.relicIn(relic.tier)
         if (previous != null) {
             val cost = Relic.REPICK_COSTS[relic.tier]
@@ -143,6 +151,9 @@ constructor(
         }
 
         player.setRelic(relic)
+        if (previous == Relic.Reloaded) {
+            player.clearReloadedRelic()
+        }
         viewing.remove(player)
         screen.grantItem(this, relic)
         drawRelicSelections()
@@ -155,6 +166,37 @@ constructor(
         }
     }
 
+    /**
+     * Whether confirming [relic] sets the Reloaded pick rather than swapping its tier: true for a
+     * relic below Reloaded's tier while the player holds Reloaded. So while Reloaded is held, a
+     * lower tier's own pick cannot be swapped - it can only be copied.
+     */
+    private fun reloads(player: Player, relic: Relic): Boolean =
+        relic.tier < Relic.Reloaded.tier && player.relicIn(Relic.Reloaded.tier) == Relic.Reloaded
+
+    /** Commits [relic] as the Reloaded pick: free the first time, the tier's price after. */
+    private fun ProtectedAccess.reload(relic: Relic) {
+        val previous = player.reloadedRelic
+        if (previous != null) {
+            val cost = Relic.REPICK_COSTS[Relic.Reloaded.tier]
+            if (!payCoins(cost)) {
+                refuse("You need ${cost.formatted} coins in your inventory or bank to reload.")
+                return
+            }
+        }
+        player.setReloadedRelic(relic)
+        viewing.remove(player)
+        screen.grantItem(this, relic)
+        drawRelicSelections()
+        publish(RelicUnlocked(player, relic, previous))
+
+        if (previous == null) {
+            mes("Reloaded: you gain the ${relic.displayName} relic as well.")
+        } else {
+            mes("Reloaded: you swap ${previous.displayName} for ${relic.displayName}.")
+        }
+    }
+
     /** Explains a refused Confirm, in the popup (still on screen) and in chat. */
     private fun ProtectedAccess.refuse(message: String) {
         ifSetText(league_components.relics_confirm_text, message)
@@ -164,6 +206,7 @@ constructor(
     private fun viewState(player: Player, relic: Relic): ViewState =
         when {
             player.relicIn(relic.tier) == relic -> ViewState.Unlocked
+            player.reloadedRelic == relic -> ViewState.Unlocked
             points.points(player) < Relic.TIER_POINTS[relic.tier] -> ViewState.NeedPoints
             relic.tier > 0 && player.relicIn(relic.tier - 1) == null -> ViewState.PreviousTier
             else -> ViewState.Selectable
@@ -171,6 +214,17 @@ constructor(
 
     private fun ProtectedAccess.confirmText(relic: Relic): String {
         val name = "<col=ffffff>${relic.displayName}</col>"
+        if (reloads(player, relic)) {
+            val reloadCost = Relic.REPICK_COSTS[Relic.Reloaded.tier].formatted
+            val reloaded = player.reloadedRelic
+            if (reloaded != null) {
+                return "Reload <col=ffffff>${reloaded.displayName}</col> into the $name relic?" +
+                    "<br><br>This costs <col=ffffff>$reloadCost</col> coins, taken from your " +
+                    "inventory first and then your bank."
+            }
+            return "Use Reloaded to gain the $name relic as well?<br><br>Changing your Reloaded " +
+                "pick later costs <col=ffffff>$reloadCost</col> coins."
+        }
         val cost = Relic.REPICK_COSTS[relic.tier].formatted
         val current = player.relicIn(relic.tier)
         if (current != null) {
@@ -224,6 +278,9 @@ constructor(
                 }
             for (tier in tiers) {
                 player.clearRelic(tier)
+            }
+            if (Relic.Reloaded.tier in tiers) {
+                player.clearReloadedRelic()
             }
             player.mes("Cleared relic picks for tiers ${tiers.first + 1}-${tiers.last + 1}.")
         }

@@ -5,7 +5,10 @@ import kotlin.math.max
 import kotlin.math.min
 import org.rsmod.api.config.refs.stats
 import org.rsmod.api.config.refs.synths
+import org.rsmod.api.hunt.NpcSearch
 import org.rsmod.api.npc.isValidTarget
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.baseHitpointsLvl
 import org.rsmod.api.player.stat.farmingLvl
@@ -27,6 +30,7 @@ import org.rsmod.game.entity.Npc
 import org.rsmod.game.entity.Player
 import org.rsmod.game.entity.player.ProtectedAccessLostException
 import org.rsmod.game.hit.HitType
+import org.rsmod.game.type.hunt.HuntVis
 import org.rsmod.game.type.obj.ObjType
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
@@ -56,8 +60,16 @@ import org.rsmod.plugin.scripts.ScriptContext
  */
 class Pickpocketing
 @Inject
-constructor(private val xpMods: XpModifiers, private val invisibleLvls: InvisibleLevels) :
-    PluginScript() {
+constructor(
+    private val xpMods: XpModifiers,
+    private val invisibleLvls: InvisibleLevels,
+    private val perks: Perks,
+    private val npcSearch: NpcSearch,
+) : PluginScript() {
+    /** Which ladder rung each target npc id belongs to, for [Perk.PickpocketCrowd]. */
+    private val targetsById: Map<Int, PickpocketTarget> =
+        ThievingTargets.all.entries.associate { (npc, target) -> npc.id to target }
+
     override fun ScriptContext.startup() {
         for ((npc, target) in ThievingTargets.all) {
             onOpNpc3(npc) { pickpocket(it.npc, target) }
@@ -112,9 +124,12 @@ constructor(private val xpMods: XpModifiers, private val invisibleLvls: Invisibl
             actionDelay = mapClock + PICKPOCKET_DELAY
             spam("You attempt to pick the ${npc.name}'s pocket.")
         } else if (actionDelay == mapClock) {
-            val success = statRandom(stats.thieving, target.rateLow, target.rateHigh, invisibleLvls)
+            val success =
+                perks.has(player, Perk.ThievingNeverFails) ||
+                    statRandom(stats.thieving, target.rateLow, target.rateHigh, invisibleLvls)
             if (success) {
                 award(npc, target)
+                robCrowd(npc, target)
             } else {
                 stun(npc, target)
             }
@@ -160,6 +175,28 @@ constructor(private val xpMods: XpModifiers, private val invisibleLvls: Invisibl
         // Keeps the session from ever stalling on a full stack; see `CoinPouches.AUTO_OPEN_AT`.
         if (target.loot is PickpocketLoot.Pouch) {
             autoOpenPouchesIfFull(target.loot.pouch)
+        }
+    }
+
+    /**
+     * [Perk.PickpocketCrowd]: every other npc of the same ladder rung within [CROWD_RADIUS] tiles
+     * (an 11x11 square) is robbed too, each paying its own loot and experience. Stops early rather
+     * than dropping loot once the inventory has no room.
+     */
+    private fun ProtectedAccess.robCrowd(npc: Npc, target: PickpocketTarget) {
+        if (!perks.has(player, Perk.PickpocketCrowd)) {
+            return
+        }
+        val crowd =
+            npcSearch
+                .findAllAny(npc.coords, CROWD_RADIUS, HuntVis.LineOfSight)
+                .filter { it !== npc && targetsById[it.id] == target && it.isValidTarget() }
+                .toList()
+        for (other in crowd) {
+            if (!hasRoomFor(target.loot)) {
+                return
+            }
+            award(other, target)
         }
     }
 
@@ -261,6 +298,9 @@ constructor(private val xpMods: XpModifiers, private val invisibleLvls: Invisibl
          * per action than it should be.
          */
         const val PICKPOCKET_DELAY = 3
+
+        /** How far [Perk.PickpocketCrowd] reaches: 5 tiles each way, an 11x11 square. */
+        const val CROWD_RADIUS = 5
 
         /**
          * The share of the player's own hitpoints bar an unattended session parks at. The damage

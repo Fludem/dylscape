@@ -127,6 +127,7 @@ constructor(
         }
 
         val locType = locTypes[loc]
+        val instant = perks.has(player, Perk.InstantProduction)
         var made = 0
         while (made < count && invTotal(inv, food) > 0) {
             if (locRepo.findExact(loc.coords, locType) == null) {
@@ -138,7 +139,9 @@ constructor(
 
             faceLoc(loc)
             anim(heat.seq)
-            delay(COOK_TICKS)
+            if (made == 0 || !instant) {
+                delay(COOK_TICKS)
+            }
 
             val burnt =
                 !perks.has(player, Perk.NeverBurnFood) &&

@@ -1,10 +1,13 @@
 package org.rsmod.api.specials.scripts
 
+import jakarta.inject.Inject
 import kotlin.math.min
 import org.rsmod.api.config.constants
 import org.rsmod.api.config.refs.timers
 import org.rsmod.api.config.refs.varbits
 import org.rsmod.api.config.refs.varps
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.vars.boolVarBit
 import org.rsmod.api.player.vars.intVarp
 import org.rsmod.api.script.onPlayerLogin
@@ -13,7 +16,7 @@ import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
-public class SpecialEnergyScript : PluginScript() {
+public class SpecialEnergyScript @Inject constructor(private val perks: Perks) : PluginScript() {
     private val Player.newAccount by boolVarBit(varbits.new_player_account)
     private var Player.specialAttackEnergy by intVarp(varps.sa_energy)
 
@@ -30,9 +33,15 @@ public class SpecialEnergyScript : PluginScript() {
     }
 
     private fun Player.specRegen() {
-        val increased = min(constants.sa_max_energy, specialAttackEnergy + 100)
+        val regen = if (perks.has(this, Perk.FastSpecRegen)) FAST_REGEN else REGEN
+        val increased = min(constants.sa_max_energy, specialAttackEnergy + regen)
         if (increased > specialAttackEnergy) {
             specialAttackEnergy = increased
         }
+    }
+
+    private companion object {
+        const val REGEN = 100
+        const val FAST_REGEN = 200
     }
 }

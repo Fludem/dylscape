@@ -3,6 +3,8 @@ package org.rsmod.content.skills.farming.scripts
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.farmingLvl
 import org.rsmod.api.random.GameRandom
@@ -40,6 +42,7 @@ constructor(
     private val objTypes: ObjTypeList,
     private val random: GameRandom,
     private val xpMods: XpModifiers,
+    private val perks: Perks,
 ) {
     private val compostTiers by lazy {
         mapOf(
@@ -118,11 +121,22 @@ constructor(
             mes("You need ${objTypes[tool].name.lowercase()} to plant that.")
             return
         }
-        if (!invDel(inv, seed, count = 1).success) {
+        val seedSaved = perks.has(player, Perk.SeedSaver) && random.of(100) < SEED_SAVE_PERCENT
+        if (!seedSaved && !invDel(inv, seed, count = 1).success) {
             return
         }
         anim(if (tool == FarmingObjs.dibber) FarmingSeqs.dibbing else FarmingSeqs.dig)
-        state.plant(seed.id, System.currentTimeMillis())
+        // Half grown means planted half a growth cycle ago: every stage timer runs off `plantedAt`.
+        val headStart =
+            if (perks.has(player, Perk.HalfGrownCrops)) {
+                crop.growthStages * FarmingRates.stageMillis(crop.cycleMinutes) / 2
+            } else {
+                0L
+            }
+        state.plant(seed.id, System.currentTimeMillis() - headStart)
+        if (seedSaved) {
+            spam("Your seed is not used up.")
+        }
         statAdvance(stats.farming, crop.plantXp * xpMods.get(player, stats.farming))
         sync()
         delay(2)
@@ -165,8 +179,13 @@ constructor(
 
         when (crop.model) {
             HarvestModel.Lives -> {
-                val saved =
-                    random.randomDouble() < FarmingRates.harvestSaveChance(player.farmingLvl)
+                val saveChance =
+                    if (perks.has(player, Perk.HarvestSaver)) {
+                        HARVEST_SAVER_CHANCE
+                    } else {
+                        FarmingRates.harvestSaveChance(player.farmingLvl)
+                    }
+                val saved = random.randomDouble() < saveChance
                 if (!saved) {
                     state.livesUsed++
                 }
@@ -436,5 +455,11 @@ constructor(
     private companion object {
         /** Every rake pulls one clump of weeds and pays the same trickle of xp. */
         const val RAKE_XP: Double = 4.0
+
+        /** [Perk.SeedSaver]'s chance, out of 100, to keep the seed. */
+        const val SEED_SAVE_PERCENT = 75
+
+        /** [Perk.HarvestSaver]'s chance to keep a patch's life on each harvest. */
+        const val HARVEST_SAVER_CHANCE = 0.80
     }
 }

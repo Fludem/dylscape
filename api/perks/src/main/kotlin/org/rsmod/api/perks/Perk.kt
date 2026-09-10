@@ -46,4 +46,41 @@ enum class Perk {
 
     /** Alchemy needs no runes or level, pays 15% more and has a 65% chance to keep the item. */
     GoldenAlchemy,
+
+    /** Cleaning a grimy herb cleans every copy of it in the inventory. */
+    CleanAllHerbs,
+    /** Mixing a potion has a 50% chance to keep the secondary ingredient. */
+    SaveSecondary,
+
+    /** Pickpocketing never fails. */
+    ThievingNeverFails,
+    /** A pickpocket also robs every npc of the same kind within 5 tiles. */
+    PickpocketCrowd,
+    /** Stalls give double loot. */
+    StallDoubleLoot,
+
+    /** Opening the clue chest lets the player choose which tier of casket to roll. */
+    ClueChestAnyTier,
+
+    /** Drop tables roll their loot twice. */
+    DoubleLoot,
+    /** Drops that have a noted form drop noted. */
+    NotedLoot,
+
+    /** Make-X production loops process every item in a single action. */
+    InstantProduction,
+
+    /** Planting a seed has a 75% chance to not use it. */
+    SeedSaver,
+    /** Crops start half grown. */
+    HalfGrownCrops,
+    /** Harvesting a lives-based patch keeps its life 80% of the time. */
+    HarvestSaver,
+
+    /** Special attacks cost at most 20% energy. */
+    CheapSpecials,
+    /** Special attacks roll with double accuracy. */
+    AccurateSpecials,
+    /** Special attack energy regenerates twice as fast. */
+    FastSpecRegen,
 }

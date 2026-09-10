@@ -2,6 +2,8 @@ package org.rsmod.content.skills.crafting.scripts
 
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.craftingLvl
 import org.rsmod.api.script.onOpHeldU
@@ -37,6 +39,7 @@ constructor(
     private val objTypes: ObjTypeList,
     private val xpMods: XpModifiers,
     private val skillMulti: SkillMulti,
+    private val perks: Perks,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         for (wheel in WHEELS) {
@@ -67,10 +70,14 @@ constructor(
             return
         }
 
+        val instant = perks.has(player, Perk.InstantProduction)
+
         var made = 0
         while (made < count && invTotal(inv, recipe.material) > 0) {
             anim(CraftingSeqs.spin)
-            delay(SPIN_TICKS)
+            if (made == 0 || !instant) {
+                delay(SPIN_TICKS)
+            }
 
             // Re-checked after the delay: the material could have been banked mid-animation.
             if (invTotal(inv, recipe.material) == 0) {

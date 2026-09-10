@@ -3,6 +3,8 @@ package org.rsmod.content.skills.thieving.scripts
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.stats
 import org.rsmod.api.config.refs.synths
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.thievingLvl
 import org.rsmod.api.script.onOpLoc2
@@ -41,7 +43,8 @@ import org.rsmod.plugin.scripts.ScriptContext
  * already takes a `cert` flag, so this costs nothing beyond passing it — and every product in the
  * table has a cert link, which `ThievingConfigTest` pins.
  */
-class StallThieving @Inject constructor(private val xpMods: XpModifiers) : PluginScript() {
+class StallThieving @Inject constructor(private val xpMods: XpModifiers, private val perks: Perks) :
+    PluginScript() {
     override fun ScriptContext.startup() {
         for ((loc, stall) in ThievingStalls.all) {
             onOpLoc2(loc) { steal(it.loc, stall) }
@@ -80,7 +83,8 @@ class StallThieving @Inject constructor(private val xpMods: XpModifiers) : Plugi
 
     private fun ProtectedAccess.award(loc: BoundLocInfo, stall: Stall) {
         val product = random.pick(stall.loot)
-        val count = stall.baseCount * ThievingRates.LOOT_RATE
+        val multiplier = if (perks.has(player, Perk.StallDoubleLoot)) 2 else 1
+        val count = stall.baseCount * ThievingRates.LOOT_RATE * multiplier
         invAdd(inv, product, count = count, cert = true)
         statAdvance(
             stats.thieving,

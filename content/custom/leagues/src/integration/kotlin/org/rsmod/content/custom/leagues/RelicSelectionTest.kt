@@ -54,15 +54,57 @@ class RelicSelectionTest {
         }
 
     @Test
-    fun GameTestState.`an unbuilt relic cannot be picked`() =
+    fun GameTestState.`with reloaded held a lower tier pick becomes the reloaded relic`() =
         runInjectedGameTest(LeagueTestDeps::class, null, RelicScreenScript::class) { deps ->
-            deps.points.override(player, Relic.TIER_POINTS[1])
-            player.setVarBit(league_varbits.relic_selection[0], Relic.PowerMiner.slot)
+            deps.points.override(player, Relic.TIER_POINTS[3])
+            pickFirstFour(Relic.Reloaded)
+            openScreen(deps)
+            pick(Relic.Lumberjack)
+
+            assertEquals(Relic.PowerMiner.slot, selection(0))
+            assertEquals(Relic.Lumberjack.slot, other(0))
+            assertEquals(1, player.count(league_objs.echo_axe))
+        }
+
+    @Test
+    fun GameTestState.`changing the reloaded pick costs the tier four price`() =
+        runInjectedGameTest(LeagueTestDeps::class, null, RelicScreenScript::class) { deps ->
+            deps.points.override(player, Relic.TIER_POINTS[3])
+            pickFirstFour(Relic.Reloaded)
+            player.setVarBit(league_varbits.relic_selection_other[0], Relic.Lumberjack.slot)
+            player.withProtectedAccess { invAdd(inv, objs.coins, Relic.REPICK_COSTS[3]) }
             openScreen(deps)
             pick(Relic.FriendlyForager)
 
-            assertEquals(0, selection(1))
+            assertEquals(0, other(0))
+            assertEquals(Relic.FriendlyForager.slot, other(1))
+            assertEquals(0, player.count(objs.coins))
         }
+
+    @Test
+    fun GameTestState.`swapping reloaded away clears the reloaded pick`() =
+        runInjectedGameTest(LeagueTestDeps::class, null, RelicScreenScript::class) { deps ->
+            deps.points.override(player, Relic.TIER_POINTS[3])
+            pickFirstFour(Relic.Reloaded)
+            player.setVarBit(league_varbits.relic_selection_other[0], Relic.Lumberjack.slot)
+            player.withProtectedAccess { invAdd(inv, objs.coins, Relic.REPICK_COSTS[3]) }
+            openScreen(deps)
+            pick(Relic.GoldenGod)
+
+            assertEquals(Relic.GoldenGod.slot, selection(3))
+            assertEquals(0, other(0))
+        }
+
+    /** Picks the first relic in tiers 1-3 and [tierFour] in tier 4, straight into the varbits. */
+    private fun GameTestScope.pickFirstFour(tierFour: Relic) {
+        for (tier in 0 until 3) {
+            player.setVarBit(league_varbits.relic_selection[tier], Relic.inTier(tier)[0].slot)
+        }
+        player.setVarBit(league_varbits.relic_selection[3], tierFour.slot)
+    }
+
+    private fun GameTestScope.other(tier: Int): Int =
+        player.vars[league_varbits.relic_selection_other[tier]]
 
     @Test
     fun GameTestState.`swapping a tier one relic costs its price`() =

@@ -8,6 +8,8 @@ import org.rsmod.api.combat.commons.styles.RangedAttackStyle
 import org.rsmod.api.combat.commons.types.MeleeAttackType
 import org.rsmod.api.combat.commons.types.RangedAttackType
 import org.rsmod.api.combat.manager.PlayerAttackManager
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.specials.energy.SpecialAttackEnergy
 import org.rsmod.api.specials.weapon.SpecialAttackWeapons
@@ -27,7 +29,12 @@ constructor(
     private val energy: SpecialAttackEnergy,
     private val weapons: SpecialAttackWeapons,
     private val manager: PlayerAttackManager,
+    private val perks: Perks,
 ) {
+    /** A spec's accuracy multiplier, doubled under [Perk.AccurateSpecials]. */
+    private fun specAccuracy(source: ProtectedAccess, multiplier: Double): Double =
+        if (perks.has(source.player, Perk.AccurateSpecials)) multiplier * 2 else multiplier
+
     public fun hasSpecialEnergy(source: ProtectedAccess, energyInHundreds: Int): Boolean {
         return energy.hasSpecialEnergy(source.player, energyInHundreds)
     }
@@ -121,7 +128,7 @@ constructor(
             source = source.player,
             target = target,
             attack = attack,
-            accuracyMultiplier = accuracyMultiplier,
+            accuracyMultiplier = specAccuracy(source, accuracyMultiplier),
             maxHitMultiplier = maxHitMultiplier,
             attackType = attackType,
             attackStyle = attackStyle,
@@ -143,7 +150,7 @@ constructor(
             attackType = attackType,
             attackStyle = attackStyle,
             blockType = blockType,
-            multiplier = multiplier,
+            multiplier = specAccuracy(source, multiplier),
         )
 
     /** @see [PlayerAttackManager.rollMeleeMaxHit] */
@@ -189,7 +196,7 @@ constructor(
             source = source.player,
             target = target,
             attack = attack,
-            accuracyMultiplier = accuracyMultiplier,
+            accuracyMultiplier = specAccuracy(source, accuracyMultiplier),
             maxHitMultiplier = maxHitMultiplier,
             attackType = attackType,
             attackStyle = attackStyle,
@@ -212,7 +219,7 @@ constructor(
             attackType = attackType,
             attackStyle = attackStyle,
             blockType = blockType,
-            multiplier = multiplier,
+            multiplier = specAccuracy(source, multiplier),
         )
 
     /** @see [PlayerAttackManager.rollRangedMaxHit] */

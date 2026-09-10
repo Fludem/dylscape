@@ -2,6 +2,8 @@ package org.rsmod.content.skills.crafting.scripts
 
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.craftingLvl
 import org.rsmod.api.script.onOpHeldU
@@ -31,6 +33,7 @@ constructor(
     private val objTypes: ObjTypeList,
     private val xpMods: XpModifiers,
     private val skillMulti: SkillMulti,
+    private val perks: Perks,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         for (recipe in CraftingRecipes.leather) {
@@ -65,11 +68,15 @@ constructor(
             return
         }
 
+        val instant = perks.has(player, Perk.InstantProduction)
+
         var made = 0
         var onReel = 0
         while (made < count && canAfford(recipe, product)) {
             anim(CraftingSeqs.leather)
-            delay(STITCH_TICKS)
+            if (made == 0 || !instant) {
+                delay(STITCH_TICKS)
+            }
 
             // Re-checked after the delay: the hide or the thread could have been banked.
             if (!canAfford(recipe, product)) {

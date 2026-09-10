@@ -6,6 +6,8 @@ import org.rsmod.api.config.constants
 import org.rsmod.api.config.refs.queues
 import org.rsmod.api.death.NpcDeath
 import org.rsmod.api.npc.access.StandardNpcAccess
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onNpcQueue
 import org.rsmod.content.custom.droptables.DropBoost
@@ -14,6 +16,7 @@ import org.rsmod.content.custom.droptables.DropTableRoller
 import org.rsmod.content.custom.droptables.configs.LumbridgeDropTables
 import org.rsmod.content.custom.droptables.data.DropTableResourceLoader
 import org.rsmod.game.entity.PlayerList
+import org.rsmod.game.type.obj.ObjTypeList
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
@@ -33,6 +36,8 @@ constructor(
     private val objRepo: ObjRepository,
     private val players: PlayerList,
     private val generated: DropTableResourceLoader,
+    private val perks: Perks,
+    private val objTypes: ObjTypeList,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         // Keyed on the raw npc id: `find()` hands back a `HashedNpcType` and the loader hands back
@@ -96,14 +101,19 @@ constructor(
         }
 
         val duration = hero.lootDropDuration ?: constants.lootdrop_duration
-        for (drop in roller.roll(table, DropBoost.forTier(hero.xpRateTier))) {
-            objRepo.add(
-                type = drop.obj,
-                coords = dropCoords,
-                duration = duration,
-                receiver = hero,
-                count = drop.count,
-            )
+        val boost = DropBoost.forTier(hero.xpRateTier)
+        val rolls = if (perks.has(hero, Perk.DoubleLoot)) 2 else 1
+        val noted = perks.has(hero, Perk.NotedLoot)
+        repeat(rolls) {
+            for (drop in roller.roll(table, boost)) {
+                objRepo.add(
+                    type = if (noted) objTypes.cert(objTypes[drop.obj]) else drop.obj,
+                    coords = dropCoords,
+                    duration = duration,
+                    receiver = hero,
+                    count = drop.count,
+                )
+            }
         }
     }
 

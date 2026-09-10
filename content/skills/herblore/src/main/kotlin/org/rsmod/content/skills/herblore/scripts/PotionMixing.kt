@@ -2,6 +2,8 @@ package org.rsmod.content.skills.herblore.scripts
 
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.herbloreLvl
 import org.rsmod.api.script.onOpHeldU
@@ -36,6 +38,7 @@ constructor(
     private val objTypes: ObjTypeList,
     private val xpMods: XpModifiers,
     private val skillMulti: SkillMulti,
+    private val perks: Perks,
 ) : PluginScript() {
     override fun ScriptContext.startup() {
         for (recipe in HerbloreRecipes.unfinished) {
@@ -99,10 +102,14 @@ constructor(
             return
         }
 
+        val instant = perks.has(player, Perk.InstantProduction)
+
         var made = 0
         while (made < count && affords(recipe.base, recipe.herb)) {
             anim(HerbloreSeqs.mix)
-            delay(MIX_TICKS)
+            if (made == 0 || !instant) {
+                delay(MIX_TICKS)
+            }
 
             // Re-checked after the delay: either half could have been banked mid-animation.
             if (!affords(recipe.base, recipe.herb)) {
@@ -130,15 +137,23 @@ constructor(
             return
         }
 
+        val instant = perks.has(player, Perk.InstantProduction)
+
         var made = 0
         while (made < count && affords(recipe.primary, recipe.secondary)) {
             anim(HerbloreSeqs.mix)
-            delay(MIX_TICKS)
+            if (made == 0 || !instant) {
+                delay(MIX_TICKS)
+            }
 
             if (!affords(recipe.primary, recipe.secondary)) {
                 break
             }
-            invDel(inv, recipe.primary, 1, recipe.secondary, 1)
+            if (keepsSecondary()) {
+                invDel(inv, recipe.primary, 1)
+            } else {
+                invDel(inv, recipe.primary, 1, recipe.secondary, 1)
+            }
             invAdd(inv, recipe.product)
             statAdvance(stats.herblore, recipe.xp * xpMods.get(player, stats.herblore))
             made++
@@ -160,10 +175,13 @@ constructor(
         }
 
         val inputs = HerbloreRecipes.superCombatInputs
+        val instant = perks.has(player, Perk.InstantProduction)
         var made = 0
         while (made < count && affordsSuperCombat()) {
             anim(HerbloreSeqs.mix)
-            delay(MIX_TICKS)
+            if (made == 0 || !instant) {
+                delay(MIX_TICKS)
+            }
 
             if (!affordsSuperCombat()) {
                 break
@@ -171,7 +189,9 @@ constructor(
             // Four objs, so this cannot use the two- or three-type atomic overload. The `affords`
             // check immediately above is what stands in for atomicity, and it is re-run on the
             // same tick as the deletes.
-            invDel(inv, HerbloreObjs.torstol, 1)
+            if (!keepsSecondary()) {
+                invDel(inv, HerbloreObjs.torstol, 1)
+            }
             for (input in inputs) {
                 invDel(inv, input, 1)
             }
@@ -191,6 +211,10 @@ constructor(
 
     private fun ProtectedAccess.affords(first: ObjType, second: ObjType): Boolean =
         invTotal(inv, first) >= 1 && invTotal(inv, second) >= 1
+
+    /** [Perk.SaveSecondary]: a coin flip that keeps the secondary ingredient. */
+    private fun ProtectedAccess.keepsSecondary(): Boolean =
+        perks.has(player, Perk.SaveSecondary) && random.of(2) == 0
 
     private fun ProtectedAccess.affordsSuperCombat(): Boolean =
         invTotal(inv, HerbloreObjs.torstol) >= 1 &&

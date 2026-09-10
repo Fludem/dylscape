@@ -2,6 +2,8 @@ package org.rsmod.content.skills.herblore.scripts
 
 import jakarta.inject.Inject
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.perks.Perk
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.stat.herbloreLvl
 import org.rsmod.api.script.onOpHeld1
@@ -23,7 +25,8 @@ import org.rsmod.plugin.scripts.ScriptContext
  * click, and a player can empty a full inventory as fast as they can click. That means none of the
  * "re-validate after the delay" discipline the mixing loop needs applies here.
  */
-class HerbCleaning @Inject constructor(private val xpMods: XpModifiers) : PluginScript() {
+class HerbCleaning @Inject constructor(private val xpMods: XpModifiers, private val perks: Perks) :
+    PluginScript() {
     override fun ScriptContext.startup() {
         for (recipe in HerbloreRecipes.cleaning) {
             onOpHeld1(recipe.grimy) { clean(recipe, it.slot) }
@@ -43,6 +46,15 @@ class HerbCleaning @Inject constructor(private val xpMods: XpModifiers) : Plugin
         if (!replaced.success) {
             return
         }
-        statAdvance(stats.herblore, recipe.xp * xpMods.get(player, stats.herblore))
+        var cleaned = 1
+        // Every other copy at once. `invReplace` swaps into the first free slot, which shuffles
+        // the backpack - acceptable here, since the whole inventory changes in one click anyway.
+        if (perks.has(player, Perk.CleanAllHerbs)) {
+            val rest = invTotal(inv, recipe.grimy)
+            if (rest > 0 && invReplace(inv, recipe.grimy, rest, recipe.clean).success) {
+                cleaned += rest
+            }
+        }
+        statAdvance(stats.herblore, recipe.xp * cleaned * xpMods.get(player, stats.herblore))
     }
 }
