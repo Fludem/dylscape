@@ -17,6 +17,7 @@ dependencies {
     implementation(projects.api.hunt)
     implementation(projects.api.market)
     implementation(projects.api.npc)
+    implementation(projects.api.perks)
     implementation(projects.api.player)
     implementation(projects.api.pwHash)
     implementation(projects.api.random)

@@ -1,6 +1,8 @@
 package org.rsmod.api.core.module
 
 import com.google.inject.multibindings.Multibinder
+import org.rsmod.api.perks.PerkSource
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.stats.levelmod.InvisibleLevelMod
 import org.rsmod.api.stats.levelmod.InvisibleLevels
 import org.rsmod.api.stats.xpmod.WornXpModifiers
@@ -15,5 +17,9 @@ public object StatModModule : ExtendedModule() {
 
         addSetBinding<XpMod>(WornXpModifiers::class.java)
         bindInstance<XpModifiers>()
+
+        // Bound empty so `Perks` injects even when no plugin grants any.
+        Multibinder.newSetBinder(binder(), PerkSource::class.java)
+        bindInstance<Perks>()
     }
 }

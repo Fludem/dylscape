@@ -49,6 +49,8 @@ import org.rsmod.api.npc.hit.processor.StandardNpcHitProcessor
 import org.rsmod.api.npc.hit.queueHit
 import org.rsmod.api.npc.interact.AiPlayerInteractions
 import org.rsmod.api.npc.opPlayer2
+import org.rsmod.api.perks.PerkSource
+import org.rsmod.api.perks.Perks
 import org.rsmod.api.player.hit.processor.DamageOnlyPlayerHitProcessor
 import org.rsmod.api.player.hit.processor.InstantPlayerHitProcessor
 import org.rsmod.api.player.interact.LocInteractions
@@ -1033,6 +1035,9 @@ constructor(
 
             Multibinder.newSetBinder(binder(), XpMod::class.java)
             bind(XpModifiers::class.java).`in`(Scopes.SINGLETON)
+
+            Multibinder.newSetBinder(binder(), PerkSource::class.java)
+            bind(Perks::class.java).`in`(Scopes.SINGLETON)
 
             bind(MarketPrices::class.java)
                 .to(DefaultMarketPrices::class.java)

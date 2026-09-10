@@ -24,6 +24,7 @@ import org.rsmod.api.cache.types.obj.ObjTypeEncoder
 import org.rsmod.api.cache.types.param.ParamTypeEncoder
 import org.rsmod.api.cache.types.proj.ProjAnimTypeEncoder
 import org.rsmod.api.cache.types.stat.StatTypeEncoder
+import org.rsmod.api.cache.types.struct.StructTypeEncoder
 import org.rsmod.api.cache.types.varbit.VarBitTypeEncoder
 import org.rsmod.api.cache.types.varn.VarnTypeEncoder
 import org.rsmod.api.cache.types.varnbit.VarnBitTypeEncoder
@@ -69,6 +70,8 @@ import org.rsmod.game.type.proj.ProjAnimTypeBuilder
 import org.rsmod.game.type.proj.UnpackedProjAnimType
 import org.rsmod.game.type.stat.StatTypeBuilder
 import org.rsmod.game.type.stat.UnpackedStatType
+import org.rsmod.game.type.struct.StructTypeBuilder
+import org.rsmod.game.type.struct.UnpackedStructType
 import org.rsmod.game.type.util.MergeableCacheBuilder
 import org.rsmod.game.type.varbit.UnpackedVarBitType
 import org.rsmod.game.type.varbit.VarBitType
@@ -195,6 +198,7 @@ constructor(
         val areas = merge(build.areas, edit.areas, vanilla.areas, AreaTypeBuilder)
         val enums = merge(build.enums, edit.enums, vanilla.enums, EnumTypeBuilder)
         val stats = merge(build.stats, edit.stats, vanilla.stats, StatTypeBuilder)
+        val structs = merge(build.structs, edit.structs, vanilla.structs, StructTypeBuilder)
         val varns = merge(build.varns, edit.varns, vanilla.varns, VarnTypeBuilder)
         val varps = merge(build.varps, edit.varps, vanilla.varps, VarpTypeBuilder)
         val dbRows = merge(build.dbRows, edit.dbRows, vanilla.dbRows, DbRowTypeBuilder)
@@ -229,6 +233,7 @@ constructor(
             stats = stats,
             areas = areas,
             enums = enums,
+            structs = structs,
             params = params,
             varps = varps,
             varbits = varbits,
@@ -254,6 +259,7 @@ constructor(
         val areas: List<UnpackedAreaType>,
         val hunt: List<UnpackedHuntModeType>,
         val enums: List<UnpackedEnumType<*, *>>,
+        val structs: List<UnpackedStructType>,
         val params: List<UnpackedParamType<*>>,
         val varps: List<UnpackedVarpType>,
         val varbits: List<UnpackedVarBitType>,
@@ -278,6 +284,7 @@ constructor(
         val areas = filterIsInstance<UnpackedAreaType>()
         val hunt = filterIsInstance<UnpackedHuntModeType>()
         val enums = filterIsInstance<UnpackedEnumType<*, *>>()
+        val structs = filterIsInstance<UnpackedStructType>()
         val params = filterIsInstance<UnpackedParamType<*>>()
         val varps = filterIsInstance<UnpackedVarpType>()
         val varbits = filterIsInstance<UnpackedVarBitType>()
@@ -301,6 +308,7 @@ constructor(
             stats = stats,
             areas = areas,
             enums = enums,
+            structs = structs,
             params = params,
             varps = varps,
             varbits = varbits,
@@ -339,6 +347,7 @@ constructor(
             ParamTypeEncoder.encodeAll(cache, updates.params, ctx)
             AreaTypeEncoder.encodeAll(cache, updates.areas, ctx)
             EnumTypeEncoder.encodeAll(cache, updates.enums, ctx)
+            StructTypeEncoder.encodeAll(cache, updates.structs, ctx)
             InvTypeEncoder.encodeAll(cache, updates.invs, ctx)
             ComponentTypeEncoder.encodeAll(cache, updates.comps)
             LocTypeEncoder.encodeAll(cache, updates.locs, ctx)
