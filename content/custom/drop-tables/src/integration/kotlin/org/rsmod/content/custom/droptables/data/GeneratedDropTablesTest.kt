@@ -109,6 +109,39 @@ class GeneratedDropTablesTest {
             }
         }
 
+    @Test
+    fun GameTestState.`clue scrolls drop as keys and no other trail item drops`() =
+        runInjectedGameTest(DropTableResourceLoader::class) { loader ->
+            // `generate.py` rewrites each clue scroll as the key of its tier (`CLUE_KEYS`) and
+            // skips every other trail item: nothing implements trails, and the step keys the wiki
+            // lists as "Always" only drop while on that clue step.
+            for ((npc, table) in loader.load().assignments) {
+                val names = table.allObjs().map { cacheTypes.objs[it].internalName }
+                val stray = names.filter { it?.startsWith("trail_") == true && it !in CLUE_KEYS }
+                assertTrue(stray.isEmpty(), "'${npc.internalName}' drops trail items $stray.")
+                val always = table.always.map { cacheTypes.objs[it.obj].internalName }
+                assertTrue(
+                    always.none { it in CLUE_KEYS } || npc.internalName in ALWAYS_CLUE_NPCS,
+                    "'${npc.internalName}' always drops a clue key: $always",
+                )
+            }
+        }
+
+    @Test
+    fun GameTestState.`guards drop a medium key at the medium clue rate`() =
+        runInjectedGameTest(DropTableResourceLoader::class) { loader ->
+            // `guard1` is the Varrock fountain guard, on the wiki's shared "Guard" page. It used
+            // to drop a Key (medium) on every kill.
+            val guard = loader.load().assignments.single { it.first.internalName == "guard1" }
+            val table = guard.second
+            assertTrue(table.always.none { cacheTypes.objs[it.obj].internalName in CLUE_KEYS })
+            val key =
+                table.tertiary.single {
+                    cacheTypes.objs[it.drop.obj].internalName == "trail_clue_medium_riddle001_key"
+                }
+            assertEquals(128, key.oneIn)
+        }
+
     private fun DropTable.allObjs(): List<ObjType> =
         always.map { it.obj } +
             tables.flatMap { table -> table.selfAndNested().flatMap { it.slots.itemObjs() } } +
@@ -120,4 +153,19 @@ class GeneratedDropTablesTest {
 
     private fun List<DropSlot>.itemObjs(): List<ObjType> =
         filterIsInstance<DropSlot.Item>().map { it.drop.obj }
+
+    private companion object {
+        /** `CLUE_KEYS` in `tools/drop-tables/generate.py`. */
+        val CLUE_KEYS =
+            setOf(
+                "trail_key_beginner",
+                "trail_key_easy",
+                "trail_clue_medium_riddle001_key",
+                "trail_key_hard",
+                "trail_elite_riddle_key32",
+            )
+
+        /** Npcs whose wiki clue scroll really is "Always", so the key is too: Skotizo. */
+        val ALWAYS_CLUE_NPCS = setOf<String?>("cata_boss")
+    }
 }

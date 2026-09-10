@@ -65,6 +65,31 @@ items with no rev-233 obj id, rows whose rarity the wiki states as prose ("Commo
 slot rounded by more than 1%, and npcs claimed by more than one wiki page. Read it rather than
 assuming a gap is a bug.
 
+Clue items are rewritten rather than imported, because nothing implements treasure trails
+(`CLUE_KEYS` in `generate.py`):
+
+- A `Clue scroll (<tier>)` row keeps its rate but drops the **key** of that tier instead. The
+  Edgeville clue chest (`content/custom/clue-chest`) opens a key into that tier's reward casket.
+  Beginner, easy and hard keys are ours (`.data/symbols/.local/obj.sym`, built by
+  `ClueKeyBuilds`); medium and elite reuse vanilla's `Key (medium)` and `Key (elite)`.
+- Every other `trail_` obj is skipped. The wiki lists the step keys and reward caskets as
+  `Always` because in vanilla they only drop while you are on that clue step, and read literally
+  that made every guard, man and chicken drop a Key (medium) on every kill.
+
+## Reward caskets
+
+`caskets.py` writes the clue chest's loot, `content/custom/clue-chest/.../cluechest/caskets.toml`,
+from the same `dropsline` bucket: the `reward` rows "dropped from" `Reward casket (<tier>)`. The
+wiki's casket rates are **per roll** and sum to one roll per tier, so each tier is one weighted
+table. The roll count per casket is vanilla and lives in `ClueTier`. It skips the `#Entrana`
+tables, the `Always` rows (scroll cases, large spade, clueless scroll, heavy casket) and master
+clue scrolls, and prints what it skipped.
+
+```bash
+python3 tools/drop-tables/caskets.py
+./gradlew :content:custom:clue-chest:integration --rerun-tasks   # ClueCasketTest is the gate
+```
+
 Two more filters live on the Kotlin side, because they need the cache:
 
 - Only `combat` drops are imported. Thieving, hunter and reward drops belong to other content.

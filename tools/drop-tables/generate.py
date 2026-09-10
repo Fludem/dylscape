@@ -51,6 +51,21 @@ PAGE_SIZE = 5000
 # earned through other content and would be wrong to hang off an npc's death.
 DROP_TYPE = "combat"
 
+# Nothing here implements treasure trails, so clue items are rewritten rather than
+# imported. A monster's clue scroll drop keeps its wiki rate but becomes the key of
+# the same tier, which the Edgeville clue chest (`content/custom/clue-chest`) opens
+# into that tier's reward casket. Every other trail item is skipped: the step keys
+# and reward caskets the wiki lists as "Always" only drop while on that clue step,
+# and nothing drops a master key.
+CLUE_KEYS = {
+    "Clue scroll (beginner)": "trail_key_beginner",
+    "Clue scroll (easy)": "trail_key_easy",
+    "Clue scroll (medium)": "trail_clue_medium_riddle001_key",
+    "Clue scroll (hard)": "trail_key_hard",
+    "Clue scroll (elite)": "trail_elite_riddle_key32",
+}
+TRAIL_PREFIX = "trail_"
+
 # Smallest denominator that represents every rate in a table exactly wins, so a
 # vanilla-shaped monster still reads as `/128`. The ceiling is bounded by
 # `DropTableRoller`: it scales weights by up to `boost.all.den * boost.rare.den`
@@ -84,13 +99,20 @@ def _get(params, attempts=4):
             time.sleep(wait)
 
 
-def bucket(table, fields):
-    """Every row of `table`, paged. `limit` is capped at 5000 server-side."""
+def bucket(table, fields, where=None):
+    """Every row of `table`, paged. `limit` is capped at 5000 server-side.
+
+    `where` is an optional `(field, value)` equality filter.
+    """
     selects = ",".join(f"'{field}'" for field in fields)
+    condition = f".where('{where[0]}','{where[1]}')" if where else ""
     rows = []
     offset = 0
     while True:
-        query = f"bucket('{table}').select({selects}).limit({PAGE_SIZE}).offset({offset}).run()"
+        query = (
+            f"bucket('{table}').select({selects}){condition}"
+            f".limit({PAGE_SIZE}).offset({offset}).run()"
+        )
         payload = _get({"action": "bucket", "format": "json", "query": query})
         if payload.get("error"):
             raise SystemExit(f"bucket query failed for '{table}': {payload['error']}")
@@ -239,6 +261,8 @@ class Report:
         self.duplicate_npcs = []
         self.failed_tables = []
         self.multi_roll = collections.Counter()
+        self.clue_keys = collections.Counter()
+        self.trail_skipped = collections.Counter()
 
 
 # --------------------------------------------------------------------------
@@ -268,8 +292,10 @@ def inline_drop(row, weight_key=None):
 
 def render_table(entry):
     lines = ["[[table]]"]
-    npcs = ", ".join(toml_string(name) for name in entry["npc"])
-    lines.append(f"npc = [{npcs}]")
+    # Casket tables (`caskets.py`) belong to no npc and are looked up by `source`.
+    if entry["npc"]:
+        npcs = ", ".join(toml_string(name) for name in entry["npc"])
+        lines.append(f"npc = [{npcs}]")
     lines.append(f"source = {toml_string(entry['source'])}")
 
     table = entry["table"]
@@ -304,6 +330,46 @@ def render_table(entry):
     return "\n".join(lines)
 
 
+def obj_resolver(items, obj_symbols):
+    """A `dropsline` row -> internal obj name (or None), from `infobox_item` rows.
+
+    Three indexes, because a display name is not unique: "Coins" is the name of
+    item 995 but also of the Shilo Village and Mage Training Arena tokens, whose
+    ids sort first. A dropsline row carries the item's *page* (stashed as
+    `_page`), so try that, then the name as it appears on its own page, and only
+    then any page at all.
+    """
+    page_item_ids, canonical_item_ids, named_item_ids = {}, {}, collections.defaultdict(list)
+    for row in items:
+        ids = [int(i) for i in (row.get("item_id") or []) if str(i).isdigit()]
+        if not ids:
+            continue
+        page, name = row.get("page_name"), row.get("item_name")
+        if page:
+            page_item_ids.setdefault(page, []).extend(ids)
+        if name:
+            named_item_ids[name].extend(ids)
+            if name == page:
+                canonical_item_ids.setdefault(name, []).extend(ids)
+
+    def resolve_obj(row):
+        page, name = row.get("_page"), row.get("Dropped item")
+        lookups = (
+            (page, page_item_ids),
+            (name, canonical_item_ids),
+            (name, named_item_ids),
+        )
+        for key, index in lookups:
+            if not key:
+                continue
+            for obj_id in index.get(str(key)) or ():
+                if obj_id in obj_symbols:
+                    return obj_symbols[obj_id]
+        return None
+
+    return resolve_obj
+
+
 def shard_name(source):
     first = source.strip()[:1].lower()
     return f"monsters_{first}.toml" if first.isalpha() else "monsters_misc.toml"
@@ -324,6 +390,12 @@ def main():
     npc_symbols = read_symbols(SYMBOLS / "npc.sym")
     obj_symbols = read_symbols(SYMBOLS / "obj.sym")
     print(f"symbols: {len(npc_symbols)} npcs, {len(obj_symbols)} objs")
+
+    # Three of the keys are ours, so they only exist in the `.local` symbols.
+    known_objs = set(obj_symbols.values()) | set(read_symbols(SYMBOLS / ".local" / "obj.sym").values())
+    missing_keys = sorted(key for key in CLUE_KEYS.values() if key not in known_objs)
+    if missing_keys:
+        raise SystemExit(f"CLUE_KEYS names objs with no symbol: {missing_keys}")
 
     print("fetching dropsline ...")
     drops = bucket("dropsline", ["item_name", "drop_json"])
@@ -353,39 +425,8 @@ def main():
             if anchor:
                 index[f"{key}#{anchor}"] |= ids
 
-    # Three indexes, because a display name is not unique: "Coins" is the name of
-    # item 995 but also of the Shilo Village and Mage Training Arena tokens, whose
-    # ids sort first. A dropsline row carries the item's *page*, so try that, then
-    # the name as it appears on its own page, and only then any page at all.
-    page_item_ids, canonical_item_ids, named_item_ids = {}, {}, collections.defaultdict(list)
-    for row in items:
-        ids = [int(i) for i in (row.get("item_id") or []) if str(i).isdigit()]
-        if not ids:
-            continue
-        page, name = row.get("page_name"), row.get("item_name")
-        if page:
-            page_item_ids.setdefault(page, []).extend(ids)
-        if name:
-            named_item_ids[name].extend(ids)
-            if name == page:
-                canonical_item_ids.setdefault(name, []).extend(ids)
-
+    resolve_obj = obj_resolver(items, obj_symbols)
     report = Report()
-
-    def resolve_obj(row):
-        page, name = row.get("_page"), row.get("Dropped item")
-        lookups = (
-            (page, page_item_ids),
-            (name, canonical_item_ids),
-            (name, named_item_ids),
-        )
-        for key, index in lookups:
-            if not key:
-                continue
-            for obj_id in index.get(str(key)) or ():
-                if obj_id in obj_symbols:
-                    return obj_symbols[obj_id]
-        return None
 
     by_monster = collections.defaultdict(list)
     for row in drops:
@@ -419,10 +460,18 @@ def main():
 
         rows = []
         for wiki_row in wiki_rows:
-            obj = resolve_obj(wiki_row)
-            if obj is None:
-                report.unresolved_items[str(wiki_row.get("Dropped item"))] += 1
-                continue
+            item = str(wiki_row.get("Dropped item"))
+            if item in CLUE_KEYS:
+                obj = CLUE_KEYS[item]
+                report.clue_keys[item] += 1
+            else:
+                obj = resolve_obj(wiki_row)
+                if obj is None:
+                    report.unresolved_items[item] += 1
+                    continue
+                if obj.startswith(TRAIL_PREFIX):
+                    report.trail_skipped[f"{item} ({obj})"] += 1
+                    continue
             rate = parse_rarity(wiki_row.get("Rarity"))
             if rate is None:
                 report.unparsed_rarity[str(wiki_row.get("Rarity"))] += 1
@@ -515,6 +564,26 @@ def write_report(report, entries, claimed, dry_run):
     ]
     for source, count in sorted(report.unresolved_monsters, key=lambda x: -x[1]):
         lines.append(f"- {source} ({count} drops)")
+
+    lines += [
+        "",
+        "## Clue scrolls imported as keys",
+        "",
+        "Kept at the wiki rate as the key of the same tier; see `CLUE_KEYS`.",
+        "",
+    ]
+    for name, count in report.clue_keys.most_common():
+        lines.append(f"- {name} -> `{CLUE_KEYS[name]}` ({count} rows)")
+
+    lines += [
+        "",
+        "## Trail items skipped",
+        "",
+        "Clue-step keys, reward caskets and master clues. Nothing implements trails.",
+        "",
+    ]
+    for name, count in report.trail_skipped.most_common():
+        lines.append(f"- {name} ({count} rows)")
 
     lines += ["", "## Items with no rev-233 obj id", ""]
     for name, count in report.unresolved_items.most_common():

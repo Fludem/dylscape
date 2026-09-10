@@ -85,6 +85,28 @@ constructor(
         return Result(assignments, errors, unattackable)
     }
 
+    /**
+     * Loads a `[[table]]` file that is keyed by `source` rather than by npc, such as the clue
+     * chest's reward caskets. [anchor] is the class whose package the resource sits in, so another
+     * module can keep its own tables beside its own code.
+     *
+     * Same leniency as [load]: a bad table is left out and explained in [SourceResult.errors].
+     */
+    fun loadSources(anchor: Class<*>, fileName: String): SourceResult {
+        val bytes =
+            anchor.getResourceAsStream(fileName)?.use { it.readAllBytes() }
+                ?: return SourceResult(emptyMap(), listOf("No '$fileName' beside ${anchor.name}."))
+        val errors = mutableListOf<String>()
+        val tables = mutableMapOf<String, DropTable>()
+        for (entry in mapper.readValue(bytes, DropTableShard::class.java).table) {
+            val table = entry.toDropTable(errors) ?: continue
+            if (tables.put(entry.source, table) != null) {
+                errors += "${entry.source}: more than one table has this source."
+            }
+        }
+        return SourceResult(tables, errors)
+    }
+
     private inline fun <reified T> read(fileName: String): T {
         val bytes = InputStreams.readAllBytes<DropTableResourceLoader>(fileName)
         return mapper.readValue(bytes, T::class.java)
@@ -192,6 +214,8 @@ constructor(
         /** Npcs the wiki gave a table but that cannot be attacked in this cache. */
         val unattackable: List<String>,
     )
+
+    class SourceResult(val tables: Map<String, DropTable>, val errors: List<String>)
 
     private companion object {
         private const val INDEX_FILE = "index.toml"

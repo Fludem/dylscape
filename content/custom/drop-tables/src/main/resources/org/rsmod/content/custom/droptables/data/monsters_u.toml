@@ -72,7 +72,7 @@ tertiary = [
   { one_in = 75, obj = "hosdun_grubby_key" },
   { one_in = 95, obj = "jangerberry_bush_seed" },
   { one_in = 97, obj = "unidentified_avantoe", count = 1, count_max = 3 },
-  { one_in = 100, obj = "trail_clue_hard_sextant026" },
+  { one_in = 100, obj = "trail_key_hard" },
   { one_in = 103, obj = "tarromin_seed" },
   { one_in = 105, obj = "wildblood_hop_seed" },
   { one_in = 116, obj = "unidentified_kwuarm", count = 1, count_max = 3 },

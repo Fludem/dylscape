@@ -32,7 +32,7 @@ tertiary = [
   { one_in = 127, obj = "steam_battlestaff" },
   { one_in = 127, obj = "zamorak_spear" },
   { one_in = 156, obj = "uncut_sapphire" },
-  { one_in = 250, obj = "trail_elite_anagram_exp12" },
+  { one_in = 250, obj = "trail_elite_riddle_key32" },
   { one_in = 313, obj = "uncut_emerald" },
   { one_in = 406, obj = "rune_sword" },
   { one_in = 508, obj = "godwars_godsword_hilt_zamorak" },
@@ -210,7 +210,7 @@ tertiary = [
   { one_in = 63, obj = "unidentified_ranarr", count = 25, noted = true },
   { one_in = 63, obj = "unidentified_snapdragon", count = 25, noted = true },
   { one_in = 63, obj = "unidentified_torstol", count = 25, noted = true },
-  { one_in = 100, obj = "trail_elite_anagram_exp12" },
+  { one_in = 100, obj = "trail_elite_riddle_key32" },
   { one_in = 128, obj = "poh_trophydrop_kalphitequeen" },
   { one_in = 128, obj = "dragon_chainbody" },
   { one_in = 256, obj = "dragon_2h_sword" },
@@ -484,7 +484,7 @@ tertiary = [
 [[table]]
 npc = ["king_dragon", "twocats_kbd_cutscene"]
 source = "King Black Dragon"
-always = [{ obj = "dragon_bones" }, { obj = "dragonhide_black", count = 2 }, { obj = "trail_elite_riddle_key32" }]
+always = [{ obj = "dragon_bones" }, { obj = "dragonhide_black", count = 2 }]
 out_of = 10000000
 drop = [
   { weight = 781250, obj = "rune_longsword" },
@@ -515,7 +515,7 @@ drop = [
   { weight = 63476, obj = "uncut_sapphire" },
   { weight = 31738, obj = "uncut_emerald" },
   { weight = 24414, obj = "runite_bar" },
-  { weight = 22222, obj = "trail_elite_anagram_exp12" },
+  { weight = 22222, obj = "trail_elite_riddle_key32" },
   { weight = 15869, obj = "uncut_ruby" },
   { weight = 14648, obj = "naturerune", count = 67 },
   { weight = 14648, obj = "rune_2h_sword" },
@@ -612,7 +612,7 @@ drop = [
   { weight = 111607, obj = "mind_talisman" },
   { weight = 111607, obj = "water_talisman" },
   { weight = 87873, obj = "unidentified_tarromin" },
-  { weight = 78125, obj = "trail_clue_medium_map002" },
+  { weight = 78125, obj = "trail_clue_medium_riddle001_key" },
   { weight = 68353, obj = "unidentified_harralander" },
   { weight = 53706, obj = "unidentified_ranarr" },
   { weight = 50000, obj = "cata_shard" },
@@ -665,7 +665,7 @@ out_of = 10000000
 drop = [
   { weight = 2500000, obj = "looting_bag_open" },
   { weight = 400000, obj = "arceuus_corpse_scorpion" },
-  { weight = 100000, obj = "trail_clue_beginner" },
+  { weight = 100000, obj = "trail_key_beginner" },
   { weight = 33784, obj = "slayer_enchantment" },
   { weight = 12642, obj = "slayer_wilderness_key" },
   { weight = 6953574 },
@@ -679,7 +679,7 @@ out_of = 10000000
 drop = [
   { weight = 1290323, obj = "coins", count = 2000, count_max = 3000 },
   { weight = 806452, obj = "naturerune", count = 10 },
-  { weight = 781250, obj = "trail_clue_hard_sextant026" },
+  { weight = 781250, obj = "trail_key_hard" },
   { weight = 564516, obj = "naturerune", count = 15 },
   { weight = 483871, obj = "limpwurt_seed" },
   { weight = 483871, obj = "flax", count = 100, noted = true },
@@ -756,7 +756,7 @@ out_of = 10000000
 drop = [
   { weight = 3333333, obj = "looting_bag_open" },
   { weight = 166667, obj = "ecumenical_key" },
-  { weight = 78125, obj = "trail_clue_hard_sextant026" },
+  { weight = 78125, obj = "trail_key_hard" },
   { weight = 6421875 },
 ]
 
@@ -775,7 +775,7 @@ drop = [
   { weight = 185185, obj = "potato_seed", count = 4 },
   { weight = 136986, obj = "onion_seed", count = 4 },
   { weight = 91743, obj = "cabbage_seed", count = 4 },
-  { weight = 78125, obj = "trail_clue_medium_map002" },
+  { weight = 78125, obj = "trail_clue_medium_riddle001_key" },
   { weight = 5459, obj = "watermelon_seed", count = 2 },
   { weight = 2502 },
 ]
@@ -893,7 +893,7 @@ drop = [
 tertiary = [
   { one_in = 128, obj = "dragonstone_ring" },
   { one_in = 400, obj = "kraken_tentacle" },
-  { one_in = 500, obj = "trail_elite_anagram_exp12" },
+  { one_in = 500, obj = "trail_elite_riddle_key32" },
   { one_in = 512, obj = "tots" },
   { one_in = 512, obj = "uncut_emerald" },
   { one_in = 1024, obj = "uncut_ruby" },
@@ -924,7 +924,7 @@ drop = [
   { weight = 629921, obj = "unidentified_dwarf_weed", count = 8, count_max = 13, noted = true },
   { weight = 629921, obj = "dwarf_weed_seed", count = 2 },
   { weight = 200000, obj = "konar_key" },
-  { weight = 40000, obj = "trail_elite_anagram_exp12" },
+  { weight = 40000, obj = "trail_elite_riddle_key32" },
   { weight = 19685, obj = "godwars_godsword_hilt_armadyl" },
   { weight = 160 },
 ]
@@ -1027,7 +1027,7 @@ drop = [
   { weight = 5, obj = "coins", count = 50 },
   { weight = 5, obj = "coins", count = 96 },
   { weight = 5, obj = "coins", count = 120 },
-  { weight = 4, obj = "trail_easy_map_exp1" },
+  { weight = 4, obj = "trail_key_easy" },
   { weight = 2, obj = "eye_of_newt" },
   { weight = 2, obj = "snape_grass" },
   { weight = 2, obj = "jangerberries" },
@@ -1097,7 +1097,7 @@ drop = [
   { weight = 112108, obj = "avantoe_seed" },
   { weight = 106496, obj = "cactus_seed" },
   { weight = 90744, obj = "unidentified_irit" },
-  { weight = 78125, obj = "trail_clue_hard_sextant026" },
+  { weight = 78125, obj = "trail_key_hard" },
   { weight = 77700, obj = "potato_cactus_seed" },
   { weight = 76570, obj = "kwuarm_seed" },
   { weight = 68027, obj = "unidentified_avantoe" },

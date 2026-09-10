@@ -258,7 +258,7 @@ tertiary = [
   { one_in = 128, obj = "rune_longsword" },
   { one_in = 128, obj = "coins", count = 690 },
   { one_in = 128, obj = "adamantite_bar" },
-  { one_in = 128, obj = "trail_clue_hard_sextant026" },
+  { one_in = 128, obj = "trail_key_hard" },
   { one_in = 205, obj = "uncut_emerald" },
   { one_in = 341, obj = "unidentified_marentill" },
   { one_in = 410, obj = "uncut_ruby" },
@@ -296,7 +296,7 @@ out_of = 10000000
 drop = [
   { weight = 900901, obj = "unidentified_guam", count = 1, count_max = 3 },
   { weight = 781250, obj = "limpwurt_seed", count = 3, count_max = 11 },
-  { weight = 781250, obj = "trail_clue_hard_sextant026" },
+  { weight = 781250, obj = "trail_key_hard" },
   { weight = 675676, obj = "unidentified_marentill", count = 1, count_max = 3 },
   { weight = 625000, obj = "uncut_sapphire" },
   { weight = 505051, obj = "unidentified_tarromin", count = 1, count_max = 3 },
@@ -1190,7 +1190,6 @@ tertiary = [
 [[table]]
 npc = ["horror_rockcrab", "horror_rockcrab_inactive", "horror_rockcrab_small", "horror_rockcrab_small_inactive"]
 source = "Rock Crab"
-always = [{ obj = "trail_reward_casket_elite" }]
 out_of = 10000000
 drop = [
   { weight = 2265625, obj = "coins", count = 4 },
@@ -1215,7 +1214,7 @@ drop = [
   { weight = 78125, obj = "smalloysterpearls" },
   { weight = 78125, obj = "spinach_roll" },
   { weight = 78125, obj = "casket" },
-  { weight = 78125, obj = "trail_easy_map_exp1" },
+  { weight = 78125, obj = "trail_key_easy" },
   { weight = 19531, obj = "uncut_sapphire" },
   { weight = 9766, obj = "uncut_emerald" },
   { weight = 4883, obj = "uncut_ruby" },
@@ -1283,7 +1282,7 @@ drop = [
   { weight = 781250, obj = "edible_seaweed", count = 1, count_max = 3 },
   { weight = 781250, obj = "lobster_pot" },
   { weight = 781250, obj = "tinderbox" },
-  { weight = 78125, obj = "trail_clue_medium_map002" },
+  { weight = 78125, obj = "trail_clue_medium_riddle001_key" },
   { weight = 58582, obj = "unidentified_guam" },
   { weight = 44643, obj = "air_talisman" },
   { weight = 44643, obj = "body_talisman" },
@@ -1404,7 +1403,7 @@ drop = [
   { weight = 156250, obj = "earth_talisman" },
   { weight = 154321, obj = "unidentified_ranarr" },
   { weight = 112360, obj = "unidentified_irit" },
-  { weight = 111111, obj = "trail_clue_beginner" },
+  { weight = 111111, obj = "trail_key_beginner" },
   { weight = 84246, obj = "unidentified_avantoe" },
   { weight = 32573, obj = "slayer_enchantment" },
   { weight = 5645 },
@@ -1414,7 +1413,7 @@ tertiary = [
   { one_in = 128, obj = "chaosrune", count = 2 },
   { one_in = 128, obj = "coins", count = 25 },
   { one_in = 128, obj = "cabbage" },
-  { one_in = 128, obj = "trail_easy_map_exp1" },
+  { one_in = 128, obj = "trail_key_easy" },
   { one_in = 142, obj = "unidentified_kwuarm" },
   { one_in = 178, obj = "unidentified_cadantine" },
   { one_in = 237, obj = "unidentified_lantadyme" },
@@ -1430,7 +1429,7 @@ out_of = 10000000
 drop = [
   { weight = 5000000, obj = "feather", count = 5 },
   { weight = 2500000, obj = "feather", count = 15 },
-  { weight = 33333, obj = "trail_clue_beginner" },
+  { weight = 33333, obj = "trail_key_beginner" },
   { weight = 2466667 },
 ]
 
@@ -1464,7 +1463,7 @@ drop = [
   { weight = 196850, obj = "unidentified_avantoe" },
   { weight = 157480, obj = "unidentified_ranarr" },
   { weight = 118106, obj = "unidentified_torstol" },
-  { weight = 33333, obj = "trail_elite_anagram_exp12" },
+  { weight = 33333, obj = "trail_elite_riddle_key32" },
   { weight = 2000, obj = "dragon_lump" },
   { weight = 769, obj = "uncut_ruby" },
   { weight = 96, obj = "rune_javelin", count = 5 },
@@ -1533,13 +1532,13 @@ tertiary = [
   { one_in = 64, obj = "earth_talisman" },
   { one_in = 65, obj = "unidentified_ranarr" },
   { one_in = 89, obj = "unidentified_irit" },
-  { one_in = 90, obj = "trail_clue_beginner" },
+  { one_in = 90, obj = "trail_key_beginner" },
   { one_in = 119, obj = "unidentified_avantoe" },
   { one_in = 128, obj = "iron_dagger" },
   { one_in = 128, obj = "chaosrune", count = 2 },
   { one_in = 128, obj = "coins", count = 25 },
   { one_in = 128, obj = "cabbage" },
-  { one_in = 128, obj = "trail_easy_map_exp1" },
+  { one_in = 128, obj = "trail_key_easy" },
   { one_in = 142, obj = "unidentified_kwuarm" },
   { one_in = 178, obj = "unidentified_cadantine" },
   { one_in = 237, obj = "unidentified_lantadyme" },

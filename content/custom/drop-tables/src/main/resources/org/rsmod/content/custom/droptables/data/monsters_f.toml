@@ -29,7 +29,7 @@ drop = [
   { weight = 156250, obj = "mindrune", count = 9 },
   { weight = 156250, obj = "copper_ore" },
   { weight = 156250, obj = "earth_talisman" },
-  { weight = 111111, obj = "trail_clue_beginner" },
+  { weight = 111111, obj = "trail_key_beginner" },
   { weight = 78125, obj = "iron_dagger" },
   { weight = 78125, obj = "chaosrune", count = 2 },
   { weight = 78125, obj = "coins", count = 25 },
@@ -73,7 +73,7 @@ tertiary = [
   { one_in = 126, obj = "harralander_seed" },
   { one_in = 128, obj = "bloodrune", count = 2 },
   { one_in = 128, obj = "uncut_sapphire" },
-  { one_in = 128, obj = "trail_clue_medium_map002" },
+  { one_in = 128, obj = "trail_clue_medium_riddle001_key" },
   { one_in = 149, obj = "unidentified_ranarr" },
   { one_in = 176, obj = "snape_grass_seed" },
   { one_in = 181, obj = "ranarr_seed" },
@@ -110,7 +110,6 @@ tertiary = [
 [[table]]
 npc = ["brut_angry_spirit_bad"]
 source = "Ferocious barbarian spirit"
-always = [{ obj = "trail_reward_casket_elite" }]
 out_of = 10000000
 drop = [
   { weight = 1250000, obj = "brutal_1doseprayerrestore" },
@@ -350,7 +349,7 @@ drop = [
   { weight = 1640625, obj = "firerune", count = 30 },
   { weight = 1562500, obj = "coins", count = 120 },
   { weight = 781250, obj = "coins", count = 200 },
-  { weight = 781250, obj = "trail_clue_medium_map002" },
+  { weight = 781250, obj = "trail_clue_medium_riddle001_key" },
   { weight = 14648, obj = "uncut_ruby" },
   { weight = 8741, obj = "slayer_eternal_gem" },
   { weight = 1831, obj = "rune_javelin", count = 5 },
@@ -479,7 +478,7 @@ drop = [
 ]
 tertiary = [
   { one_in = 20, obj = "nex_frozen_key_armadyl" },
-  { one_in = 128, obj = "trail_clue_hard_sextant026" },
+  { one_in = 128, obj = "trail_key_hard" },
   { one_in = 130, obj = "coins", count = 1000, count_max = 1100 },
   { one_in = 169, obj = "coins", count = 1000, count_max = 1100 },
 ]
@@ -509,7 +508,7 @@ drop = [
 ]
 tertiary = [
   { one_in = 20, obj = "nex_frozen_key_armadyl" },
-  { one_in = 128, obj = "trail_clue_hard_sextant026" },
+  { one_in = 128, obj = "trail_key_hard" },
   { one_in = 130, obj = "coins", count = 1000, count_max = 1100 },
   { one_in = 169, obj = "coins", count = 1000, count_max = 1100 },
 ]
@@ -616,7 +615,7 @@ drop = [
   { weight = 195312, obj = "coins", count = 20 },
   { weight = 97656, obj = "coins", count = 38 },
   { weight = 78125, obj = "eye_of_newt" },
-  { weight = 78125, obj = "trail_easy_map_exp1" },
+  { weight = 78125, obj = "trail_key_easy" },
   { weight = 48828, obj = "unidentified_guam" },
   { weight = 39062, obj = "beer" },
   { weight = 39062, obj = "snape_grass" },
@@ -699,7 +698,7 @@ source = "Frog"
 always = [{ obj = "bones" }]
 out_of = 10000000
 drop = [
-  { weight = 111111, obj = "trail_clue_beginner" },
+  { weight = 111111, obj = "trail_key_beginner" },
   { weight = 9888889 },
 ]
 
@@ -747,7 +746,7 @@ drop = [
 ]
 tertiary = [
   { one_in = 90, obj = "frozen_tear", count = 5 },
-  { one_in = 128, obj = "trail_easy_map_exp1" },
+  { one_in = 128, obj = "trail_key_easy" },
   { one_in = 360, obj = "uncut_sapphire" },
   { one_in = 720, obj = "uncut_emerald" },
   { one_in = 1354, obj = "varlamore_key_half_1" },

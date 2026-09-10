@@ -154,7 +154,7 @@ drop = [
   { weight = 312500, obj = "earth_talisman" },
   { weight = 131579, obj = "konar_key" },
   { weight = 78125, obj = "uncut_sapphire" },
-  { weight = 78125, obj = "trail_clue_hard_sextant026" },
+  { weight = 78125, obj = "trail_key_hard" },
   { weight = 19531, obj = "uncut_ruby" },
   { weight = 4883, obj = "uncut_diamond" },
   { weight = 153, obj = "tbwt_rune_spear_kp" },
@@ -200,7 +200,7 @@ drop = [
   { weight = 5, obj = "coins", count = 50 },
   { weight = 5, obj = "coins", count = 96 },
   { weight = 5, obj = "coins", count = 120 },
-  { weight = 4, obj = "trail_easy_map_exp1" },
+  { weight = 4, obj = "trail_key_easy" },
   { weight = 2, obj = "eye_of_newt" },
   { weight = 2, obj = "snape_grass" },
   { weight = 2, obj = "jangerberries" },
@@ -277,7 +277,7 @@ tertiary = [
   { one_in = 90, obj = "slayer_wilderness_key" },
   { one_in = 100, obj = "unidentified_lantadyme", count = 1, count_max = 4 },
   { one_in = 100, obj = "unidentified_dwarf_weed", count = 1, count_max = 4 },
-  { one_in = 128, obj = "trail_clue_hard_sextant026" },
+  { one_in = 128, obj = "trail_key_hard" },
   { one_in = 129, obj = "naturerune", count = 12 },
   { one_in = 129, obj = "snape_grass", count = 4 },
   { one_in = 129, obj = "unholy_symbol_mould" },
@@ -369,7 +369,7 @@ source = "Eldric the Ice King"
 out_of = 10000000
 drop = [
   { weight = 625000, obj = "giantsoul_amulet_charged" },
-  { weight = 400000, obj = "trail_clue_hard_sextant026" },
+  { weight = 400000, obj = "trail_key_hard" },
   { weight = 357143, obj = "mystic_water_staff", count = 4, noted = true },
   { weight = 357143, obj = "water_battlestaff", count = 6, noted = true },
   { weight = 357143, obj = "rune_platelegs", count = 2 },
@@ -406,7 +406,7 @@ tertiary = [
   { one_in = 56, obj = "yew_seed", count = 2 },
   { one_in = 75, obj = "twinflame_piece_1" },
   { one_in = 75, obj = "deadeye_prayer_scroll" },
-  { one_in = 100, obj = "trail_elite_anagram_exp12" },
+  { one_in = 100, obj = "trail_elite_riddle_key32" },
 ]
 
 [[table]]
@@ -440,7 +440,7 @@ drop = [
   { weight = 78125, obj = "rune_dagger" },
   { weight = 78125, obj = "mourning_teleport_crystal_1" },
   { weight = 78125, obj = "adamantite_ore" },
-  { weight = 78125, obj = "trail_clue_hard_sextant026" },
+  { weight = 78125, obj = "trail_key_hard" },
   { weight = 73260, obj = "unidentified_irit" },
   { weight = 54945, obj = "unidentified_avantoe" },
   { weight = 48828, obj = "uncut_emerald" },
@@ -493,7 +493,7 @@ drop = [
   { weight = 78125, obj = "rune_dagger" },
   { weight = 78125, obj = "mourning_teleport_crystal_1" },
   { weight = 78125, obj = "adamantite_ore" },
-  { weight = 78125, obj = "trail_clue_hard_sextant026" },
+  { weight = 78125, obj = "trail_key_hard" },
   { weight = 73260, obj = "unidentified_irit" },
   { weight = 54945, obj = "unidentified_avantoe" },
   { weight = 48828, obj = "uncut_emerald" },
@@ -639,7 +639,7 @@ drop = [
   { weight = 100705, obj = "unidentified_ranarr" },
   { weight = 78125, obj = "steel_pickaxe" },
   { weight = 78125, obj = "mindrune", count = 2 },
-  { weight = 78125, obj = "trail_clue_medium_map002" },
+  { weight = 78125, obj = "trail_clue_medium_riddle001_key" },
   { weight = 73260, obj = "unidentified_irit" },
   { weight = 58593, obj = "uncut_sapphire" },
   { weight = 54945, obj = "unidentified_avantoe" },
@@ -688,7 +688,7 @@ drop = [
   { weight = 100705, obj = "unidentified_ranarr" },
   { weight = 78125, obj = "steel_pickaxe" },
   { weight = 78125, obj = "mindrune", count = 2 },
-  { weight = 78125, obj = "trail_clue_medium_map002" },
+  { weight = 78125, obj = "trail_clue_medium_riddle001_key" },
   { weight = 73260, obj = "unidentified_irit" },
   { weight = 58593, obj = "uncut_sapphire" },
   { weight = 54945, obj = "unidentified_avantoe" },
@@ -758,7 +758,7 @@ source = "Enraged Boar"
 always = [{ obj = "raw_boar_meat" }, { obj = "bones" }]
 out_of = 128
 drop = [
-  { weight = 1, obj = "trail_clue_beginner" },
+  { weight = 1, obj = "trail_key_beginner" },
   { weight = 127 },
 ]
 
@@ -803,7 +803,7 @@ drop = [
   { weight = 78125, obj = "rune_scimitar" },
   { weight = 78125, obj = "battlestaff" },
   { weight = 78125, obj = "coins", count = 323 },
-  { weight = 78125, obj = "trail_clue_medium_map002" },
+  { weight = 78125, obj = "trail_clue_medium_riddle001_key" },
   { weight = 73260, obj = "unidentified_marentill" },
   { weight = 54945, obj = "unidentified_tarromin" },
   { weight = 42717, obj = "unidentified_harralander" },
@@ -912,7 +912,7 @@ tertiary = [
   { one_in = 85, obj = "uncut_sapphire" },
   { one_in = 98, obj = "unidentified_cadantine" },
   { one_in = 128, obj = "mystic_earth_staff" },
-  { one_in = 128, obj = "trail_clue_hard_sextant026" },
+  { one_in = 128, obj = "trail_key_hard" },
   { one_in = 130, obj = "unidentified_lantadyme" },
   { one_in = 130, obj = "unidentified_dwarf_weed" },
   { one_in = 171, obj = "uncut_emerald" },
