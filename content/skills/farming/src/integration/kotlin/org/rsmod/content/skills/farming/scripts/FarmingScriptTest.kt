@@ -254,38 +254,50 @@ class FarmingScriptTest {
 
     /**
      * The bug this pins: a patch is a multiloc, and by the time "use item on loc" reaches
-     * [LocUInteractions] the loc has already been resolved down to the child face the player can
+     * `LocUInteractions` the loc has already been resolved down to the child face the player can
      * see. A handler registered against the parent - the loc that is actually on the map, and the
-     * only one [FarmingScript] knows about - was never consulted, so every seed, compost bucket
-     * and watering can on every patch answered "Nothing interesting happens."
+     * only one [FarmingScript] knows about - was never consulted, so every seed, compost bucket and
+     * watering can used on any patch answered "Nothing interesting happens."
+     *
+     * Driven through both halves of the real dispatch: `LocTInteractions` decides which script owns
+     * the click and resolves the face, then `LocUInteractions` is handed exactly what
+     * `LocUOpScript` hands it. The `OpLocT` packet itself is not replayed because the handler ahead
+     * of it wants the inventory interface open with `TgtLoc` armed, which is the client's side of
+     * the conversation and not what was broken.
      */
     @Test
-    fun GameTestState.`using a seed on a patch resolves to the patch handler`() =
+    fun GameTestState.`a seed is planted by using it on the patch`() =
         runInjectedGameTest(Deps::class, null, FarmingScript::class, LocUOpScript::class) { deps ->
             val patch = placeMapLoc(TILE, locTypes[FarmingLocs.farming_herb_patch_1])
             player.teleport(patch.coords.translateX(-1))
             player.clearInv()
+            player.setBaseLevel(stats.farming, 99)
+            player.setCurrentLevel(stats.farming, 99)
             player.inv[0] = InvObj(guam.seed)
+            player.inv[1] = InvObj(FarmingObjs.dibber)
+
+            val state = deps.registry[player][FarmingPatches.byLoc.getValue(patch.id)]
+            state.clear(System.currentTimeMillis())
 
             val seed = deps.objTypes[guam.seed]
-            val locT =
-                deps.locT.opTrigger(player, patch, seed, components.inv_items, comsub = 0)
-                    as? LocTDefaultEvents.Op
-            assertTrue(locT != null) { "The inventory-on-loc handler should own this click." }
-            checkNotNull(locT)
-
-            assertTrue(locT.vis.id != locT.loc.id) {
+            val click = deps.locT.opTrigger(player, patch, seed, components.inv_items, comsub = 0)
+            assertTrue(click is LocTDefaultEvents.Op) {
+                "The engine's inventory-on-loc script should own this click."
+            }
+            check(click is LocTDefaultEvents.Op)
+            assertTrue(click.vis.id != click.loc.id) {
                 "A patch must resolve to a multiloc face, or this test proves nothing."
             }
 
             player.withProtectedAccess {
-                val trigger =
-                    with(deps.locU) { opTrigger(locT.vis, locT.loc, locT.type, seed, invSlot = 0) }
-                assertTrue(trigger != null) {
-                    "No script found for a seed on the patch: the parent multiloc " +
-                        "(${locT.loc.id}) was skipped in favour of the face (${locT.vis.id})."
-                }
+                deps.locU.interactOp(this, click.vis, click.loc, click.type, seed, inv, invSlot = 0)
             }
+            advance(ticks = 3)
+
+            assertEquals(seed.id, state.seedId) {
+                "Using a seed on a weeded patch should plant it, not answer with the engine default."
+            }
+            assertEquals(0, player.count(guam.seed)) { "Planting should take the seed." }
         }
 
     private fun grownAgo(crop: FarmingCrop): Long =

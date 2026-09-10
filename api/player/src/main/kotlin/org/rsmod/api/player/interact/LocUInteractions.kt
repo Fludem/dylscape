@@ -71,7 +71,33 @@ private constructor(
         }
     }
 
+    /**
+     * Resolves the script for [objType] used on [target].
+     *
+     * [target] arrives already resolved to the multiloc face the player can see -
+     * `LocTInteractions` descends before this runs, and hands the face over as the loc type - so a
+     * script registered against the *parent* multiloc, the loc that is actually on the map, would
+     * never be reached. [base] is therefore retried once the face turns up nothing, which is what
+     * the plain loc-op path gets for free by descending and unwinding within a single lookup.
+     */
     public fun ProtectedAccess.opTrigger(
+        target: BoundLocInfo,
+        base: BoundLocInfo,
+        locType: UnpackedLocType,
+        objType: UnpackedObjType,
+        invSlot: Int,
+    ): OpEvent? {
+        val resolved = faceOpTrigger(target, base, locType, objType, invSlot)
+        if (resolved != null) {
+            return resolved
+        }
+        if (base.entity.id == target.entity.id) {
+            return null
+        }
+        return faceOpTrigger(base, base, locTypes[base], objType, invSlot)
+    }
+
+    private fun ProtectedAccess.faceOpTrigger(
         target: BoundLocInfo,
         base: BoundLocInfo,
         locType: UnpackedLocType,
@@ -81,7 +107,7 @@ private constructor(
         val multiLoc = multiLoc(target, locType, player.vars)
         if (multiLoc != null) {
             val multiLocType = locTypes[multiLoc]
-            val multiLocTrigger = opTrigger(multiLoc, base, multiLocType, objType, invSlot)
+            val multiLocTrigger = faceOpTrigger(multiLoc, base, multiLocType, objType, invSlot)
             if (multiLocTrigger != null) {
                 return multiLocTrigger
             }
@@ -145,7 +171,25 @@ private constructor(
         apRange(-1)
     }
 
+    /** The ap counterpart of [opTrigger]; the same parent-multiloc retry applies. */
     private fun ProtectedAccess.apTrigger(
+        target: BoundLocInfo,
+        base: BoundLocInfo,
+        locType: UnpackedLocType,
+        objType: UnpackedObjType,
+        invSlot: Int,
+    ): ApEvent? {
+        val resolved = faceApTrigger(target, base, locType, objType, invSlot)
+        if (resolved != null) {
+            return resolved
+        }
+        if (base.entity.id == target.entity.id) {
+            return null
+        }
+        return faceApTrigger(base, base, locTypes[base], objType, invSlot)
+    }
+
+    private fun ProtectedAccess.faceApTrigger(
         target: BoundLocInfo,
         base: BoundLocInfo,
         locType: UnpackedLocType,
@@ -155,7 +199,7 @@ private constructor(
         val multiLoc = multiLoc(target, locType, player.vars)
         if (multiLoc != null) {
             val multiLocType = locTypes[multiLoc]
-            val multiLocTrigger = apTrigger(multiLoc, base, multiLocType, objType, invSlot)
+            val multiLocTrigger = faceApTrigger(multiLoc, base, multiLocType, objType, invSlot)
             if (multiLocTrigger != null) {
                 return multiLocTrigger
             }
