@@ -170,6 +170,79 @@ class PickpocketingTest {
         }
 
     /**
+     * The item half of a rung's table.
+     *
+     * `SequenceRandom.of` returns the queued value untouched, so a zero on the table roll lands on
+     * the rogue's first row — air runes — and the count queued after it is multiplied by the 5x
+     * loot rate. Before the tables existed, every rogue pickpocket paid a purse and nothing else.
+     */
+    @Test
+    fun GameTestState.`a rogue can pay an item instead of its purse`() =
+        runGameTest(Pickpocketing::class) {
+            val rogue = spawnTarget("rogue")
+            startThieving(level = 32)
+            random.next = 0 // Success.
+            random.then = 0 // The first row of the table.
+            random.then = 8 // Eight air runes, before the loot multiplier.
+
+            player.opNpc3(rogue)
+            advance(ticks = 1)
+            advance(ticks = PICKPOCKET_DELAY)
+
+            assertEquals(40, player.inv.count(ThievingObjs.airrune)) {
+                "The rogue's table did not pay air runes."
+            }
+            assertEquals(0, player.inv.count(ThievingObjs.pouch_rogue)) {
+                "An item row should replace the purse, not come alongside it."
+            }
+        }
+
+    /**
+     * The other half: a row that loses the roll leaves the purse, which is not a row at all but the
+     * remainder of the denominator. Rolling past every gnome row exercises that arithmetic.
+     */
+    @Test
+    fun GameTestState.`a gnome pays its purse when no row wins the roll`() =
+        runGameTest(Pickpocketing::class) {
+            val gnome = spawnTarget("gnome")
+            startThieving(level = 75)
+            random.next = 0 // Success.
+            random.then = 127 // Past all 98 weight of rows, into the purse's remainder.
+
+            player.opNpc3(gnome)
+            advance(ticks = 1)
+            advance(ticks = PICKPOCKET_DELAY)
+
+            assertEquals(1, player.inv.count(ThievingObjs.pouch_gnome)) {
+                "The gnome rung paid nothing; level 75 gnomes were unbound before this."
+            }
+        }
+
+    /**
+     * Watchmen and paladins are not weighted tables at all — the wiki prints their extras as
+     * `Always`, so the purse and the item both land on every success.
+     */
+    @Test
+    fun GameTestState.`a paladin pays chaos runes alongside its purse`() =
+        runGameTest(Pickpocketing::class) {
+            val paladin = spawnTarget("paladin")
+            startThieving(level = 70)
+            random.next = 0 // Success.
+            random.then = 2 // Two chaos runes, before the loot multiplier.
+
+            player.opNpc3(paladin)
+            advance(ticks = 1)
+            advance(ticks = PICKPOCKET_DELAY)
+
+            assertEquals(10, player.inv.count(ThievingObjs.chaosrune)) {
+                "The paladin's guaranteed chaos runes were not paid."
+            }
+            assertEquals(1, player.inv.count(ThievingObjs.pouch_paladin)) {
+                "An always-drop must come alongside the purse, not replace it."
+            }
+        }
+
+    /**
      * Draynor's Martin, who reads `Martin the Master Gardener` rather than `Master Farmer` and so
      * slipped past the display-name rule the rest of the ladder was built from. He is the first
      * master farmer most accounts ever click, and until he was listed that click did nothing.

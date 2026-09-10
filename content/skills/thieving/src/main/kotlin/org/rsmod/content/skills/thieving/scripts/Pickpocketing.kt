@@ -94,8 +94,8 @@ constructor(private val xpMods: XpModifiers, private val invisibleLvls: Invisibl
 
         if (!hasRoomFor(target.loot)) {
             val holding =
-                when (target.loot) {
-                    is PickpocketLoot.Pouch -> "coin pouches"
+                when (val loot = target.loot) {
+                    is PickpocketLoot.Pouch -> if (loot.paysItems) "loot" else "coin pouches"
                     PickpocketLoot.Seeds -> "seeds"
                 }
             mes("Your inventory is too full to hold any more $holding.")
@@ -126,24 +126,28 @@ constructor(private val xpMods: XpModifiers, private val invisibleLvls: Invisibl
     }
 
     /**
-     * A pouch stacks, so a full bag still has room for one as long as the stack is already there. A
-     * seed is not known until it is rolled, so that branch asks for a genuinely free slot rather
-     * than rolling first and risking loot with nowhere to go — conservative by a slot, and the only
-     * version that cannot silently drop a torstol seed.
+     * Whether a success has somewhere to go.
+     *
+     * A purse stacks, so a rung that pays nothing but a purse still has room in a full bag as long
+     * as the stack is already there — that is the AFK-forever case, and it stays exactly as it was.
+     * Every other case asks for a genuinely free slot: the rolled item is not known until it is
+     * rolled, and most of them (a lockpick, a diamond, a jug of wine) do not stack at all.
+     *
+     * Conservative by a slot, and the only version that cannot silently drop the loot on a roll the
+     * player already paid a stun risk for.
      */
     private fun ProtectedAccess.hasRoomFor(loot: PickpocketLoot): Boolean =
         when (loot) {
-            is PickpocketLoot.Pouch -> !inv.isFull() || invTotal(inv, loot.pouch) > 0
+            is PickpocketLoot.Pouch ->
+                if (loot.paysItems) !inv.isFull()
+                else !inv.isFull() || invTotal(inv, loot.pouch) > 0
             PickpocketLoot.Seeds -> !inv.isFull()
         }
 
     private fun ProtectedAccess.award(npc: Npc, target: PickpocketTarget) {
         val stolen =
             when (val loot = target.loot) {
-                is PickpocketLoot.Pouch -> {
-                    invAdd(inv, loot.pouch)
-                    loot.pouch
-                }
+                is PickpocketLoot.Pouch -> awardPurse(loot)
                 PickpocketLoot.Seeds -> awardSeed()
             }
         statAdvance(
@@ -157,6 +161,37 @@ constructor(private val xpMods: XpModifiers, private val invisibleLvls: Invisibl
         if (target.loot is PickpocketLoot.Pouch) {
             autoOpenPouchesIfFull(target.loot.pouch)
         }
+    }
+
+    /**
+     * Pays one roll of a purse rung, plus whatever that rung always hands over.
+     *
+     * The roll is the wiki's table read literally: one number out of the denominator, walked
+     * against the item rows, with the purse taking everything the rows do not claim. Returns
+     * whatever the roll landed on rather than the extras, so [Pickpocketed] still reports the thing
+     * that varied.
+     */
+    private fun ProtectedAccess.awardPurse(loot: PickpocketLoot.Pouch): ObjType {
+        for (extra in loot.extras) {
+            invAdd(inv, extra.obj, count = random.of(extra.count) * ThievingRates.LOOT_RATE)
+        }
+
+        val table = loot.table
+        if (table == null) {
+            invAdd(inv, loot.pouch)
+            return loot.pouch
+        }
+
+        var cursor = random.of(table.denominator)
+        for (row in table.rows) {
+            cursor -= row.weight
+            if (cursor < 0) {
+                invAdd(inv, row.obj, count = random.of(row.count) * ThievingRates.LOOT_RATE)
+                return row.obj
+            }
+        }
+        invAdd(inv, loot.pouch)
+        return loot.pouch
     }
 
     /**

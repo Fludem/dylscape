@@ -162,6 +162,26 @@ object ThievingTargetNpcs : NpcReferences() {
             "kastori_master_farmer_f_2",
         )
 
+    /**
+     * Level-75 `Gnome`s. Women and children are the same rung wearing a different model, and OSRS
+     * gives all three one table.
+     *
+     * `grim_gnome_incage_1` is the caged gnome from Grim Tales. It reads `Gnome` and carries the op
+     * like the rest, so the module's own rule puts it here rather than making it a special case.
+     */
+    val gnomes: List<NpcType> =
+        refs(
+            "gnome",
+            "browclothedgnome",
+            "darkskinned_gnome",
+            "grim_gnome_incage_1",
+            "gnomefemale",
+            "gnomefemale_dskinned",
+            "gnomechild",
+            "gnomechildblue",
+            "gnomechildgreen",
+        )
+
     /** `Guard` and Kourend's `Head Guard`, which is the same rung wearing a bigger model. */
     val guards: List<NpcType> =
         refs(
@@ -301,13 +321,50 @@ object ThievingTargetNpcs : NpcReferences() {
  */
 sealed interface PickpocketLoot {
     /**
-     * The ladder's default. [coins] is the real OSRS range for the tier; [ThievingRates.LOOT_RATE]
-     * is applied when the pouch is opened.
+     * The ladder's default: a stackable purse, optionally with items around it.
+     *
+     * [coins] is the real OSRS range for the tier; [ThievingRates.LOOT_RATE] is applied when the
+     * pouch is opened. [table] and [extras] are the two ways OSRS pays items on top, and they are
+     * genuinely different mechanics rather than one modelled twice — see each.
      */
-    data class Pouch(val pouch: ObjType, val coins: IntRange) : PickpocketLoot
+    data class Pouch(
+        val pouch: ObjType,
+        val coins: IntRange,
+        /**
+         * Rows that **replace** the purse when they win the roll. Rogues, gnomes and heroes work
+         * this way: one roll per success, and the purse is simply the rows' remainder.
+         */
+        val table: LootTable? = null,
+        /**
+         * Stacks paid **alongside** the purse on every single success. Watchmen (a loaf of bread)
+         * and paladins (two chaos runes) work this way; the wiki prints both as `Always`.
+         */
+        val extras: List<LootStack> = emptyList(),
+    ) : PickpocketLoot {
+        /** True when a success can pay something other than the purse, which needs its own slot. */
+        val paysItems: Boolean = table != null || extras.isNotEmpty()
+    }
 
     /** Master farmers. See [MasterFarmerSeeds]. */
     data object Seeds : PickpocketLoot
+}
+
+/** A guaranteed stack, paid on every success. [count] is pre-[ThievingRates.LOOT_RATE]. */
+data class LootStack(val obj: ObjType, val count: IntRange)
+
+/** One weighted row: [weight] of its table's [LootTable.denominator] outcomes. */
+data class LootRow(val obj: ObjType, val count: IntRange, val weight: Int)
+
+/**
+ * The item half of a rung's table, weighted out of [denominator].
+ *
+ * The purse is not a row. It takes every outcome the rows do not claim, which is exactly how the
+ * wiki prints these tables — a rogue's `Coins 123/144` is the leftover of the four item rows, not a
+ * number anyone has to keep in step by hand. [purseWeight] is therefore derived, and
+ * `ThievingConfigTest` asserts it never goes negative.
+ */
+data class LootTable(val denominator: Int, val rows: List<LootRow>) {
+    val purseWeight: Int = denominator - rows.sumOf(LootRow::weight)
 }
 
 /**
@@ -354,8 +411,23 @@ object ThievingTargets {
         tier(
             npcs.rogues,
             level = 32,
-            xp = 35.5,
-            loot = purse(pouches.pouch_rogue, coins = 18..25),
+            xp = 36.5,
+            loot =
+                purse(
+                    pouches.pouch_rogue,
+                    coins = 25..40,
+                    table =
+                        LootTable(
+                            denominator = 144,
+                            rows =
+                                listOf(
+                                    LootRow(pouches.airrune, 8..8, weight = 9),
+                                    LootRow(pouches.jug_wine, 1..1, weight = 6),
+                                    LootRow(pouches.lockpick, 1..1, weight = 5),
+                                    LootRow(pouches.iron_dagger_p, 1..1, weight = 1),
+                                ),
+                        ),
+                ),
             damage = 1..2,
         )
         // The one rung that pays loot rather than a purse; see `MasterFarmerSeeds`.
@@ -378,21 +450,72 @@ object ThievingTargets {
             npcs.watchmen,
             level = 65,
             xp = 137.5,
-            loot = purse(pouches.pouch_watchman, coins = 45..60),
+            loot =
+                purse(
+                    pouches.pouch_watchman,
+                    coins = 60..60,
+                    extras = listOf(LootStack(pouches.bread, 1..1)),
+                ),
             damage = 2..3,
         )
         tier(
             npcs.paladins,
             level = 70,
-            xp = 151.75,
-            loot = purse(pouches.pouch_paladin, coins = 60..80),
+            xp = 131.8,
+            loot =
+                purse(
+                    pouches.pouch_paladin,
+                    coins = 80..80,
+                    extras = listOf(LootStack(pouches.chaosrune, 2..2)),
+                ),
             damage = 3..3,
+        )
+        tier(
+            npcs.gnomes,
+            level = 75,
+            xp = 133.3,
+            loot =
+                purse(
+                    pouches.pouch_gnome,
+                    coins = 300..300,
+                    table =
+                        LootTable(
+                            denominator = 128,
+                            rows =
+                                listOf(
+                                    LootRow(pouches.arrow_shaft, 2..4, weight = 56),
+                                    LootRow(pouches.swamp_toad, 1..1, weight = 24),
+                                    LootRow(pouches.gold_ore, 1..1, weight = 8),
+                                    LootRow(pouches.earthrune, 1..1, weight = 5),
+                                    LootRow(pouches.king_worm, 1..1, weight = 3),
+                                    LootRow(pouches.fire_orb, 1..1, weight = 2),
+                                ),
+                        ),
+                ),
+            damage = 1..1,
         )
         tier(
             npcs.heroes,
             level = 80,
-            xp = 273.3,
-            loot = purse(pouches.pouch_hero, coins = 150..200),
+            xp = 163.3,
+            loot =
+                purse(
+                    pouches.pouch_hero,
+                    coins = 200..300,
+                    table =
+                        LootTable(
+                            denominator = 128,
+                            rows =
+                                listOf(
+                                    LootRow(pouches.deathrune, 2..2, weight = 8),
+                                    LootRow(pouches.jug_wine, 1..1, weight = 6),
+                                    LootRow(pouches.bloodrune, 1..1, weight = 5),
+                                    LootRow(pouches.fire_orb, 1..1, weight = 2),
+                                    LootRow(pouches.diamond, 1..1, weight = 1),
+                                    LootRow(pouches.gold_ore, 1..1, weight = 1),
+                                ),
+                        ),
+                ),
             damage = 3..4,
         )
     }
@@ -415,8 +538,12 @@ object ThievingTargets {
     }
 
     /** Shorthand for the pouch rungs, which are every rung but the master farmer. */
-    private fun purse(pouch: ObjType, coins: IntRange): PickpocketLoot =
-        PickpocketLoot.Pouch(pouch, coins)
+    private fun purse(
+        pouch: ObjType,
+        coins: IntRange,
+        table: LootTable? = null,
+        extras: List<LootStack> = emptyList(),
+    ): PickpocketLoot = PickpocketLoot.Pouch(pouch, coins, table, extras)
 
     /**
      * How long a caught thief is frozen for. OSRS stuns for five ticks on most targets; this is

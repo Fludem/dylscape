@@ -40,6 +40,29 @@ object ThievingObjs : ObjReferences() {
 
     val coins = find("coins")
 
+    /**
+     * Pickpocket loot beyond the purse. Names are the cache's own, which is why the runes read
+     * `airrune` rather than `air_rune` and the wine is a `jug_wine`.
+     *
+     * Unlike the pouches these are mostly **not** stackable, and that is the point of the
+     * inventory-space rule in `Pickpocketing.hasRoomFor`: a rung that can pay one of these needs a
+     * free slot, so its session ends when the bag fills rather than dropping the roll on the floor.
+     */
+    val airrune = find("airrune")
+    val arrow_shaft = find("arrow_shaft")
+    val bloodrune = find("bloodrune")
+    val chaosrune = find("chaosrune")
+    val deathrune = find("deathrune")
+    val diamond = find("diamond")
+    val earthrune = find("earthrune")
+    val fire_orb = find("fire_orb")
+    val gold_ore = find("gold_ore")
+    val iron_dagger_p = find("iron_dagger_p")
+    val jug_wine = find("jug_wine")
+    val king_worm = find("king_worm")
+    val lockpick = find("lockpick")
+    val swamp_toad = find("swamp_toad")
+
     /** Stall loot. Every one of these has a cert link, which is what lets stalls pay out noted. */
     val cake = find("cake")
     val bread = find("bread")

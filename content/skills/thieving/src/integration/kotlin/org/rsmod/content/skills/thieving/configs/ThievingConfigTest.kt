@@ -187,16 +187,74 @@ class ThievingConfigTest {
         }
     }
 
+    /**
+     * The ladder climbs in xp as it climbs in level, with one exception that is OSRS's and not
+     * ours: a Yanille watchman at 65 pays 137.5xp and a paladin at 70 pays 131.8. The gnome rung at
+     * 75 then climbs back to 133.3, so the dip is a single step rather than a run.
+     *
+     * Pinned by the levels either side rather than waived, so this still catches the typo it was
+     * written for — a second inversion anywhere on the ladder fails the assert.
+     */
     @Test
-    fun GameTestState.`the pickpocket ladder is monotone`() = runBasicGameTest {
-        val rungs = ThievingTargets.all.values.distinct().sortedBy { it.level }
-        val xp = rungs.map { it.baseXp }
-        assertTrue(xp == xp.sorted()) {
-            "Sorting the ladder by level does not sort it by xp, which means a typo in the table: " +
-                rungs.joinToString { "lvl ${it.level} -> ${it.baseXp}xp" }
+    fun GameTestState.`the pickpocket ladder climbs except where OSRS does not`() =
+        runBasicGameTest {
+            val rungs = ThievingTargets.all.values.distinct().sortedBy { it.level }
+            val descents =
+                rungs
+                    .zipWithNext()
+                    .filter { (lower, higher) -> higher.baseXp < lower.baseXp }
+                    .map { (lower, higher) -> lower.level to higher.level }
+            assertEquals(listOf(WATCHMAN_TO_PALADIN), descents) {
+                "The ladder dips in xp somewhere other than watchman -> paladin, which means a " +
+                    "typo in the table: " +
+                    rungs.joinToString { "lvl ${it.level} -> ${it.baseXp}xp" }
+            }
+            assertTrue(ThievingTargets.lowestLevel == 1) {
+                "A fresh account has nothing to pickpocket; lowest rung is " +
+                    "${ThievingTargets.lowestLevel}."
+            }
         }
-        assertTrue(ThievingTargets.lowestLevel == 1) {
-            "A fresh account has nothing to pickpocket; lowest rung is ${ThievingTargets.lowestLevel}."
+
+    /**
+     * The item tables, which are hand-typed wiki rows and so are wrong in small ways by default.
+     *
+     * The weight arithmetic is the assertion that matters: the purse is not a row, it takes the
+     * remainder, so rows that oversubscribe the denominator would silently make the purse
+     * unreachable rather than fail anywhere visible.
+     */
+    @Test
+    fun GameTestState.`every loot row is a real obj with a sane weight`() = runBasicGameTest {
+        val purses =
+            ThievingTargets.all.values.distinct().mapNotNull { it.loot as? PickpocketLoot.Pouch }
+        assertTrue(purses.any { it.paysItems }) {
+            "No rung pays items, so this test proves nothing."
+        }
+
+        for (purse in purses) {
+            for (extra in purse.extras) {
+                val obj = cacheTypes.objs[extra.obj.id]
+                assertNotNull(obj) { "An always-drop is not in the cache." }
+                assertTrue(extra.count.first >= 1 && extra.count.first <= extra.count.last) {
+                    "'${extra.obj.internalName}' has a nonsensical count ${extra.count}."
+                }
+            }
+
+            val table = purse.table ?: continue
+            for (row in table.rows) {
+                val obj = cacheTypes.objs[row.obj.id]
+                assertNotNull(obj) { "Loot row '${row.obj.internalName}' is not in the cache." }
+                assertTrue(row.weight >= 1) {
+                    "'${row.obj.internalName}' has weight ${row.weight}, so it can never be rolled."
+                }
+                assertTrue(row.count.first >= 1 && row.count.first <= row.count.last) {
+                    "'${row.obj.internalName}' has a nonsensical count ${row.count}."
+                }
+            }
+            assertTrue(table.purseWeight >= 1) {
+                "The rows of '${purse.pouch.internalName}' claim ${table.denominator - table.purseWeight} " +
+                    "of ${table.denominator}, leaving the purse ${table.purseWeight}. The purse " +
+                    "takes the remainder, so it must be positive."
+            }
         }
     }
 
@@ -292,9 +350,15 @@ class ThievingConfigTest {
                 "Head Guard",
                 "Knight of Ardougne",
                 "Watchman",
+                "Gnome",
+                "Gnome child",
+                "Gnome woman",
                 "Paladin",
                 "Hero",
             )
+
+        /** The one xp inversion OSRS itself has; see the ladder test. */
+        val WATCHMAN_TO_PALADIN = 65 to 70
 
         /** Likewise; `StallThieving` registers `onOpLoc2`. */
         const val STEAL_OP_SLOT = 2
