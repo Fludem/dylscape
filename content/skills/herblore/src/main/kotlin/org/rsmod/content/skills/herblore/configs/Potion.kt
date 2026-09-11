@@ -1,5 +1,6 @@
 package org.rsmod.content.skills.herblore.configs
 
+import org.rsmod.api.toxins.ToxinCure
 import org.rsmod.game.type.obj.ObjType
 import org.rsmod.game.type.stat.StatType
 
@@ -35,14 +36,15 @@ data class Potion(
      * Zero for everything that is not a stamina potion.
      */
     val staminaUnits: Int = 0,
+    /** What this dose does to poison and venom, handed straight to `Toxins.cure`. */
+    val cure: ToxinCure? = null,
     /**
      * The live game shows `Drink` but the mechanic does not exist on this server.
      *
-     * Antipoison, the antidotes, antivenom and relicym's balm all cure or prevent poison, and this
-     * engine has no poison; the antifire tiers protect against dragonfire, and it has no dragonfire
-     * either. Those rows still carry a correct dose ladder and still hand back the vial -- they
-     * just say so, rather than pretending. A fake looks implemented, which is worse than a gap you
-     * can read.
+     * Relicym's balm cures disease, and this engine has no disease; the antifire tiers protect
+     * against dragonfire, and it has no dragonfire either. Those rows still carry a correct dose
+     * ladder and still hand back the vial -- they just say so, rather than pretending. A fake looks
+     * implemented, which is worse than a gap you can read.
      */
     val inertMessage: String? = null,
 ) {

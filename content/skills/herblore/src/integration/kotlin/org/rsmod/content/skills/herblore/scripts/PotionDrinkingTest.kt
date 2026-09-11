@@ -1,5 +1,6 @@
 package org.rsmod.content.skills.herblore.scripts
 
+import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -11,10 +12,13 @@ import org.rsmod.api.player.events.interact.HeldContentEvents
 import org.rsmod.api.player.stat.stat
 import org.rsmod.api.testing.GameTestState
 import org.rsmod.api.testing.scope.GameTestScope
+import org.rsmod.api.toxins.Toxins
 import org.rsmod.content.skills.herblore.configs.HerbloreObjs
 import org.rsmod.content.skills.herblore.configs.Potions
 import org.rsmod.game.entity.Player
 import org.rsmod.game.inv.InvObj
+
+class PotionToxinDeps @Inject constructor(val toxins: Toxins)
 
 /**
  * Drinking: the dose ladder, the boosts, the shared cooldown and the empty vial at the end.
@@ -112,15 +116,54 @@ class PotionDrinkingTest {
     fun GameTestState.`an inert potion still steps its dose and says why`() =
         runGameTest(PotionDrinking::class) {
             fresh()
-            val antipoison = Potions.heads.getValue("antipoison").obj
-            player.inv[0] = InvObj(antipoison)
+            val balm = Potions.heads.getValue("relicyms_balm").obj
+            player.inv[0] = InvObj(balm)
 
             drinkSlot(player, slot = 0)
 
-            assertEquals(Potions.byObjId.getValue(antipoison.id).next.id, player.inv[0]?.id) {
+            assertEquals(Potions.byObjId.getValue(balm.id).next.id, player.inv[0]?.id) {
                 "An inert potion did not step its dose."
             }
-            assertMessageSent("Nothing seems to happen: poison is not implemented yet.")
+            assertMessageSent("Nothing seems to happen: disease is not implemented yet.")
+        }
+
+    @Test
+    fun GameTestState.`an antipoison turns venom into poison and a second dose cures it`() =
+        runInjectedGameTest(PotionToxinDeps::class, null, PotionDrinking::class) { deps ->
+            fresh()
+            deps.toxins.clear(player)
+            player.inv[0] = InvObj(Potions.heads.getValue("antipoison").obj)
+            deps.toxins.envenom(player)
+
+            drinkSlot(player, slot = 0)
+            assertTrue(deps.toxins.isPoisoned(player)) {
+                "Antipoison should convert venom to poison, not leave it or cure it outright."
+            }
+
+            advance(ticks = 4)
+            drinkSlot(player, slot = 0)
+            assertTrue(deps.toxins.isPoisonImmune(player)) {
+                "A second dose should cure the poison and leave the player immune."
+            }
+            assertTrue(!deps.toxins.isVenomImmune(player)) {
+                "A plain antipoison must not protect against venom."
+            }
+            deps.toxins.clear(player)
+        }
+
+    @Test
+    fun GameTestState.`an anti-venom cures venom and protects against it`() =
+        runInjectedGameTest(PotionToxinDeps::class, null, PotionDrinking::class) { deps ->
+            fresh()
+            deps.toxins.clear(player)
+            player.inv[0] = InvObj(Potions.heads.getValue("antivenom").obj)
+            deps.toxins.envenom(player)
+
+            drinkSlot(player, slot = 0)
+
+            assertTrue(deps.toxins.isVenomImmune(player)) { "Anti-venom did not cure the venom." }
+            assertTrue(!deps.toxins.envenom(player)) { "Venom landed through anti-venom." }
+            deps.toxins.clear(player)
         }
 
     private fun GameTestScope.fresh() {

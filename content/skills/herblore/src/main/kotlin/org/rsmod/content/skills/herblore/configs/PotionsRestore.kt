@@ -1,6 +1,7 @@
 package org.rsmod.content.skills.herblore.configs
 
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.toxins.ToxinCure
 
 /**
  * The potions that put levels back rather than pushing them past the top.
@@ -39,7 +40,8 @@ internal object PotionsRestore : PotionFamily() {
         ladder("prayerrestore", effects = listOf(restore(stats.prayer, 7, 25)))
 
         // Sanfew serum restores like a super restore and additionally cures poison and disease.
-        // Neither of those exists here, so the restore half is real and the rest says so.
+        // Poison is real; disease is not, and sanfew is the one drink where that half is minor
+        // enough that saying so on every sip would be noise.
         infixLadder(
             "sanfew_salve_",
             "_dose",
@@ -52,7 +54,7 @@ internal object PotionsRestore : PotionFamily() {
                     restore(stats.magic, 4, 30),
                     restore(stats.prayer, 4, 30),
                 ),
-            inertMessage = NO_POISON,
+            cure = ToxinCure.Sanfew,
         )
 
         // Two Varlamore potions whose effects are timed rather than instant, and which no part of

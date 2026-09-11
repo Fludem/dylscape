@@ -1,5 +1,6 @@
 package org.rsmod.content.skills.herblore.configs
 
+import org.rsmod.api.toxins.ToxinCure
 import org.rsmod.api.type.refs.obj.ObjReferences
 import org.rsmod.game.type.stat.StatType
 
@@ -38,10 +39,11 @@ internal abstract class PotionFamily : ObjReferences() {
         healPercent: Int = 0,
         energy: Int = 0,
         staminaUnits: Int = 0,
+        cure: ToxinCure? = null,
         inertMessage: String? = null,
     ) {
         val names = listOf(head ?: "4dose$stem", "3dose$stem", "2dose$stem", "1dose$stem")
-        build(stem, names, effects, heal, healPercent, energy, staminaUnits, inertMessage)
+        build(stem, names, effects, heal, healPercent, energy, staminaUnits, cure, inertMessage)
     }
 
     /**
@@ -54,10 +56,11 @@ internal abstract class PotionFamily : ObjReferences() {
         heal: Int = 0,
         healPercent: Int = 0,
         energy: Int = 0,
+        cure: ToxinCure? = null,
         inertMessage: String? = null,
     ) {
         val names = (4 downTo 1).map { "$stem$it" }
-        build(stem, names, effects, heal, healPercent, energy, 0, inertMessage)
+        build(stem, names, effects, heal, healPercent, energy, 0, cure, inertMessage)
     }
 
     /** `sanfew_salve_4_dose` and its kin, where the digit sits in the middle. */
@@ -65,10 +68,11 @@ internal abstract class PotionFamily : ObjReferences() {
         prefix: String,
         suffix: String,
         effects: List<PotionEffect> = emptyList(),
+        cure: ToxinCure? = null,
         inertMessage: String? = null,
     ) {
         val names = (4 downTo 1).map { "$prefix$it$suffix" }
-        build("$prefix$suffix", names, effects, 0, 0, 0, 0, inertMessage)
+        build("$prefix$suffix", names, effects, 0, 0, 0, 0, cure, inertMessage)
     }
 
     private fun build(
@@ -79,6 +83,7 @@ internal abstract class PotionFamily : ObjReferences() {
         healPercent: Int,
         energy: Int,
         staminaUnits: Int,
+        cure: ToxinCure?,
         inertMessage: String?,
     ) {
         require(names.size == DOSES) { "A ladder has exactly $DOSES rungs: $names" }
@@ -96,6 +101,7 @@ internal abstract class PotionFamily : ObjReferences() {
                     healPercent = healPercent,
                     energy = energy,
                     staminaUnits = staminaUnits,
+                    cure = cure,
                     inertMessage = inertMessage,
                 )
         }
@@ -114,10 +120,7 @@ internal abstract class PotionFamily : ObjReferences() {
     protected companion object {
         const val DOSES: Int = 4
 
-        /** Poison is not implemented on this server; see [Potion.inertMessage]. */
-        const val NO_POISON: String = "Nothing seems to happen: poison is not implemented yet."
-
-        /** Neither is dragonfire. */
+        /** Dragonfire is not implemented on this server; see [Potion.inertMessage]. */
         const val NO_DRAGONFIRE: String =
             "Nothing seems to happen: dragonfire is not implemented yet."
     }

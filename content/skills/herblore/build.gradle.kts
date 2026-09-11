@@ -6,7 +6,10 @@ plugins {
 dependencies {
     implementation(projects.api.pluginCommons)
     implementation(projects.content.interfaces.skillMulti)
+    // The antipoison and anti-venom tiers cure what `api/toxins` inflicts.
+    implementation(projects.api.toxins)
     integrationImplementation(projects.api.player)
+    integrationImplementation(projects.api.toxins)
     integrationImplementation(projects.content.interfaces.skillMulti)
     // Integration-only, and only so `PotionCoverageTest` can assert that the `food` table and the
     // `potion` table partition the cache's drinkables. An obj carries exactly one content group, so

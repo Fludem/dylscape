@@ -13,6 +13,7 @@ import org.rsmod.api.player.protect.ProtectedAccess
 import org.rsmod.api.player.vars.VarPlayerIntMapSetter
 import org.rsmod.api.script.onOpHeld1
 import org.rsmod.api.script.onPlayerSoftTimer
+import org.rsmod.api.toxins.Toxins
 import org.rsmod.content.skills.herblore.configs.EffectKind
 import org.rsmod.content.skills.herblore.configs.HerbloreSeqs
 import org.rsmod.content.skills.herblore.configs.HerbloreTimers
@@ -40,7 +41,7 @@ import org.rsmod.plugin.scripts.ScriptContext
  * straight back, so a player can walk off, click again or die mid-stack without the script needing
  * to unwind -- the same reason `Consume` and `BuryBones` do not suspend either.
  */
-class PotionDrinking @Inject constructor() : PluginScript() {
+class PotionDrinking @Inject constructor(private val toxins: Toxins) : PluginScript() {
     override fun ScriptContext.startup() {
         onOpHeld1(content.potion) { drink(it.type, it.slot) }
 
@@ -92,6 +93,7 @@ class PotionDrinking @Inject constructor() : PluginScript() {
         }
         restoreEnergy(potion.energy)
         applyStamina(potion)
+        potion.cure?.let { toxins.cure(player, it) }
         mes(dosesLeft(potion))
         potion.inertMessage?.let(::mes)
     }

@@ -1,16 +1,17 @@
 package org.rsmod.content.skills.herblore.configs
 
 import org.rsmod.api.config.refs.stats
+import org.rsmod.api.toxins.ToxinCure
 
 /**
- * Everything that is not a fight: run energy, the skilling boosts, and the two families whose
- * mechanic this server does not have.
+ * Everything that is not a fight: run energy, the skilling boosts, the poison cures, and the two
+ * families whose mechanic this server does not have.
  *
- * The inert rows are the honest half of this file. Antipoison, the antidotes, antivenom, relicym's
- * balm and all four antifire tiers exist in the cache, are makeable, and cure or prevent something
- * the engine does not model -- there is no poison anywhere in `engine/` and no dragonfire damage
- * path. They ship with a correct dose ladder and a correct empty vial and say plainly that the
- * effect is missing, because a silent no-op reads as a bug and an invented effect reads as working.
+ * The inert rows are the honest half of this file. Relicym's balm and all four antifire tiers exist
+ * in the cache, are makeable, and cure or prevent something the engine does not model -- there is
+ * no disease and no dragonfire damage path. They ship with a correct dose ladder and a correct
+ * empty vial and say plainly that the effect is missing, because a silent no-op reads as a bug and
+ * an invented effect reads as working.
  */
 internal object PotionsUtility : PotionFamily() {
     init {
@@ -33,14 +34,17 @@ internal object PotionsUtility : PotionFamily() {
         ladder("goading", inertMessage = NOT_MODELLED)
         ladder("surge", inertMessage = NOT_MODELLED)
 
-        // Poison, which this engine does not have. See the file comment.
-        ladder("antipoison", inertMessage = NO_POISON)
-        ladder("2antipoison", inertMessage = NO_POISON)
-        suffixLadder("antidote+", inertMessage = NO_POISON)
-        suffixLadder("antidote++", inertMessage = NO_POISON)
-        suffixLadder("antivenom", inertMessage = NO_POISON)
-        suffixLadder("antivenom+", inertMessage = NO_POISON)
-        suffixLadder("extended_antivenom+", inertMessage = NO_POISON)
+        // Poison and venom, from `api/toxins`. The durations and the venom-to-poison conversion
+        // live on `ToxinCure`, next to the varp encoding they depend on.
+        ladder("antipoison", cure = ToxinCure.Antipoison)
+        ladder("2antipoison", cure = ToxinCure.Superantipoison)
+        suffixLadder("antidote+", cure = ToxinCure.AntidotePlus)
+        suffixLadder("antidote++", cure = ToxinCure.AntidotePlusPlus)
+        suffixLadder("antivenom", cure = ToxinCure.Antivenom)
+        suffixLadder("antivenom+", cure = ToxinCure.AntivenomPlus)
+        suffixLadder("extended_antivenom+", cure = ToxinCure.ExtendedAntivenomPlus)
+
+        // Disease, which this engine does not have. See the file comment.
         suffixLadder("relicyms_balm", inertMessage = NO_DISEASE)
 
         // Dragonfire, which it does not have either. The cache reserves
