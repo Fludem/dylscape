@@ -84,6 +84,8 @@ internal object TeleportTable {
             // a room nobody can reach. This lands at the *entrance*, not inside -- the player still
             // climbs down the same ladder they would on the real route.
             entry("dagannoth_kings", "Dagannoth Kings", CoordGrid(1912, 4367, 0)),
+            // Zul-Andra, beside the Sacrificial boat that sails to Zulrah's shrine.
+            entry("zul_andra", "Zul-Andra (Zulrah)", CoordGrid(2212, 3056, 0)),
             entry("ape_atoll", "Ape Atoll", CoordGrid(2797, 2798, 0)), // spell
             entry("kalphite_lair", "Kalphite Lair", CoordGrid(3227, 3108, 0)),
             // The God Wars entrance itself is a boulder crevice; Trollheim is the vetted spell
