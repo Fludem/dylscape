@@ -20,12 +20,13 @@ import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 
 /**
- * Corner Cutter's Sage's greaves: every [TICKS_PER_PAYOUT] ticks spent running in them pays a
- * [SmallXpLamp]'s worth of Agility experience at the player's base Agility level.
+ * Corner Cutter's Sage's greaves: every [TICKS_PER_PAYOUT] ticks spent running in them pays
+ * [PAYOUT_SHARE] of a [SmallXpLamp]'s worth of Agility experience at the player's base Agility
+ * level. A whole lamp per payout proved far too generous once the xp rate was applied.
  *
  * "Running" is read off movement - two tiles covered in one tick - rather than the run toggle, so
  * standing still with run on pays nothing. The running ticks need not be consecutive; they carry
- * over until the next payout, but not across a logout. The lamp amount is the base, and
+ * over until the next payout, but not across a logout. The share of a lamp is the base, and
  * `statAdvance` multiplies it by the player's xp rate (x10, x16 or x30) like everything else.
  */
 class SageGreavesScript : PluginScript() {
@@ -73,11 +74,12 @@ class SageGreavesScript : PluginScript() {
             return
         }
         runningTicks.remove(player)
-        player.statAdvance(stats.agility, SmallXpLamp.xp(player.baseAgilityLvl))
+        player.statAdvance(stats.agility, SmallXpLamp.xp(player.baseAgilityLvl) * PAYOUT_SHARE)
     }
 
     private companion object {
         const val RUN_STEP = 2
         const val TICKS_PER_PAYOUT = 10
+        const val PAYOUT_SHARE = 0.25
     }
 }

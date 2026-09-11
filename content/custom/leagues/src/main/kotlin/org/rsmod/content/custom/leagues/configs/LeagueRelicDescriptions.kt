@@ -54,9 +54,9 @@ internal object LeagueRelicDescriptions : StructEditor() {
                 lines(
                     "You gain 25% more Agility experience.",
                     "Every Mark of grace comes with 10,000 coins.",
-                    "Every 10 ticks you spend running in Sage's greaves grants a Small XP lamp's " +
-                        "worth of Agility experience for your Agility level, multiplied by your " +
-                        "xp rate.",
+                    "Every 10 ticks you spend running in Sage's greaves grants a quarter of a " +
+                        "Small XP lamp's worth of Agility experience for your Agility level, " +
+                        "multiplied by your xp rate.",
                 )
             Relic.BankHeist ->
                 lines(
