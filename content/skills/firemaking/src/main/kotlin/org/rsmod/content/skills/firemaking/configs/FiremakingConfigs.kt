@@ -8,6 +8,7 @@ import org.rsmod.api.type.refs.content.ContentReferences
 import org.rsmod.api.type.refs.loc.LocReferences
 import org.rsmod.api.type.refs.obj.ObjReferences
 import org.rsmod.api.type.refs.param.ParamReferences
+import org.rsmod.api.type.refs.queue.QueueReferences
 import org.rsmod.api.type.refs.seq.SeqReferences
 import org.rsmod.game.stat.PlayerStatMap
 import org.rsmod.game.type.obj.ObjType
@@ -27,6 +28,14 @@ internal object FiremakingLocs : LocReferences() {
 
 internal object FiremakingSeqs : SeqReferences() {
     val light_fire = find("human_createfire")
+}
+
+internal object FiremakingQueues : QueueReferences() {
+    /**
+     * One light attempt. Weak, so walking away cancels it: the attempts used to run behind `delay`,
+     * which left the player unable to move until the logs caught.
+     */
+    val light = find("firemaking_light")
 }
 
 object FiremakingParams : ParamReferences() {

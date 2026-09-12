@@ -13,12 +13,14 @@ import org.rsmod.api.player.stat.firemakingLvl
 import org.rsmod.api.repo.loc.LocRepository
 import org.rsmod.api.repo.obj.ObjRepository
 import org.rsmod.api.script.onOpHeldU
+import org.rsmod.api.script.onPlayerQueueWithArgs
 import org.rsmod.api.stats.levelmod.InvisibleLevels
 import org.rsmod.api.stats.xpmod.XpModifiers
 import org.rsmod.content.skills.firemaking.configs.FiremakingContent
 import org.rsmod.content.skills.firemaking.configs.FiremakingLocs
 import org.rsmod.content.skills.firemaking.configs.FiremakingObjs
 import org.rsmod.content.skills.firemaking.configs.FiremakingParams
+import org.rsmod.content.skills.firemaking.configs.FiremakingQueues
 import org.rsmod.content.skills.firemaking.configs.FiremakingSeqs
 import org.rsmod.game.MapClock
 import org.rsmod.game.loc.LocAngle
@@ -27,6 +29,7 @@ import org.rsmod.game.loc.LocInfo
 import org.rsmod.game.loc.LocShape
 import org.rsmod.game.obj.Obj
 import org.rsmod.game.type.obj.UnpackedObjType
+import org.rsmod.map.CoordGrid
 import org.rsmod.plugin.scripts.PluginScript
 import org.rsmod.plugin.scripts.ScriptContext
 import org.rsmod.routefinder.loc.LocLayerConstants
@@ -59,9 +62,10 @@ constructor(
         onOpHeldU(FiremakingContent.firemaking_logs, objs.tinderbox) {
             lightFire(it.first, it.firstSlot)
         }
+        onPlayerQueueWithArgs<LightAttempt>(FiremakingQueues.light) { attemptLight(it.args) }
     }
 
-    private suspend fun ProtectedAccess.lightFire(logs: UnpackedObjType, slot: Int) {
+    private fun ProtectedAccess.lightFire(logs: UnpackedObjType, slot: Int) {
         if (player.firemakingLvl < logs.firemakingLevelReq) {
             mes("You need a Firemaking level of ${logs.firemakingLevelReq} to light these logs.")
             return
@@ -81,29 +85,54 @@ constructor(
         locRepo.del(fire, duration = 0)
 
         mes("You attempt to light the logs.")
+        anim(FiremakingSeqs.light_fire)
+        weakQueue(
+            FiremakingQueues.light,
+            ATTEMPT_TICKS,
+            LightAttempt(logs, slot, tile, attempt = 1),
+        )
+    }
 
-        var lit = false
-        val neverFail = perks.has(player, Perk.NeverFailFire)
-        for (attempt in 0 until MAX_ATTEMPTS) {
-            anim(FiremakingSeqs.light_fire)
-            delay(ATTEMPT_TICKS)
-            if (
-                neverFail ||
-                    statRandom(stats.firemaking, logs.fireRateLow, logs.fireRateHigh, invisibleLvls)
-            ) {
-                lit = true
-                break
-            }
-        }
-
-        if (!lit) {
+    /**
+     * A single attempt, re-queued weakly rather than looped behind `delay`.
+     *
+     * A delayed player cannot walk, so the old loop could freeze them for
+     * [MAX_ATTEMPTS] * [ATTEMPT_TICKS] ticks with no way out -- which is exactly what happened to a
+     * player on the live server. A weak queue is dropped the moment they walk or act, which is also
+     * how OSRS lets you give up on a fire.
+     *
+     * Everything is re-checked, because a tick has passed since the last attempt: the logs may be
+     * gone and the tile may have been built on.
+     */
+    private fun ProtectedAccess.attemptLight(attempt: LightAttempt) {
+        val logs = attempt.logs
+        val held = inv[attempt.slot]
+        if (player.coords != attempt.tile || held == null || held.id != logs.id) {
             resetAnim()
-            mes("You fail to light the logs.")
             return
         }
 
+        val neverFail = perks.has(player, Perk.NeverFailFire)
+        val lit =
+            neverFail ||
+                statRandom(stats.firemaking, logs.fireRateLow, logs.fireRateHigh, invisibleLvls)
+        if (!lit) {
+            if (attempt.attempt >= MAX_ATTEMPTS) {
+                resetAnim()
+                mes("You fail to light the logs.")
+                return
+            }
+            anim(FiremakingSeqs.light_fire)
+            weakQueue(FiremakingQueues.light, ATTEMPT_TICKS, attempt.next())
+            return
+        }
+
+        val tile = attempt.tile
+        val fire =
+            LocInfo(LocLayerConstants.of(LocShape.CentrepieceStraight.id), tile, fireEntity())
+
         // Everything below must happen together: the logs are only spent once the fire is real.
-        val deleted = invDel(inv, logs, count = 1, slot = slot)
+        val deleted = invDel(inv, logs, count = 1, slot = attempt.slot)
         if (!deleted.success) {
             resetAnim()
             return
@@ -138,6 +167,16 @@ constructor(
             shape = LocShape.CentrepieceStraight.id,
             angle = LocAngle.West.id,
         )
+
+    /** One pending attempt, carried on the weak queue. */
+    private data class LightAttempt(
+        val logs: UnpackedObjType,
+        val slot: Int,
+        val tile: CoordGrid,
+        val attempt: Int,
+    ) {
+        fun next(): LightAttempt = copy(attempt = attempt + 1)
+    }
 
     companion object {
         private const val ATTEMPT_TICKS = 4

@@ -56,6 +56,39 @@ class FiremakingTest {
         }
 
     @Test
+    fun GameTestState.`lighting a fire leaves the player free to walk away`() =
+        runGameTest(Firemaking::class) {
+            player.teleport(CoordGrid(0, 50, 50, 34, 31))
+            player.clearInv()
+            player.inv[0] = InvObj(objs.logs)
+            player.inv[1] = InvObj(objs.tinderbox)
+            player.stats[stats.firemaking] = 50
+
+            player.withProtectedAccess {
+                eventBus.publish(
+                    this,
+                    HeldUContentEvents.Type(
+                        first = cacheTypes.objs.getValue(objs.logs.id),
+                        firstSlot = 0,
+                        second = cacheTypes.objs.getValue(objs.tinderbox.id),
+                        secondSlot = 1,
+                    ),
+                )
+            }
+            advance(ticks = 1)
+
+            // The attempts used to sit behind `delay`, and a delayed player has every walk click
+            // dropped - which stranded a player on the live server for as long as the logs took.
+            assertTrue(player.isNotDelayed) { "A player lighting a fire cannot walk away." }
+
+            // Walking clears weak queues, so the pending attempt is dropped with it.
+            player.moveGameClick(CoordGrid(0, 50, 50, 30, 31))
+            advance(ticks = 6)
+
+            assertEquals(1, player.count(objs.logs)) { "Walking away still burned the logs." }
+        }
+
+    @Test
     fun GameTestState.`refuse logs above the player's level`() =
         runGameTest(Firemaking::class) {
             player.teleport(CoordGrid(0, 50, 50, 34, 31))
