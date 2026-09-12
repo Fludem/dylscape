@@ -37,6 +37,13 @@ constructor(
         targetObj: UnpackedObjType,
         targetSlot: Int,
     ) {
+        // A delayed player cannot act, and `clearPendingAction` refuses to run while they are
+        // delayed. `OpPlayerHandler` and the move handlers drop the click the same way; throwing
+        // here instead force-disconnected the player.
+        if (isDelayed) {
+            resendSlot(inv, 0)
+            return
+        }
         clearPendingAction(eventBus)
         resetFaceEntity()
         if (isAccessProtected) {
