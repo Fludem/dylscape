@@ -107,16 +107,13 @@ class AccountLoadResponseHook(
             return
         }
 
-        // This can occur under extreme circumstances (e.g., power outage) where a new player's
-        // character row was created, but their game state was never saved due to a crash before
-        // the save could occur (either via logout or another persistence mechanism).
+        // A character row that was created but never saved: the server stopped before the player's
+        // first logout could save them. Upstream refused these logins, which locked the player out
+        // for good, with no fix short of editing the database. Nothing saved means nothing to lose,
+        // so they load as the fresh character the row describes.
         val isPartialSave = response.account.lastLogout == null
         if (isPartialSave) {
-            logger.error {
-                "Player has never logged out properly - login aborted: ${response.account}"
-            }
-            writeErrorResponse(LoginResponse.InvalidSave)
-            return
+            logger.warn { "Loading a character that was never saved: ${response.account}" }
         }
 
         safeQueueLogin(response)
