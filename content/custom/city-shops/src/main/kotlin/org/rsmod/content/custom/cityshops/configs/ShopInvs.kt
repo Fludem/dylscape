@@ -186,6 +186,14 @@ internal object ShopInvBuilder : InvEditor() {
             stock += stock(shop_objs.yew_longbow, count = 1, restockCycles = 2000)
             stock += stock(shop_objs.crossbow, count = 5, restockCycles = 100)
             stock += stock(shop_objs.bronze_bolts, count = 250, restockCycles = 10)
+            // Only bronze bolts were buyable anywhere, which left the crossbow ladder with no
+            // ammo above tier one.
+            stock += stock(shop_objs.xbows_crossbow_bolts_iron, count = 150, restockCycles = 20)
+            stock += stock(shop_objs.xbows_crossbow_bolts_steel, count = 100, restockCycles = 40)
+            stock += stock(shop_objs.xbows_crossbow_bolts_mithril, count = 50, restockCycles = 80)
+            stock +=
+                stock(shop_objs.xbows_crossbow_bolts_adamantite, count = 25, restockCycles = 160)
+            stock += stock(shop_objs.xbows_crossbow_bolts_runite, count = 10, restockCycles = 320)
         }
 
         // Horvik's Armour Shop.
@@ -203,8 +211,17 @@ internal object ShopInvBuilder : InvEditor() {
             stock += stock(shop_objs.mithril_platebody, count = 3, restockCycles = 600)
             stock += stock(shop_objs.adamant_platebody, count = 2, restockCycles = 1500)
             stock += stock(objs.rune_platebody, count = 1, restockCycles = 3000)
+            stock += stock(shop_objs.black_platebody, count = 1, restockCycles = 2000)
             stock += stock(shop_objs.leather_armour, count = 5, restockCycles = 100)
             stock += stock(shop_objs.studded_body, count = 2, restockCycles = 600)
+            // The leather line had a body and nothing else, so Crafting's whole starter set was
+            // unbuyable and no shop on the server sold a single pair of gloves or boots.
+            stock += stock(shop_objs.hardleather_body, count = 3, restockCycles = 300)
+            stock += stock(shop_objs.leather_cowl, count = 5, restockCycles = 100)
+            stock += stock(shop_objs.leather_chaps, count = 5, restockCycles = 100)
+            stock += stock(shop_objs.leather_vambraces, count = 5, restockCycles = 100)
+            stock += stock(shop_objs.leather_gloves, count = 5, restockCycles = 100)
+            stock += stock(shop_objs.leather_boots, count = 5, restockCycles = 100)
         }
 
         // Varrock Swordshop.
@@ -214,18 +231,21 @@ internal object ShopInvBuilder : InvEditor() {
             stock += stock(shop_objs.iron_sword, count = 5, restockCycles = 150)
             stock += stock(shop_objs.steel_sword, count = 4, restockCycles = 300)
             stock += stock(shop_objs.mithril_sword, count = 3, restockCycles = 600)
+            stock += stock(shop_objs.black_sword, count = 2, restockCycles = 1000)
             stock += stock(shop_objs.adamant_sword, count = 2, restockCycles = 1500)
             stock += stock(shop_objs.rune_sword, count = 1, restockCycles = 3000)
             stock += stock(shop_objs.bronze_longsword, count = 10, restockCycles = 100)
             stock += stock(shop_objs.iron_longsword, count = 5, restockCycles = 150)
             stock += stock(shop_objs.steel_longsword, count = 4, restockCycles = 300)
             stock += stock(shop_objs.mithril_longsword, count = 3, restockCycles = 600)
+            stock += stock(shop_objs.black_longsword, count = 2, restockCycles = 1000)
             stock += stock(shop_objs.adamant_longsword, count = 2, restockCycles = 1500)
             stock += stock(shop_objs.rune_longsword, count = 1, restockCycles = 3000)
             stock += stock(shop_objs.bronze_dagger, count = 10, restockCycles = 100)
             stock += stock(shop_objs.iron_dagger, count = 5, restockCycles = 150)
             stock += stock(shop_objs.steel_dagger, count = 4, restockCycles = 300)
             stock += stock(shop_objs.mithril_dagger, count = 3, restockCycles = 600)
+            stock += stock(shop_objs.black_dagger, count = 2, restockCycles = 1000)
             stock += stock(shop_objs.adamant_dagger, count = 2, restockCycles = 1500)
             stock += stock(shop_objs.rune_dagger, count = 1, restockCycles = 3000)
         }

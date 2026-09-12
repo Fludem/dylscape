@@ -14,9 +14,9 @@ import org.rsmod.content.custom.cityshops.shop
  * Karamja. The Musa Point general store is wired through `generalshop5`; Davon's is across the
  * island in Brimhaven.
  *
- * Stock counts, restock rates and margins are OSRS's own. A count of 0 is not a mistake: vanilla
- * shops hold those lines empty until a player sells one, and the engine models that with a
- * zero-count stock obj.
+ * Margins are OSRS's own. Stock counts are not: vanilla holds all four amulets empty until a player
+ * sells one in, so on this server the shop never had anything to sell. They are stocked here
+ * instead.
  */
 internal object KaramjaShops {
     val all: List<ShopAssignment> =
@@ -36,10 +36,10 @@ internal object KaramjaShopsInvs : InvEditor() {
         // Not in this cache, so dropped: Holy symbol.
         edit(shop_invs.amuletshop) {
             specialistShop()
-            stock += stock(shop_objs.amulet_of_magic, count = 0, restockCycles = 200)
-            stock += stock(shop_objs.amulet_of_defence, count = 0, restockCycles = 200)
-            stock += stock(shop_objs.amulet_of_strength, count = 0, restockCycles = 200)
-            stock += stock(shop_objs.amulet_of_power, count = 0, restockCycles = 200)
+            stock += stock(shop_objs.amulet_of_magic, count = 3, restockCycles = 200)
+            stock += stock(shop_objs.amulet_of_defence, count = 3, restockCycles = 200)
+            stock += stock(shop_objs.amulet_of_strength, count = 2, restockCycles = 300)
+            stock += stock(shop_objs.amulet_of_power, count = 2, restockCycles = 300)
         }
     }
 }

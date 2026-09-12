@@ -13,9 +13,11 @@ import org.rsmod.content.custom.cityshops.shop
 /**
  * Falador's four specialist shops, clustered around the north gate and the park.
  *
- * Stock counts, restock rates and margins are OSRS's own. A count of 0 is not a mistake: vanilla
- * shops hold those lines empty until a player sells one, and the engine models that with a
- * zero-count stock obj.
+ * Margins are OSRS's own. Stock counts are not: vanilla holds a shop's upper tiers empty until a
+ * player sells one in, which on a server with a handful of players means they stay empty forever.
+ * Cassie's shields above iron and Herquin's gems above sapphire are stocked here so a low-level
+ * player can actually buy them, and the slowest restock rates are brought down to match. A count of
+ * 0 that remains is deliberate.
  */
 internal object FaladorShops {
     val all: List<ShopAssignment> =
@@ -56,10 +58,15 @@ internal object FaladorShopsInvs : InvEditor() {
             stock += stock(shop_objs.bronze_sq_shield, count = 3, restockCycles = 100)
             stock += stock(shop_objs.bronze_kiteshield, count = 3, restockCycles = 300)
             stock += stock(shop_objs.iron_sq_shield, count = 2, restockCycles = 400)
-            stock += stock(shop_objs.iron_kiteshield, count = 0, restockCycles = 1500)
-            stock += stock(shop_objs.steel_sq_shield, count = 0, restockCycles = 1500)
-            stock += stock(shop_objs.steel_kiteshield, count = 0, restockCycles = 1500)
-            stock += stock(shop_objs.mithril_sq_shield, count = 0, restockCycles = 1500)
+            stock += stock(shop_objs.iron_kiteshield, count = 2, restockCycles = 400)
+            stock += stock(shop_objs.steel_sq_shield, count = 2, restockCycles = 600)
+            stock += stock(shop_objs.steel_kiteshield, count = 2, restockCycles = 600)
+            stock += stock(shop_objs.mithril_sq_shield, count = 1, restockCycles = 1500)
+            stock += stock(shop_objs.mithril_kiteshield, count = 1, restockCycles = 1500)
+            stock += stock(shop_objs.adamant_sq_shield, count = 1, restockCycles = 3000)
+            stock += stock(shop_objs.adamant_kiteshield, count = 1, restockCycles = 3000)
+            stock += stock(shop_objs.black_sq_shield, count = 1, restockCycles = 2000)
+            stock += stock(shop_objs.black_kiteshield, count = 1, restockCycles = 2000)
         }
 
         // Flynn's Mace Market.
@@ -75,14 +82,14 @@ internal object FaladorShopsInvs : InvEditor() {
         // Herquin's Gems.
         edit(shop_invs.gemshop2) {
             specialistShop()
-            stock += stock(shop_objs.uncut_sapphire, count = 1, restockCycles = 25000)
-            stock += stock(shop_objs.uncut_emerald, count = 0, restockCycles = 1000)
-            stock += stock(shop_objs.uncut_ruby, count = 0, restockCycles = 2000)
-            stock += stock(shop_objs.uncut_diamond, count = 0, restockCycles = 4000)
-            stock += stock(shop_objs.sapphire, count = 1, restockCycles = 15000)
-            stock += stock(shop_objs.emerald, count = 0, restockCycles = 1000)
-            stock += stock(shop_objs.ruby, count = 0, restockCycles = 2000)
-            stock += stock(shop_objs.diamond, count = 0, restockCycles = 4000)
+            stock += stock(shop_objs.uncut_sapphire, count = 3, restockCycles = 1000)
+            stock += stock(shop_objs.uncut_emerald, count = 2, restockCycles = 1000)
+            stock += stock(shop_objs.uncut_ruby, count = 1, restockCycles = 2000)
+            stock += stock(shop_objs.uncut_diamond, count = 1, restockCycles = 4000)
+            stock += stock(shop_objs.sapphire, count = 3, restockCycles = 1000)
+            stock += stock(shop_objs.emerald, count = 2, restockCycles = 1000)
+            stock += stock(shop_objs.ruby, count = 1, restockCycles = 2000)
+            stock += stock(shop_objs.diamond, count = 1, restockCycles = 4000)
         }
 
         // Wayne's Chains.

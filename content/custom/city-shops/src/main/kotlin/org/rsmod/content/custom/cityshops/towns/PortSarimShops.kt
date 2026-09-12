@@ -15,9 +15,12 @@ import org.rsmod.content.custom.cityshops.shop
  * Port Sarim's row of shops along the docks. The town has no general store in OSRS; these five
  * cover food, runes, fishing gear, battleaxes and jewellery instead.
  *
- * Stock counts, restock rates and margins are OSRS's own. A count of 0 is not a mistake: vanilla
- * shops hold those lines empty until a player sells one, and the engine models that with a
- * zero-count stock obj.
+ * Margins are OSRS's own. Stock counts are not: vanilla holds Wydin's bread, Gerrant's raw fish and
+ * every one of Grum's fifteen lines empty until a player sells one in, so on this server they were
+ * empty shelves. They are stocked here instead.
+ *
+ * Raw fish is stocked only up to lobster. Anything above that ceiling stays at 0 on purpose:
+ * swordfish and up are meant to be caught and cooked, not bought.
  */
 internal object PortSarimShops {
     val all: List<ShopAssignment> =
@@ -66,7 +69,7 @@ internal object PortSarimShopsInvs : InvEditor() {
             stock += stock(objs.cabbage, count = 3, restockCycles = 100)
             stock += stock(shop_objs.banana, count = 3, restockCycles = 100)
             stock += stock(shop_objs.redberries, count = 1, restockCycles = 100)
-            stock += stock(shop_objs.bread, count = 0, restockCycles = 100)
+            stock += stock(shop_objs.bread, count = 5, restockCycles = 100)
             stock += stock(shop_objs.chocolate_bar, count = 1, restockCycles = 100)
             stock += stock(shop_objs.cheese, count = 3, restockCycles = 100)
             stock += stock(shop_objs.tomato, count = 3, restockCycles = 100)
@@ -92,8 +95,11 @@ internal object PortSarimShopsInvs : InvEditor() {
             stock += stock(shop_objs.pack_chaosrune, count = 35, restockCycles = 10)
             stock += stock(shop_objs.eye_of_newt, count = 300, restockCycles = 10)
             stock += stock(shop_objs.pack_eye_newt, count = 60, restockCycles = 50)
-            stock += stock(shop_objs.bluewizhat, count = 1, restockCycles = 100)
-            stock += stock(shop_objs.blackwizhat, count = 1, restockCycles = 100)
+            stock += stock(shop_objs.bluewizhat, count = 3, restockCycles = 100)
+            stock += stock(shop_objs.blackwizhat, count = 3, restockCycles = 100)
+            // This cache has no wizard robe bottom to pair with it -- `wizards_robe` is the only
+            // half that exists, so a starter mage buys the top here and finds legs elsewhere.
+            stock += stock(shop_objs.wizards_robe, count = 3, restockCycles = 100)
         }
 
         // Gerrant's Fishy Business.
@@ -108,15 +114,16 @@ internal object PortSarimShopsInvs : InvEditor() {
             stock += stock(shop_objs.fishing_bait, count = 1500, restockCycles = 1)
             stock += stock(shop_objs.feather, count = 1000, restockCycles = 1)
             stock += stock(shop_objs.pack_feather, count = 100, restockCycles = 2)
-            stock += stock(shop_objs.raw_shrimp, count = 0, restockCycles = 300)
+            stock += stock(shop_objs.raw_shrimp, count = 100, restockCycles = 10)
             stock += stock(shop_objs.raw_sardine, count = 200, restockCycles = 1)
-            stock += stock(objs.raw_herring, count = 0, restockCycles = 900)
-            stock += stock(shop_objs.raw_anchovies, count = 0, restockCycles = 1200)
-            stock += stock(shop_objs.raw_trout, count = 0, restockCycles = 1500)
-            stock += stock(shop_objs.raw_pike, count = 0, restockCycles = 1800)
-            stock += stock(shop_objs.raw_salmon, count = 0, restockCycles = 2100)
-            stock += stock(shop_objs.raw_tuna, count = 0, restockCycles = 2300)
-            stock += stock(shop_objs.raw_lobster, count = 0, restockCycles = 2600)
+            stock += stock(objs.raw_herring, count = 100, restockCycles = 20)
+            stock += stock(shop_objs.raw_anchovies, count = 100, restockCycles = 30)
+            stock += stock(shop_objs.raw_trout, count = 50, restockCycles = 50)
+            stock += stock(shop_objs.raw_pike, count = 50, restockCycles = 60)
+            stock += stock(shop_objs.raw_salmon, count = 30, restockCycles = 100)
+            stock += stock(shop_objs.raw_tuna, count = 30, restockCycles = 150)
+            stock += stock(shop_objs.raw_lobster, count = 20, restockCycles = 200)
+            // Above the lobster ceiling: caught and cooked, not bought.
             stock += stock(shop_objs.raw_swordfish, count = 0, restockCycles = 2900)
         }
 
@@ -134,21 +141,21 @@ internal object PortSarimShopsInvs : InvEditor() {
         // Grum's Gold Exchange.
         edit(shop_invs.goldshop) {
             specialistShop()
-            stock += stock(shop_objs.gold_ring, count = 0, restockCycles = 1000)
-            stock += stock(shop_objs.sapphire_ring, count = 0, restockCycles = 1000)
-            stock += stock(shop_objs.emerald_ring, count = 0, restockCycles = 2000)
-            stock += stock(shop_objs.ruby_ring, count = 0, restockCycles = 2000)
-            stock += stock(shop_objs.diamond_ring, count = 0, restockCycles = 3000)
-            stock += stock(shop_objs.gold_necklace, count = 0, restockCycles = 1000)
-            stock += stock(shop_objs.sapphire_necklace, count = 0, restockCycles = 2000)
-            stock += stock(shop_objs.emerald_necklace, count = 0, restockCycles = 2000)
-            stock += stock(shop_objs.ruby_necklace, count = 0, restockCycles = 3000)
-            stock += stock(shop_objs.diamond_necklace, count = 0, restockCycles = 3000)
-            stock += stock(shop_objs.strung_gold_amulet, count = 0, restockCycles = 1000)
-            stock += stock(shop_objs.strung_sapphire_amulet, count = 0, restockCycles = 2000)
-            stock += stock(shop_objs.strung_emerald_amulet, count = 0, restockCycles = 3000)
-            stock += stock(shop_objs.strung_ruby_amulet, count = 0, restockCycles = 4000)
-            stock += stock(shop_objs.strung_diamond_amulet, count = 0, restockCycles = 5000)
+            stock += stock(shop_objs.gold_ring, count = 3, restockCycles = 200)
+            stock += stock(shop_objs.sapphire_ring, count = 3, restockCycles = 300)
+            stock += stock(shop_objs.emerald_ring, count = 2, restockCycles = 500)
+            stock += stock(shop_objs.ruby_ring, count = 2, restockCycles = 800)
+            stock += stock(shop_objs.diamond_ring, count = 1, restockCycles = 1500)
+            stock += stock(shop_objs.gold_necklace, count = 3, restockCycles = 200)
+            stock += stock(shop_objs.sapphire_necklace, count = 3, restockCycles = 300)
+            stock += stock(shop_objs.emerald_necklace, count = 2, restockCycles = 500)
+            stock += stock(shop_objs.ruby_necklace, count = 2, restockCycles = 800)
+            stock += stock(shop_objs.diamond_necklace, count = 1, restockCycles = 1500)
+            stock += stock(shop_objs.strung_gold_amulet, count = 3, restockCycles = 200)
+            stock += stock(shop_objs.strung_sapphire_amulet, count = 3, restockCycles = 300)
+            stock += stock(shop_objs.strung_emerald_amulet, count = 2, restockCycles = 500)
+            stock += stock(shop_objs.strung_ruby_amulet, count = 2, restockCycles = 800)
+            stock += stock(shop_objs.strung_diamond_amulet, count = 1, restockCycles = 1500)
         }
     }
 }

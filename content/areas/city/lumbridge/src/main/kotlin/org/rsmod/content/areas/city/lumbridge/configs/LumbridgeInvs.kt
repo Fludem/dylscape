@@ -23,6 +23,11 @@ object LumbridgeInvBuilder : InvEditor() {
             stock += stock(objs.bronze_axe, count = 10, restockCycles = 100)
             stock += stock(objs.iron_axe, count = 5, restockCycles = 200)
             stock += stock(objs.steel_axe, count = 3, restockCycles = 400)
+            // Vanilla stops Bob at steel, which caps Woodcutting tooling at level 30 gear with
+            // nowhere on the server to buy better. The upper tiers are stocked thin and slow.
+            stock += stock(objs.black_axe, count = 2, restockCycles = 800)
+            stock += stock(objs.mithril_axe, count = 2, restockCycles = 1200)
+            stock += stock(objs.adamant_axe, count = 1, restockCycles = 3000)
             stock += stock(objs.iron_battleaxe, count = 5, restockCycles = 100)
             stock += stock(objs.steel_battleaxe, count = 2, restockCycles = 200)
             stock += stock(objs.mithril_battleaxe, count = 1, restockCycles = 3000)
