@@ -53,11 +53,17 @@ constructor(
     }
 
     private fun Player.processForcedDisconnect() {
-        if (forceDisconnect && !loggingOut) {
-            queueLogout()
-            closeClient()
-            forceDisconnect = false
+        if (!forceDisconnect || loggingOut) {
+            return
         }
+        // Cleared first: `tryOrDisconnect` raises it again whenever a later step throws, and a
+        // flag left set re-entered this path every cycle.
+        forceDisconnect = false
+        // A forced disconnect is an error path, so the script that was running is not coming
+        // back. Left suspended it keeps `isAccessProtected` true, and the logout waits forever.
+        cancelActiveCoroutine()
+        queueLogout()
+        closeClient()
     }
 
     private fun Player.processClientDisconnect() {
@@ -105,15 +111,22 @@ constructor(
         closeClient()
     }
 
+    /**
+     * Idempotent. Several paths can ask for the same logout: a logout click while the player is
+     * busy, then a disconnect or a forced disconnect before it completes. When the second request
+     * threw, it stopped [processPendingLogout] from ever running for that player, so they stayed
+     * online and unsaved until the server stopped.
+     */
     private fun Player.queueLogout() {
-        check(!pendingLogout) { "`queueLogout` has already been called." }
         check(!loggingOut) { "`loggingOut` flag has already been set." }
         pendingLogout = true
     }
 
+    /** Idempotent, for the same reason as [queueLogout]. */
     private fun Player.closeClient() {
-        check(!pendingCloseClient) { "`closeClient` has already been called." }
-        check(!closeClient) { "`closeClient` flag has already been set." }
+        if (pendingCloseClient || closeClient) {
+            return
+        }
         pendingCloseClient = true
     }
 
