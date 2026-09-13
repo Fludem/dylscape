@@ -95,8 +95,10 @@ public class EnumPluginBuilder<K : Any, V : Any>(
         keyLiteral: CacheVarLiteral,
         valLiteral: CacheVarLiteral,
     ): Map<Any, Any?> {
-        val keyCodec = CacheVarTypeMap.findCodec<Any, Any>(keyLiteral)
-        val valCodec = CacheVarTypeMap.findCodec<Any, Any>(valLiteral)
+        // Looked up by the declared class rather than the literal: a literal that decodes to a
+        // plain int (structs, say) still has a typed encoder for the class the builder was given.
+        val keyCodec = CacheVarTypeMap.findCodec<Any, Any>(expectedKeyType)
+        val valCodec = CacheVarTypeMap.findCodec<Any, Any>(expectedValType)
         val primitiveMap = mutableMapOf<Any, Any?>()
         for ((key, value) in this) {
             val keyPrimitive = keyCodec.encode(key)
@@ -107,7 +109,7 @@ public class EnumPluginBuilder<K : Any, V : Any>(
     }
 
     private fun V.toPrimitive(valLiteral: CacheVarLiteral): Any {
-        val codec = CacheVarTypeMap.findCodec<Any, V>(valLiteral)
+        val codec = CacheVarTypeMap.findCodec<Any, V>(expectedValType)
         return codec.encode(this)
     }
 

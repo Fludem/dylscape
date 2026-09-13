@@ -175,6 +175,7 @@ constructor(
 
         invAdd(inv, crop.produce)
         statAdvance(stats.farming, crop.harvestXp * xpMods.get(player, stats.farming))
+        publish(Harvested(player, crop.produce))
         spam("You pick ${objTypes[crop.produce].name.lowercase()}.")
 
         when (crop.model) {

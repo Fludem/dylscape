@@ -13,9 +13,9 @@ import org.rsmod.game.type.obj.ObjTypeList
 /**
  * Opening the relics screen, shared by the journal's leagues tab and the admin command.
  *
- * Opening is also when a player's points catch up with their total level, and when a relic item
- * they have lost is handed back - the vanilla text says a lost relic item "can be retrieved from
- * the Sage", and this server has no Sage.
+ * Opening is also when a player's points are re-derived from their completed tasks, and when a
+ * relic item they have lost is handed back - the vanilla text says a lost relic item "can be
+ * retrieved from the Sage", and this server has no Sage.
  */
 @Singleton
 class RelicScreen

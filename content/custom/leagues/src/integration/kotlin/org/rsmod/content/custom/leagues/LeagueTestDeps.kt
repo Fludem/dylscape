@@ -3,6 +3,7 @@ package org.rsmod.content.custom.leagues
 import jakarta.inject.Inject
 import org.rsmod.content.custom.leagues.relics.LeaguePointsSync
 import org.rsmod.content.custom.leagues.scripts.RelicScreen
+import org.rsmod.content.custom.leagues.tasks.LeagueTaskProgress
 import org.rsmod.game.type.stat.StatTypeList
 import org.rsmod.routefinder.collision.CollisionFlagMap
 
@@ -18,6 +19,7 @@ class LeagueTestDeps
 constructor(
     val screen: RelicScreen,
     val points: LeaguePointsSync,
+    val progress: LeagueTaskProgress,
     val collision: CollisionFlagMap,
     val statTypes: StatTypeList,
 )

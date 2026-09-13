@@ -47,3 +47,20 @@
 # above. It is a league relic struct's description (the HTML the relics screen's expanded view
 # prints), and naming it is what lets `LeagueRelicDescriptions` rewrite it with a StructEditor.
 880	league_relic_description
+# Vanilla league task params, aliased so the task list can be authored with StructBuilder and
+# read back by name. Decoded from `[proc,league_tasks_draw_list]` (3204) and
+# `[proc,league_task_is_completed]` (3216) in `LeagueTasksDump`:
+# - 868 on the league struct (6211) names the INT->STRUCT enum the list walks, keys 0..n-1.
+# - 873 is the completion index: bit (873 % 32) of varp `league_task_completed_(873 / 32)`.
+# - 2044 is the tier the list reads (1 Easy .. 5 Master); enum 2671 turns it into points.
+# - 1016 type (enum 3411), 1017 area (enum 3412), 1018 skill (enum 2729, 0 for none).
+# - 877 on each tier struct (1136-1143) is the League Points threshold for that relic tier.
+868	league_tasks_enum
+873	league_task_index
+874	league_task_name
+875	league_task_description
+1016	league_task_type
+1017	league_task_area
+1018	league_task_skill
+2044	league_task_tier
+877	league_tier_points

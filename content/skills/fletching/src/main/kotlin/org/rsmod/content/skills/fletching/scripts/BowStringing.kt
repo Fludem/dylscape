@@ -79,6 +79,7 @@ constructor(
             invDel(inv, recipe.string, 1)
             invAdd(inv, recipe.strung)
             statAdvance(stats.fletching, recipe.xp * xpMods.get(player, stats.fletching))
+            publish(Fletched(player, recipe.strung, 1))
             made++
         }
         resetAnim()

@@ -12,7 +12,6 @@ import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onIfOverlayButton
 import org.rsmod.content.custom.leagues.configs.league_components
 import org.rsmod.content.custom.leagues.configs.league_interfaces
-import org.rsmod.content.custom.leagues.relics.LeaguePoints
 import org.rsmod.content.custom.leagues.relics.LeaguePointsSync
 import org.rsmod.content.custom.leagues.relics.Relic
 import org.rsmod.content.custom.leagues.relics.RelicUnlocked
@@ -236,9 +235,11 @@ constructor(
             "one relic from each tier. Swapping it later costs <col=ffffff>$cost</col> coins."
     }
 
-    private fun needPointsMessage(relic: Relic): String {
-        val total = LeaguePoints.totalLevelFor(relic.tier)
-        return "You need a total level of $total to unlock a relic from tier ${relic.tier + 1}."
+    private fun ProtectedAccess.needPointsMessage(relic: Relic): String {
+        val needed = Relic.TIER_POINTS[relic.tier].formatted
+        val have = points.points(player).formatted
+        return "You need $needed League Points to unlock a relic from tier ${relic.tier + 1}; " +
+            "you have $have. Complete league tasks to earn more."
     }
 
     /**
@@ -291,7 +292,7 @@ constructor(
             if (arg.equals("clear", ignoreCase = true)) {
                 points.forget(player)
                 points.sync(player)
-                player.mes("League Points follow your total level again: ${points.points(player)}.")
+                player.mes("League Points follow your tasks again: ${points.points(player)}.")
                 return
             }
             val value = arg?.toIntOrNull()

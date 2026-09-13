@@ -98,10 +98,14 @@ enum class Relic(
         const val TIER_COUNT: Int = 8
 
         /**
-         * Each tier's League Points threshold, straight from the tier structs' param 877. The
-         * client greys a tier out below it, so the server has to agree.
+         * Each tier's League Points threshold. `LeagueTierThresholdEditor` writes these into the
+         * tier structs' param 877, which is what the client greys tiers out by, so the two agree by
+         * construction; `RelicTableTest` checks the packed cache against this list.
+         *
+         * Set against the points our own task list offers (`LeagueTasks.totalPoints`): tier 8 opens
+         * at a little over half of everything there is to earn.
          */
-        val TIER_POINTS: List<Int> = listOf(0, 750, 1500, 2500, 5000, 8000, 16000, 25000)
+        val TIER_POINTS: List<Int> = listOf(0, 300, 900, 2000, 3500, 5500, 8000, 11000)
 
         /**
          * Coins to swap a tier's relic for another. The first pick in a tier is free; these are

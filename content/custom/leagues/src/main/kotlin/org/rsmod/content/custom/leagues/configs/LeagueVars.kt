@@ -65,6 +65,9 @@ object LeagueVarBits : VarBitReferences() {
      */
     val tutorial_completed = find("league_tutorial_completed")
 
+    /** How many tasks the player has completed; the side panel prints it. Bits 0..10 of 2610. */
+    val total_tasks_completed = find("league_total_tasks_completed")
+
     /**
      * The Reloaded relic's extra pick: one varbit per tier, holding the 1-based slot of the relic
      * re-picked from that tier, or 0. At most one is ever set. They sit in `league_relics_other`,

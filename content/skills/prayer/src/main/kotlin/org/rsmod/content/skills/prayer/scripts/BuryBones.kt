@@ -61,6 +61,7 @@ class BuryBones @Inject constructor(private val xpMods: XpModifiers) : PluginScr
         mes(flavour.confirmation)
 
         statAdvance(stats.prayer, type.prayerXp * xpMods.get(player, stats.prayer))
+        publish(BuriedBones(player, type))
     }
 
     private enum class Flavour(val preamble: String?, val confirmation: String) {

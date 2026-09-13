@@ -124,6 +124,7 @@ constructor(
             recipe.gem?.let { invDel(inv, it, 1) }
             invAdd(inv, recipe.product)
             statAdvance(stats.crafting, recipe.xp * xpMods.get(player, stats.crafting))
+            publish(Crafted(player, recipe.product, 1))
             made++
         }
         resetAnim()

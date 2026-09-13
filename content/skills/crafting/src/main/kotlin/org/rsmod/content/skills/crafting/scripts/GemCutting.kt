@@ -92,6 +92,7 @@ constructor(
 
             invAdd(inv, recipe.cut)
             statAdvance(stats.crafting, recipe.xp * xpMods.get(player, stats.crafting))
+            publish(Crafted(player, recipe.cut, 1))
             mes("You cut the ${objTypes[recipe.cut].name.lowercase()}.")
         }
         resetAnim()

@@ -72,6 +72,7 @@ constructor(
         }
         if (lapComplete) {
             statAdvance(stats.agility, course.lapXp * xpMods.get(player, stats.agility))
+            publish(CompletedLap(player, course))
         }
     }
 

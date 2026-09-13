@@ -72,7 +72,7 @@ internal fun ProtectedAccess.showExpandedView(relic: Relic, state: Int) {
     runClientScript(LeagueClientScripts.EXPANDED_VIEW, *expandedViewArgs(relic, state))
 }
 
-internal fun ProtectedAccess.openTasksScreen() {
+fun ProtectedAccess.openTasksScreen() {
     ifOpenFullOverlay(league_interfaces.tasks)
     ifSetEvents(league_components.tasks_close, 0..0, IfEvent.Op1)
     ifSetEvents(league_components.tasks_list, TASK_LIST_RANGE, IfEvent.Op1)

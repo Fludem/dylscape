@@ -149,6 +149,7 @@ constructor(
         resetAnim()
         mes("The fire catches and the logs begin to burn.")
         statAdvance(stats.firemaking, logs.fireXp * xpMods.get(player, stats.firemaking))
+        publish(LitFire(player, logs))
 
         // Ashes appear exactly as the fire dies, so the tile is never both burning and ashen.
         objRepo.addDelayed(

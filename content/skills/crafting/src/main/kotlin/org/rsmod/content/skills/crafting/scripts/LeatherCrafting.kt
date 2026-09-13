@@ -85,6 +85,7 @@ constructor(
             invDel(inv, recipe.hide, product.hides)
             invAdd(inv, product.product)
             statAdvance(stats.crafting, product.xp * xpMods.get(player, stats.crafting))
+            publish(Crafted(player, product.product, 1))
             made++
 
             onReel++

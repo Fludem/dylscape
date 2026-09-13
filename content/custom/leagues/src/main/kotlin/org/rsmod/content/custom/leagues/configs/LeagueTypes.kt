@@ -78,4 +78,7 @@ object LeagueTimers : TimerReferences() {
 
     /** Drives the Guardian's attacks and its 30-minute lifetime. */
     val guardian = find("league_guardian")
+
+    /** Checks the outstanding "visit" tasks against the player's tile every few ticks. */
+    val task_visit = find("league_task_visit")
 }

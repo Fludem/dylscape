@@ -6,7 +6,6 @@ import org.rsmod.api.player.protect.ProtectedAccessLauncher
 import org.rsmod.api.player.ui.ifCloseSub
 import org.rsmod.api.player.vars.intVarBit
 import org.rsmod.api.player.vars.intVarp
-import org.rsmod.api.script.onEvent
 import org.rsmod.api.script.onIfOverlayButton
 import org.rsmod.api.script.onPlayerLogin
 import org.rsmod.content.custom.leagues.configs.league_components
@@ -14,7 +13,6 @@ import org.rsmod.content.custom.leagues.configs.league_interfaces
 import org.rsmod.content.custom.leagues.configs.league_varbits
 import org.rsmod.content.custom.leagues.configs.league_varps
 import org.rsmod.content.custom.leagues.relics.LeaguePointsSync
-import org.rsmod.content.interfaces.levelup.LevelUpScript
 import org.rsmod.events.EventBus
 import org.rsmod.game.entity.Player
 import org.rsmod.plugin.scripts.PluginScript
@@ -33,8 +31,9 @@ import org.rsmod.plugin.scripts.ScriptContext
  * [enableLeagues] sets both on login. Neither is authored content: the world flag lives in a varp
  * no clientscript ever writes, and the tutorial counter is a plain varbit.
  *
- * League Points follow total level (see `LeaguePoints`), so they are brought up to date on login
- * and on every level-up, which keeps the side panel's progress bar honest.
+ * League Points are the sum of completed tasks (see `LeagueTaskProgress`), so they are brought up
+ * to date on login; `LeagueTaskScript` re-syncs them as each task completes, which keeps the side
+ * panel's progress bar honest.
  */
 class LeagueSidePanelScript
 @Inject
@@ -54,7 +53,6 @@ constructor(
             player.enableLeagues()
             points.sync(player)
         }
-        onEvent<LevelUpScript.StatLevelUp> { points.sync(player) }
 
         // These four sit on plain components carrying Op1 in the cache, so they arrive with
         // `comsub == -1` and need no arming from us.

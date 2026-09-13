@@ -156,6 +156,7 @@ constructor(
             }
             invAdd(inv, recipe.product)
             statAdvance(stats.herblore, recipe.xp * xpMods.get(player, stats.herblore))
+            publish(MixedPotion(player, recipe.product))
             made++
         }
         resetAnim()
@@ -200,6 +201,7 @@ constructor(
                 stats.herblore,
                 HerbloreRecipes.SUPER_COMBAT_XP * xpMods.get(player, stats.herblore),
             )
+            publish(MixedPotion(player, HerbloreRecipes.superCombatProduct))
             made++
         }
         resetAnim()

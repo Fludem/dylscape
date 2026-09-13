@@ -153,6 +153,7 @@ constructor(
                 stats.smithing,
                 barsRequired * tier.xpPerBar * xpMods.get(player, stats.smithing),
             )
+            publish(Smithed(player, product, madePerBatch))
             made++
         }
         resetAnim()

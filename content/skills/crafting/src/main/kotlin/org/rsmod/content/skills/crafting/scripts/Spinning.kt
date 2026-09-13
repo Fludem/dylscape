@@ -85,6 +85,7 @@ constructor(
             }
             invReplace(inv, replace = recipe.material, count = 1, replacement = recipe.product)
             statAdvance(stats.crafting, recipe.xp * xpMods.get(player, stats.crafting))
+            publish(Crafted(player, recipe.product, 1))
             made++
         }
         resetAnim()

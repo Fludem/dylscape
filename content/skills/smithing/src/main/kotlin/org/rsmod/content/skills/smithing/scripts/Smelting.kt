@@ -129,6 +129,7 @@ constructor(
 
             invAdd(inv, recipe.bar)
             statAdvance(stats.smithing, recipe.xp * xpMods.get(player, stats.smithing))
+            publish(Smelted(player, recipe.bar))
             mes("You retrieve a bar of ${bar.name.lowercase().removeSuffix(" bar")}.")
         }
         resetAnim()

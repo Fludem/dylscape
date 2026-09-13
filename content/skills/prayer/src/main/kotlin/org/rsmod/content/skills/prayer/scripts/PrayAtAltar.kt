@@ -80,6 +80,7 @@ class PrayAtAltar @Inject constructor(private val xpMods: XpModifiers) : PluginS
 
         val xp = bones.prayerXp * xpPercent / 100.0
         statAdvance(stats.prayer, xp * xpMods.get(player, stats.prayer))
+        publish(OfferedBones(player, bones))
         resetAnim()
 
         if (keptBones) {

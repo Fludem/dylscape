@@ -56,5 +56,6 @@ class HerbCleaning @Inject constructor(private val xpMods: XpModifiers, private 
             }
         }
         statAdvance(stats.herblore, recipe.xp * cleaned * xpMods.get(player, stats.herblore))
+        publish(CleanedHerb(player, recipe.clean, cleaned))
     }
 }

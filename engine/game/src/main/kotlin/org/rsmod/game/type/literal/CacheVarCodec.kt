@@ -18,6 +18,7 @@ import org.rsmod.game.type.proj.ProjAnimType
 import org.rsmod.game.type.seq.SeqType
 import org.rsmod.game.type.spot.SpotanimType
 import org.rsmod.game.type.stat.StatType
+import org.rsmod.game.type.struct.StructType
 import org.rsmod.game.type.synth.SynthType
 import org.rsmod.game.type.varbit.VarBitType
 import org.rsmod.game.type.varp.VarpType
@@ -194,6 +195,17 @@ public object CacheVarVarBitCodec : BaseIntVarCodec<VarBitType>(VarBitType::clas
     override fun decode(types: TypeListMap, value: Int): VarBitType? = types.varbits[value]
 
     override fun encode(value: VarBitType): Int = value.id
+}
+
+/**
+ * Structs are written by id like every other typed reference, but read back as plain ints
+ * ([CacheVarTypeMap.codecOut] keeps `STRUCT -> Int`), so this codec only ever encodes: it lets a
+ * builder author a struct-valued enum or param without changing what the rest of the server sees.
+ */
+public object CacheVarStructCodec : BaseIntVarCodec<StructType>(StructType::class) {
+    override fun decode(types: TypeListMap, value: Int): StructType? = types.structs[value]
+
+    override fun encode(value: StructType): Int = value.id
 }
 
 public object CacheVarVarpCodec : BaseIntVarCodec<VarpType>(VarpType::class) {
