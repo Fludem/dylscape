@@ -120,12 +120,13 @@ class SmithingConfigTest {
                 }
             }
             for (loc in furnaces) {
-                // Ordinary furnaces are `Smelt` on op2. Tutorial Island's is `Use` on op1.
-                val smeltOnOp2 = loc.op.getOrNull(1) == "Smelt"
+                // Ordinary furnaces are `Smelt` on op2, Lovakengj's large one on op1, and Tutorial
+                // Island's is `Use` on op1. The script binds op1 and op2, so any of those fire.
+                val smelt = loc.op.getOrNull(0) == "Smelt" || loc.op.getOrNull(1) == "Smelt"
                 val useOnOp1 = loc.op.getOrNull(0) == "Use"
-                assertTrue(smeltOnOp2 || useOnOp1 || loc.op.all { it == null }) {
+                assertTrue(smelt || useOnOp1 || loc.op.all { it == null }) {
                     "Furnace '${loc.internalName}' has ops ${loc.op.toList()}; neither Smelt on " +
-                        "op2 nor Use on op1, so nothing this module binds would ever fire."
+                        "op1/op2 nor Use on op1, so nothing this module binds would ever fire."
                 }
             }
 
@@ -134,6 +135,24 @@ class SmithingConfigTest {
             assertTrue(furnaces.any { it.op.getOrNull(1) == "Smelt" }) { "No furnace is usable." }
             assertTrue(furnaces.any { it.internalName == "newbiefurnace" }) {
                 "Tutorial Island's furnace must stay tagged; the tutorial depends on it."
+            }
+
+            // The furnaces and anvils players actually walk up to, by the name the map places.
+            // `furnace` itself is placed once; the starter towns all use `fai_falador_furnace`.
+            val tagged = furnaces.map { it.internalName }.toSet() + anvils.map { it.internalName }
+            for (name in
+                listOf(
+                    "fai_falador_furnace", // Lumbridge, Falador, Al Kharid, Port Phasmatys...
+                    "varrock_diary_furnace", // Edgeville
+                    "prif_furnace",
+                    "lovakengj_furnace_01",
+                    "lovakengj_furnace_large_01",
+                    "wilderness_resource_furnace",
+                    "anvil",
+                    "lumbridge_anvil",
+                    "lovakengj_anvil",
+                )) {
+                assertTrue(name in tagged) { "'$name' is not tagged; it says nothing interesting." }
             }
         }
 

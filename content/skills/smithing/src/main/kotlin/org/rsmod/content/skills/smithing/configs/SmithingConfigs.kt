@@ -108,15 +108,24 @@ object SmithingComponents : ComponentReferences() {
 /**
  * Anvils and furnaces.
  *
- * Only ordinary, freely usable ones are tagged. Quest-locked and minigame furnaces
- * (`furnace_legendsquest`, `regicide_furnace`, `elemental_workshop_furnace`, the Blast Furnace),
- * scenery lookalikes (`anvil_icon`, `fai_varrock_furnace_chimney`), the `_noop` anvil variants and
- * Tekton's raid anvil are all left alone -- tagging them would advertise an op the surrounding
- * content cannot honour.
+ * Every placed loc carrying a `Smelt` or `Smith` op is tagged, sourced from a dump of the map's loc
+ * placements joined against the loc types (`tools/agility/DumpLocPlacements`). The names are
+ * misleading on their own: the furnace in Lumbridge, Falador, Al Kharid, Port Phasmatys and four
+ * other towns is `fai_falador_furnace`, and Edgeville's is `varrock_diary_furnace`, while plain
+ * `furnace` is placed exactly once, in Kourend. Tagging by plausible name alone is what left every
+ * starter-town furnace answering "Nothing interesting happens" until 2026-09-13.
+ *
+ * Deliberately untagged: `cam_torum_sacred_forge` (its `Smelt` is a quest mechanic), the Elemental
+ * Workshop workbench, the PvP Arena's `pvpa_fake_anvil`, the Blast Furnace, the quest-locked
+ * `furnace_legendsquest` / `regicide_furnace` / `elemental_workshop_furnace`, scenery lookalikes
+ * (`anvil_icon`, `fai_varrock_furnace_chimney`), the `_noop` anvil variants, Tekton's raid anvil,
+ * and the multiloc children that only appear mid-quest (`enakh_new_furnace_lit`,
+ * `burgh_furnace_fired`, `ahoy_new_furnace`, `zqfurnace_lit`, `lovaquest_tower_furnace_lit`,
+ * `bcs_furnace_lit`, `cam_torum_furnace`).
  *
  * **Ops here are decoded, not assumed, and they are not uniform:**
  * - anvils carry `Smith` on **op1**
- * - furnaces carry `Smelt` on **op2**
+ * - furnaces carry `Smelt` on **op2**, except `lovakengj_furnace_large_01` which has it on **op1**
  * - `newbiefurnace`, Tutorial Island's, carries `Use` on **op1** instead
  *
  * Several plausible-looking locs carry **no ops at all** -- `gim_anvil`, `gh_anvil` ("Giant
@@ -144,8 +153,31 @@ object SmithingLocs : LocReferences() {
     val gh_anvil = find("gh_anvil")
     val gim_anvil = find("gim_anvil")
     val dorgesh_anvil = find("dorgesh_blacksmith_anvil")
+    val lovakengj_anvil = find("lovakengj_anvil")
+    val ds2_forge_anvil = find("ds2_ac_forge_anvil")
+    val myths_guild_anvil = find("ds2_guild_blacksmith_anvil")
+    val cam_torum_anvil = find("cam_torum_anvil")
+    val brut_anvil = find("brut_anvil")
+    val camdozaal_anvil = find("camdozaal_anvil")
+    val chasm_anvil = find("chasm_anvil")
 
+    /** Lumbridge, Falador, Al Kharid, Port Phasmatys and four more towns. */
+    val town_furnace = find("fai_falador_furnace")
+    /** Edgeville's furnace, despite the name. */
+    val edgeville_furnace = find("varrock_diary_furnace")
     val furnace = find("furnace")
+    val prif_furnace = find("prif_furnace")
+    val lovakengj_furnace = find("lovakengj_furnace_01")
+    val lovakengj_furnace_large = find("lovakengj_furnace_large_01")
+    val darkmeyer_furnace = find("darkm_furnace")
+    val wilderness_furnace = find("wilderness_resource_furnace")
+    val brimstone_furnace = find("brimstone_furnace")
+    val underground_pass_furnace = find("furnace_upass")
+    val lassar_furnace = find("furnace_lassar01_default01")
+    val lassar_furnace_shadow = find("furnace_lassar01_default01_shadow")
+    val cof_furnace = find("cof_furnace")
+    val tzhaar_forge = find("tzhaar_forge")
+    val neitiznot_forge = find("iznot_clay_forge")
     val furnace3 = find("furnace3")
     val keldagrim_furnace = find("dwarf_keldagrim_furnace")
     val viking_furnace = find("viking_furnace")
@@ -173,6 +205,13 @@ object SmithingLocsEditor : LocEditor() {
                 SmithingLocs.wint_anvil,
                 SmithingLocs.gh_anvil,
                 SmithingLocs.gim_anvil,
+                SmithingLocs.lovakengj_anvil,
+                SmithingLocs.ds2_forge_anvil,
+                SmithingLocs.myths_guild_anvil,
+                SmithingLocs.cam_torum_anvil,
+                SmithingLocs.brut_anvil,
+                SmithingLocs.camdozaal_anvil,
+                SmithingLocs.chasm_anvil,
             )
         for (type in anvils) {
             edit(type) { contentGroup = SmithingContent.smithing_anvil }
@@ -191,6 +230,20 @@ object SmithingLocsEditor : LocEditor() {
                 SmithingLocs.keldagrim_furnace2,
                 SmithingLocs.viking_furnace2,
                 SmithingLocs.bcs_furnace,
+                SmithingLocs.town_furnace,
+                SmithingLocs.edgeville_furnace,
+                SmithingLocs.prif_furnace,
+                SmithingLocs.lovakengj_furnace,
+                SmithingLocs.lovakengj_furnace_large,
+                SmithingLocs.darkmeyer_furnace,
+                SmithingLocs.wilderness_furnace,
+                SmithingLocs.brimstone_furnace,
+                SmithingLocs.underground_pass_furnace,
+                SmithingLocs.lassar_furnace,
+                SmithingLocs.lassar_furnace_shadow,
+                SmithingLocs.cof_furnace,
+                SmithingLocs.tzhaar_forge,
+                SmithingLocs.neitiznot_forge,
             )
         for (type in furnaces) {
             edit(type) { contentGroup = SmithingContent.smithing_furnace }

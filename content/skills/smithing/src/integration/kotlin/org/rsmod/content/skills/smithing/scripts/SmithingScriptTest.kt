@@ -22,7 +22,9 @@ import org.rsmod.content.skills.smithing.configs.SmithingVarBits
 import org.rsmod.game.inv.InvObj
 import org.rsmod.game.type.interf.IfButtonOp
 import org.rsmod.game.type.interf.IfEvent
+import org.rsmod.game.type.loc.UnpackedLocType
 import org.rsmod.map.CoordGrid
+import org.rsmod.routefinder.flag.BlockAccessFlag
 
 /**
  * Runs single-threaded on purpose.
@@ -235,6 +237,61 @@ class SmithingScriptTest {
             }
         }
 
+    /**
+     * The loc Lumbridge, Falador and Al Kharid actually place is `fai_falador_furnace`, not
+     * `furnace`. The generic tests above pick *a* tagged furnace, so they stayed green while every
+     * starter-town furnace answered "Nothing interesting happens".
+     */
+    @Test
+    fun GameTestState.`the Lumbridge furnace opens the smelting menu`() =
+        runGameTest(Smelting::class) {
+            val type = findLocTypes { it.internalName == "fai_falador_furnace" }.first()
+            assertTrue(type.isContentType(SmithingContent.smithing_furnace)) {
+                "fai_falador_furnace is not tagged smithing_furnace."
+            }
+            assertEquals("Smelt", type.op.getOrNull(1)) {
+                "Smelt is not on op2: ${type.op.toList()}"
+            }
+            val furnace = placeMapLoc(CoordGrid(0, 50, 50, 52, 31), type)
+            // This one is 2x3 and can only be approached from the front, so standing west of it
+            // (as the tests above do) is "I can't reach that" -- pick an open side instead.
+            player.teleport(approachTile(furnace.coords, type))
+            player.clearInv()
+
+            player.opLoc2(furnace)
+            advance(ticks = 1)
+
+            assertTrue(player.ui.containsModal(SkillMultiInterfaces.skillmulti)) {
+                "The make-menu was not opened from the Lumbridge furnace " +
+                    "(approach flags ${type.forceApproachFlags}, ${type.width}x${type.length})."
+            }
+        }
+
+    @Test
+    fun GameTestState.`the Lumbridge anvil opens the smithing interface`() =
+        runGameTest(AnvilSmithing::class) {
+            val type = findLocTypes { it.internalName == "lumbridge_anvil" }.first()
+            assertTrue(type.isContentType(SmithingContent.smithing_anvil)) {
+                "lumbridge_anvil is not tagged smithing_anvil."
+            }
+            assertEquals("Smith", type.op.getOrNull(0)) {
+                "Smith is not on op1: ${type.op.toList()}"
+            }
+            val anvil = placeMapLoc(CoordGrid(0, 50, 50, 54, 31), type)
+            player.teleport(anvil.coords.translateX(-1))
+            player.clearInv()
+            player.inv[0] = InvObj(objs.hammer)
+            player.inv[1] = InvObj(SmithingObjs.bronze_bar)
+            player.stats[stats.smithing] = 99
+
+            player.opLoc1(anvil)
+            advance(ticks = 1)
+
+            assertEquals(bronzeBarType, player.vars[SmithingVarBits.bar_type]) {
+                "The smithing interface was not set up from the Lumbridge anvil."
+            }
+        }
+
     @Test
     fun GameTestState.`the menu smelts as many bars as the quantity clicked`() =
         runGameTest(Smelting::class) {
@@ -287,4 +344,15 @@ class SmithingScriptTest {
             assertMessageSent("You need a Smithing level of 85 to smelt this.")
             assertEquals(1, player.count(SmithingObjs.runite_ore)) { "Ore was consumed anyway." }
         }
+
+    /** A tile beside a rotation-0 loc on a side its `forceApproachFlags` does not block. */
+    private fun approachTile(sw: CoordGrid, type: UnpackedLocType): CoordGrid {
+        val flags = type.forceApproachFlags
+        return when {
+            flags and BlockAccessFlag.WEST == 0 -> sw.translateX(-1)
+            flags and BlockAccessFlag.SOUTH == 0 -> sw.translateZ(-1)
+            flags and BlockAccessFlag.EAST == 0 -> sw.translateX(type.width)
+            else -> sw.translateZ(type.length)
+        }
+    }
 }
