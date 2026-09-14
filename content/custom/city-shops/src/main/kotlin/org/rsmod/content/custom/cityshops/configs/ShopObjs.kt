@@ -321,6 +321,22 @@ object ShopObjs : ObjReferences() {
     val xbows_silver_bolt_mould = find("xbows_silver_bolt_mould")
     val yew_roots = find("yew_roots")
 
+    // Edgeville's food and potion stalls. Only entry-tier food and potions: cooked fish stops at
+    // lobster and the potions are the regular ones, never supers. `shrimp` and `herring` come from
+    // `objs`. Potion names are the cache's own and do not follow one pattern -- the strength
+    // potion is `strength4`, the rest are `4dose1...`.
+    val anchovies = find("anchovies")
+    val lobster = find("lobster")
+    val pike = find("pike")
+    val salmon = find("salmon")
+    val sardine = find("sardine")
+    val trout = find("trout")
+    val tuna = find("tuna")
+    val antipoison_potion = find("4doseantipoison")
+    val attack_potion = find("4dose1attack")
+    val defence_potion = find("4dose1defense")
+    val strength_potion = find("strength4")
+
     // Jack's skillcape counter, in skill order rather than alphabetically, because that is the
     // order the shop is stocked in and the order a player reads a skill list.
     //

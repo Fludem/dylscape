@@ -7,3 +7,13 @@
 [[spawn]]
 npc = 'magic_store_owner'
 coords = '0_48_54_24_49'
+
+# The Fishmonger (3086, 3505) and Huito (3084, 3505), continuing the same row west past the
+# Taskmaster at 3088, two tiles apart like everyone else on it. Both are pinned by `ShopNpcEditor`.
+[[spawn]]
+npc = 'misc_fish_monger'
+coords = '0_48_54_14_49'
+
+[[spawn]]
+npc = 'cam_torum_shop_herbalist'
+coords = '0_48_54_12_49'

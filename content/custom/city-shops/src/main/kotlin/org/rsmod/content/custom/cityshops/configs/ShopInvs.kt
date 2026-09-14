@@ -76,6 +76,12 @@ object ShopInvs : InvReferences() {
     // `.data/symbols/.local/inv.sym` and a `packCache` before the shop existed at all; reusing a
     // dead cache name is the same trade `herbloreshop2` above already makes.
     val omnishop_inv_temp = find("omnishop_inv_temp")
+
+    // Edgeville's food and potion stalls. Each is the inv its own shopkeeper type was built for:
+    // vanilla stocks them, nothing here references them, and neither is shared with the Warriors'
+    // Guild keepers `world-spawns` still stands up.
+    val misc_fishmonger = find("misc_fishmonger")
+    val cam_torum_shop_herbalist = find("cam_torum_shop_herbalist")
 }
 
 internal object ShopInvBuilder : InvEditor() {

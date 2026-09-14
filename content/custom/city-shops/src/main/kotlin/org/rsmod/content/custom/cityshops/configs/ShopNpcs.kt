@@ -92,6 +92,13 @@ object ShopNpcs : NpcReferences() {
     // selling capes, which makes him the natural face for the skillcape counter.
     val jack = find("myths_guild_cape_seller")
 
+    // Edgeville's food and potion stalls, borrowed on Primula and Jack's terms: nothing on this
+    // server spawns or edits either type, and both already carry `Talk-to` on op1 and `Trade` on
+    // op3. The Warriors' Guild food and potion keepers were passed over because `world-spawns`
+    // already pins them, which would edit one type from two places.
+    val fishmonger = find("misc_fish_monger")
+    val huito = find("cam_torum_shop_herbalist")
+
     // General stores 2..7. Store 1 is Lumbridge's and store 8 is Zanaris', which stocks something
     // else entirely and is unreachable without Lost City — both are left alone.
     val generalshopkeeper2 = find("generalshopkeeper2")
@@ -164,7 +171,7 @@ object ShopNpcs : NpcReferences() {
      * Trades out in the open, so `indoors` would be wrong — there is no building to confine them
      * to. They still get pinned; they simply get pinned without the move restriction.
      */
-    val outdoors: List<NpcType> = listOf(gem_trader, nurmof)
+    val outdoors: List<NpcType> = listOf(gem_trader, nurmof, fishmonger, huito)
 
     val all: List<NpcType> = indoors + outdoors
 }
@@ -258,5 +265,8 @@ internal object ShopMargins {
             // here drifts its price with stock, and a cape whose price wanders off 100,000gp the
             // moment somebody buys one is exactly what a fixed-price shop must not do.
             shop_npcs.jack to ShopMargin(sell = 1000, buy = 600, change = 0),
+            // Edgeville's stalls: Wydin's food margin and Jatix's potion margin.
+            shop_npcs.fishmonger to ShopMargin(1000, 700, 10),
+            shop_npcs.huito to ShopMargin(1000, 700, 30),
         )
 }
