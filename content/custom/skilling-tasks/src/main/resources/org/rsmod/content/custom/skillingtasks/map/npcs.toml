@@ -1,0 +1,8 @@
+# The Taskmaster (3088, 3505), closing the west end of the Edgeville slayer row north of the bank:
+# Turael 3090, Chaeldar 3092, Duradel 3094 and Akutha 3096 all stand on the same z.
+#
+# `con_contractor_3op` is Mahogany Homes' Amy, renamed by `SkillingTaskNpcEditor`. Nothing else
+# spawns her.
+[[spawn]]
+npc = 'con_contractor_3op'
+coords = '0_48_54_16_49'

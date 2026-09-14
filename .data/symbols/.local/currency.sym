@@ -5,3 +5,4 @@
 # `CurrencyReferenceResolver` resolves them straight out of this table on boot. Upstream's
 # `currency.sym` holds only `0 standard_gp`, so 1000 leaves no realistic overlap.
 1000	mark_of_grace
+1001	skilling_points
