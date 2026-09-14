@@ -1,0 +1,23 @@
+# Vorkath and the ferryman who gets you to it.
+#
+# Coordinates are `level_msqX_msqZ_localX_localZ`. Every one of them is mirrored in
+# `VorkathArena` and `VorkathArenaTest` checks the two agree and that the tiles are real.
+#
+# Spawns only reach the cache through `./gradlew packCache` with the server stopped, or the live
+# server's own first-boot pack. A normal boot will not place them.
+
+# The sleeping dragon, on the blocked 7x7 platform in the middle of the Ungael crater. This is the
+# south-west tile of its footprint: (2269, 4062).
+[[spawn]]
+npc = 'vorkath_sleeping'
+coords = '0_35_63_29_30'
+
+# Torfinn on the Rellekka pier, beside the boat to Ungael: (2640, 3696).
+[[spawn]]
+npc = 'torfinn_travel_rellekka'
+coords = '0_41_57_16_48'
+
+# Torfinn on the Ungael shore, beside the boat back: (2276, 4036).
+[[spawn]]
+npc = 'torfinn_travel_ungael'
+coords = '0_35_63_36_4'

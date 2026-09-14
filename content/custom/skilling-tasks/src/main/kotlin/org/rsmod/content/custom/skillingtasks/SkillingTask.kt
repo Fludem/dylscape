@@ -6,7 +6,7 @@ import org.rsmod.game.type.stat.StatType
 
 /**
  * A counted skilling action, one per event the progress script listens on. [verb] is how the
- * Taskmaster phrases the job ("cut 150 yew logs"), [skillName] how the payout is described.
+ * Taskmaster phrases the job ("cut 30 yew logs"), [skillName] how the payout is described.
  */
 enum class TaskKind(val stat: StatType, val verb: String, val skillName: String) {
     Chop(stats.woodcutting, "cut", "Woodcutting"),
@@ -43,7 +43,7 @@ class SkillingTask(
         require(products.isNotEmpty()) { "Task $key names no products" }
     }
 
-    /** "cut 150 yew logs" */
+    /** "cut 30 yew logs" */
     fun describe(amount: Int): String = "${kind.verb} $amount $name"
 
     fun counts(kind: TaskKind, product: ObjType): Boolean =

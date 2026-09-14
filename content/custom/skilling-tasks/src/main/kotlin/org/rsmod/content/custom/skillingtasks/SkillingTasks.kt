@@ -20,7 +20,7 @@ import org.rsmod.game.type.obj.ObjType
  * each skill enforces its own requirements when the player actually cuts, cooks or smelts - they
  * only decide who can be *given* the task and how much the bonus is worth.
  *
- * Anvil rows count any item of a bar tier, so "smith 150 steel items" is satisfied by whatever the
+ * Anvil rows count any item of a bar tier, so "smith 30 steel items" is satisfied by whatever the
  * player finds worth making; arrowheads and dart tips are excluded because they come out fifteen
  * and ten at a time and would trivialise the count.
  */

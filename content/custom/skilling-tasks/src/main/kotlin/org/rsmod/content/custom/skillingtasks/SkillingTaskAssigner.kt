@@ -48,14 +48,14 @@ class SkillingTaskAssigner @Inject constructor(private val random: GameRandom) {
         return random.pick(candidates.getValue(picked))
     }
 
-    /** 100 to 200, in steps of five. */
+    /** 20 to 40, in steps of five. */
     fun amount(): Int = random.of(MIN_STEPS, MAX_STEPS) * STEP
 
     companion object {
         const val TOP_TIERS = 3
         const val STEP = 5
-        const val MIN_STEPS = 20
-        const val MAX_STEPS = 40
+        const val MIN_STEPS = 4
+        const val MAX_STEPS = 8
         const val MIN_AMOUNT = MIN_STEPS * STEP
         const val MAX_AMOUNT = MAX_STEPS * STEP
     }

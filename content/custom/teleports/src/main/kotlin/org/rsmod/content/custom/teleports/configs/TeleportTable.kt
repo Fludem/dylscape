@@ -86,6 +86,9 @@ internal object TeleportTable {
             entry("dagannoth_kings", "Dagannoth Kings", CoordGrid(1912, 4367, 0)),
             // Zul-Andra, beside the Sacrificial boat that sails to Zulrah's shrine.
             entry("zul_andra", "Zul-Andra (Zulrah)", CoordGrid(2212, 3056, 0)),
+            // Ungael, two tiles south of the crater lip Vorkath sleeps behind. The real route is
+            // Torfinn's boat from the Rellekka pier; this lands on the island side of it.
+            entry("ungael", "Ungael (Vorkath)", CoordGrid(2272, 4051, 0)),
             entry("ape_atoll", "Ape Atoll", CoordGrid(2797, 2798, 0)), // spell
             entry("kalphite_lair", "Kalphite Lair", CoordGrid(3227, 3108, 0)),
             // The God Wars entrance itself is a boulder crevice; Trollheim is the vetted spell

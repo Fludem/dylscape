@@ -30,8 +30,8 @@ class SkillingTaskTableTest {
 
     @Test
     fun `amounts stay inside the promised range`() {
-        assertEquals(100, SkillingTaskAssigner.MIN_AMOUNT)
-        assertEquals(200, SkillingTaskAssigner.MAX_AMOUNT)
+        assertEquals(20, SkillingTaskAssigner.MIN_AMOUNT)
+        assertEquals(40, SkillingTaskAssigner.MAX_AMOUNT)
     }
 
     @Test

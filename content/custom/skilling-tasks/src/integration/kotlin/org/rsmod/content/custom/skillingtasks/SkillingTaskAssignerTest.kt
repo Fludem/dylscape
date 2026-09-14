@@ -56,11 +56,11 @@ class SkillingTaskAssignerTest {
         }
 
     @Test
-    fun GameTestState.`amounts are 100 to 200 in fives`() =
+    fun GameTestState.`amounts are 20 to 40 in fives`() =
         runInjectedGameTest(SkillingTaskTestDeps::class) { deps ->
             repeat(50) {
                 val amount = deps.assigner.amount()
-                assertTrue(amount in 100..200, "$amount")
+                assertTrue(amount in 20..40, "$amount")
                 assertEquals(0, amount % 5)
             }
         }
