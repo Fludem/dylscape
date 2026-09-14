@@ -6,6 +6,7 @@ import org.rsmod.api.type.refs.loc.LocReferences
 import org.rsmod.api.type.refs.obj.ObjReferences
 import org.rsmod.api.type.refs.seq.SeqReferences
 import org.rsmod.content.custom.cluechest.ClueTier
+import org.rsmod.game.type.obj.ObjType
 
 object ClueChestLocs : LocReferences() {
     /**
@@ -73,4 +74,14 @@ object ClueKeys {
             put(ClueChestObjs.key_elite.id, ClueTier.Elite)
         }
     }
+
+    /** The key that is handed out for [tier]: the same objs the drop tables drop. */
+    fun keyFor(tier: ClueTier): ObjType =
+        when (tier) {
+            ClueTier.Beginner -> ClueChestObjs.key_beginner
+            ClueTier.Easy -> ClueChestObjs.key_easy
+            ClueTier.Medium -> ClueChestObjs.key_medium
+            ClueTier.Hard -> ClueChestObjs.key_hard
+            ClueTier.Elite -> ClueChestObjs.key_elite
+        }
 }

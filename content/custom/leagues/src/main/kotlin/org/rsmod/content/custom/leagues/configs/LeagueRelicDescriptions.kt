@@ -124,6 +124,9 @@ internal object LeagueRelicDescriptions : StructEditor() {
                         "Pickpocketing an npc also robs every npc of the same kind within 5 " +
                             "tiles, with full loot and experience for each.",
                         "Stalls give double loot.",
+                        "You gain double Thieving experience.",
+                        "Every npc you rob has a 1 in 50 chance to hold a clue key, and " +
+                            "harder targets hold better keys.",
                     )
             Relic.ProductionMaster ->
                 "When you make items in bulk, every item is made in a single action with full " +
@@ -136,15 +139,15 @@ internal object LeagueRelicDescriptions : StructEditor() {
                         "Mixing potions.",
                     )
             Relic.ClueCompass ->
-                "This server has no clue scrolls, so your Clue compass finds people instead:" +
-                    "<br><br>" +
-                    lines(
-                        "Teleport takes you beside any player who is online.",
-                        "Last-destination takes you to the last player you found, wherever " +
-                            "they are now.",
-                        "Current-step takes you back to where you set off from.",
-                        "It works at any Wilderness level.",
-                    )
+                lines(
+                    "Every monster you kill has a 1 in 10 chance to drop a clue key, and " +
+                        "stronger monsters drop better keys.",
+                    "Every clue key you open has a 1 in 4 chance to give the casket one tier " +
+                        "higher.",
+                    "Every casket gives double rewards.",
+                    BREAK,
+                    "Your Clue compass opens every clue key you carry at once, from anywhere.",
+                )
             Relic.FairysFlight ->
                 lines(
                     "When you open the clue chest in Edgeville bank, you choose which tier of " +

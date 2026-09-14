@@ -14,6 +14,9 @@ testing.suites {
         dependencies {
             implementation(projects.content.custom.dropTables)
             implementation(projects.api.player)
+            // ClueKeyOpenerTest builds the opener by hand, with its own perks and bank repo.
+            implementation(projects.api.perks)
+            implementation(projects.api.repo)
             // The engine's own inventory-on-loc script, so a key can be used on the chest
             // through the real dispatch rather than a hand-published event.
             implementation(projects.api.invPlugin)

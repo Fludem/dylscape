@@ -14,5 +14,8 @@ enum class ClueTier(val casket: String, val rolls: IntRange) {
     Easy("Reward casket (easy)", 2..4),
     Medium("Reward casket (medium)", 3..5),
     Hard("Reward casket (hard)", 4..6),
-    Elite("Reward casket (elite)", 4..6),
+    Elite("Reward casket (elite)", 4..6);
+
+    /** The tier above this one; [Elite] is the top and stays itself. */
+    fun next(): ClueTier = entries.getOrElse(ordinal + 1) { this }
 }

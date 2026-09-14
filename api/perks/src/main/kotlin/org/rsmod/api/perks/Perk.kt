@@ -61,6 +61,10 @@ enum class Perk {
 
     /** Opening the clue chest lets the player choose which tier of casket to roll. */
     ClueChestAnyTier,
+    /** Each opened clue key has a 1 in 4 chance to roll the next tier's casket instead. */
+    CasketUpgrade,
+    /** Every opened casket rolls its rewards twice. */
+    DoubleCaskets,
 
     /** Drop tables roll their loot twice. */
     DoubleLoot,

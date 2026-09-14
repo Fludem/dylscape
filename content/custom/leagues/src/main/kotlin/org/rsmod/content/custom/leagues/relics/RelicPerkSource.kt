@@ -50,6 +50,8 @@ class RelicPerkSource : PerkSource {
             Perk.StallDoubleLoot -> hasRelic(Relic.DodgyDeals)
 
             Perk.ClueChestAnyTier -> hasRelic(Relic.FairysFlight)
+            Perk.CasketUpgrade,
+            Perk.DoubleCaskets -> hasRelic(Relic.ClueCompass)
 
             Perk.DoubleLoot,
             Perk.NotedLoot -> hasRelic(Relic.TreasureArbiter)
@@ -73,6 +75,16 @@ class CornerCutterXp : XpMod {
 
     private companion object {
         const val BONUS = 0.25
+    }
+}
+
+/** Dodgy Deals' double Thieving experience, from pickpockets and stalls alike. */
+class DodgyDealsXp : XpMod {
+    override fun Player.modifier(stat: StatType): Double =
+        if (stat.id == stats.thieving.id && hasRelic(Relic.DodgyDeals)) BONUS else 0.0
+
+    private companion object {
+        const val BONUS = 1.0
     }
 }
 

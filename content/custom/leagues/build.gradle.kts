@@ -8,6 +8,8 @@ dependencies {
     implementation(projects.api.db)
     implementation(projects.api.pluginCommons)
     implementation(projects.api.registry)
+    // Clue Compass opens keys through the chest's opener, and both relics hand out its keys.
+    implementation(projects.content.custom.clueChest)
     implementation(projects.content.interfaces.levelup)
     // The skills whose events the task script listens on.
     implementation(projects.content.skills.agility)
@@ -26,6 +28,10 @@ dependencies {
     implementation(projects.content.skills.thieving)
     implementation(projects.content.skills.woodcutting)
     integrationImplementation(projects.api.hitPlugin)
+    integrationImplementation(projects.api.registry)
+    integrationImplementation(projects.content.custom.clueChest)
+    integrationImplementation(projects.content.custom.dropTables)
+    integrationImplementation(projects.content.skills.thieving)
     integrationImplementation(projects.content.interfaces.levelup)
     integrationImplementation(projects.content.skills.mining)
     integrationImplementation(projects.content.skills.smithing)
