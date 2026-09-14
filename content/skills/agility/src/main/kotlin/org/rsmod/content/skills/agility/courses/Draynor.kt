@@ -1,9 +1,9 @@
 package org.rsmod.content.skills.agility.courses
 
 import org.rsmod.api.config.constants
+import org.rsmod.content.skills.agility.AgilityCourse
 import org.rsmod.content.skills.agility.Movement
 import org.rsmod.content.skills.agility.Obstacle
-import org.rsmod.content.skills.agility.RooftopCourse
 import org.rsmod.content.skills.agility.configs.AgilityLocs
 import org.rsmod.content.skills.agility.configs.AgilitySeqs
 import org.rsmod.map.CoordGrid
@@ -30,8 +30,8 @@ import org.rsmod.map.CoordGrid
  * 4 for the climb down and 75 for the lap - 120 per lap either way.
  */
 public object Draynor {
-    val course: RooftopCourse =
-        RooftopCourse(
+    val course: AgilityCourse =
+        AgilityCourse(
             name = "Draynor Village",
             level = 1,
             lapXp = 75.0,

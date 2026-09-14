@@ -45,4 +45,22 @@ public object AgilitySeqs : SeqReferences() {
 
     /** Grabbing a banner / drying line. */
     val grab = find("human_pickupfloor")
+
+    /** Walking a log or a balancing rope on the ground courses. */
+    val log_balance = find("human_walk_logbalance")
+
+    /** Climbing an obstacle net. */
+    val net = find("human_largenet")
+
+    /** Squeezing through an obstacle pipe. */
+    val pipe = find("human_pipesqueeze")
+
+    /** The Wilderness stepping stones. */
+    val stepping_stone = find("human_steppingstonejump")
+
+    /** Barbarian Outpost's balancing ledge, walked sideways. */
+    val ledge = find("human_ledge_walk_left")
+
+    /** Falador's hand holds. The only handhold seqs in the cache are the Brimhaven arena's. */
+    val handholds = find("agilityarena_handholds_middle")
 }

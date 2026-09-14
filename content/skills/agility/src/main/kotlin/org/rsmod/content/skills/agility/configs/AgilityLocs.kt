@@ -3,13 +3,14 @@ package org.rsmod.content.skills.agility.configs
 import org.rsmod.api.type.refs.loc.LocReferences
 
 /**
- * Every rooftop obstacle, exactly as the rev 233 cache names them.
+ * Every course obstacle, exactly as the rev 233 cache names them.
  *
- * All nine courses use the `rooftops_<course>_<obstacle>` convention and **every** obstacle carries
+ * The nine rooftops use the `rooftops_<course>_<obstacle>` convention; the ground courses are a
+ * grab-bag of `obstical_*` (sic), `*_log_balance1` and one-off names. **Every** obstacle carries
  * its interaction on `op1` - verified by dumping `LocTypeDecoder.decodeAll` straight from
  * `.data/cache/game` (see `tools/agility/`). The op *text* varies wildly ("Climb", "Cross",
  * "Balance", "Jump-up", "Teeth-grip", "Swing-across", "Vault", "Grab", "Walk-on"...) but the slot
- * never does, which is why [org.rsmod.content.skills.agility.scripts.RooftopCourseScript] can bind
+ * never does, which is why [org.rsmod.content.skills.agility.scripts.AgilityCourseScript] can bind
  * the whole game with a single `onOpLoc1`.
  *
  * Locs deliberately absent: `rooftops_canifis_tightrope(_end)`, `rooftops_ardy_leapdown`,
@@ -111,4 +112,37 @@ public object AgilityLocs : LocReferences() {
     val ardy_jump_3 = find("rooftops_ardy_jump_3")
     val ardy_wallcrossing = find("rooftops_ardy_wallcrossing")
     val ardy_jump_4 = find("rooftops_ardy_jump_4")
+
+    // Gnome Stronghold. The pipes are two loc types, one per parallel pipe, each placed at both
+    // ends; the tree down has two climbable trunks.
+    val gnome_log = find("gnome_log_balance1")
+    val gnome_net_1 = find("obstical_net2")
+    val gnome_branch_up = find("climbing_branch")
+    val gnome_rope = find("balancing_rope")
+    val gnome_tree_down = find("climbing_tree")
+    val gnome_tree_down_2 = find("climbing_tree2")
+    val gnome_net_2 = find("obstical_net3")
+    val gnome_pipe_1 = find("obstical_pipe3_1")
+    val gnome_pipe_2 = find("obstical_pipe3_2")
+
+    // Barbarian Outpost. The crumbling wall is one loc placed three times; the entrance pipe is
+    // the level gate into the outpost and not part of the lap.
+    val barbarian_pipe = find("agility_obstical_pipe_barbarian")
+    val barbarian_ropeswing = find("obstical_ropeswing1")
+    val barbarian_log = find("barbarian_log_balance1")
+    val barbarian_net = find("agility_obstical_net_barbarian")
+    val barbarian_ledge = find("balancing_ledge1")
+    val barbarian_ladder_down = find("barbarian_laddertop_norim")
+    val barbarian_wall = find("castlecrumbly1")
+
+    // Wilderness. Since the 2024 rework the stepping stones are one loc and one click; the rocks
+    // are one loc across three tiles. The gates are plain wall locs with no open variant.
+    val wilderness_gate_outer = find("balancegate52a")
+    val wilderness_gate_left = find("balancegate52b_left")
+    val wilderness_gate_right = find("balancegate52b_right")
+    val wilderness_pipe = find("obstical_pipe2")
+    val wilderness_ropeswing = find("obstical_ropeswing2")
+    val wilderness_stones = find("steppingstone1")
+    val wilderness_log = find("wilderness_log_balance1")
+    val wilderness_rocks = find("wildclimbingrock")
 }

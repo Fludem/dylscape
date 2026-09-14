@@ -271,7 +271,7 @@ object LeagueTasks {
         gather(
             Easy,
             "Complete a Rooftop Lap",
-            "Complete a lap of any rooftop agility course.",
+            "Complete a lap of any agility course.",
             GatherKind.AgilityLap,
             1,
         )
@@ -537,7 +537,7 @@ object LeagueTasks {
         gather(
             Medium,
             "Complete 25 Rooftop Laps",
-            "Complete 25 laps of rooftop agility courses.",
+            "Complete 25 laps of agility courses.",
             GatherKind.AgilityLap,
             25,
         )
@@ -742,7 +742,7 @@ object LeagueTasks {
         gather(
             Hard,
             "Complete 100 Rooftop Laps",
-            "Complete 100 laps of rooftop agility courses.",
+            "Complete 100 laps of agility courses.",
             GatherKind.AgilityLap,
             100,
         )
@@ -872,7 +872,7 @@ object LeagueTasks {
         gather(
             Elite,
             "Complete 250 Rooftop Laps",
-            "Complete 250 laps of rooftop agility courses.",
+            "Complete 250 laps of agility courses.",
             GatherKind.AgilityLap,
             250,
         )
@@ -940,7 +940,7 @@ object LeagueTasks {
         gather(
             Master,
             "Complete 500 Rooftop Laps",
-            "Complete 500 laps of rooftop agility courses.",
+            "Complete 500 laps of agility courses.",
             GatherKind.AgilityLap,
             500,
         )

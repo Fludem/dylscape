@@ -43,7 +43,9 @@ standalone decode does not merge the sym files, so `internalName` comes back nul
   it finished early.
 - **`DumpLocPlacements` reports raw placement levels.** The game shifts a loc down one level when
   the tile above carries `LINK_BELOW` (`GameMapDecoder.putLocs`), so a loc dumped at level 3 can be
-  at level 2 in game. Al Kharid's `rooftops_kharid_tightrope_end_1` is one of these. Check
+  at level 2 in game. Al Kharid's `rooftops_kharid_tightrope_end_1` is one of these, and so is
+  **every Canifis rooftop obstacle** - placed at level 3, played on level 2 - and the three
+  ground-course logs and the Wilderness stepping stones, placed at 1 and walked on 0. Check
   `DumpMapTiles`' settings bit 2 before trusting a level near a bridge or a stepped roof.
 - **A blocked tile is not the same as an unreachable one.** Tightrope ends sit on blocked terrain -
   the rope spans a void and the loc provides the surface - so a landing tile has to be the platform

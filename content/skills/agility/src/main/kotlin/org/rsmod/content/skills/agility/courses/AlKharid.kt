@@ -1,9 +1,9 @@
 package org.rsmod.content.skills.agility.courses
 
 import org.rsmod.api.config.constants
+import org.rsmod.content.skills.agility.AgilityCourse
 import org.rsmod.content.skills.agility.Movement
 import org.rsmod.content.skills.agility.Obstacle
-import org.rsmod.content.skills.agility.RooftopCourse
 import org.rsmod.content.skills.agility.configs.AgilityLocs
 import org.rsmod.content.skills.agility.configs.AgilitySeqs
 import org.rsmod.map.CoordGrid
@@ -27,8 +27,8 @@ import org.rsmod.map.CoordGrid
  * courses", and its eight obstacles already sum to the full 216.
  */
 public object AlKharid {
-    val course: RooftopCourse =
-        RooftopCourse(
+    val course: AgilityCourse =
+        AgilityCourse(
             name = "Al Kharid",
             level = 10,
             lapXp = 0.0,

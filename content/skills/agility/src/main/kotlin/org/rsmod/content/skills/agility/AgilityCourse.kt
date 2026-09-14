@@ -3,7 +3,8 @@ package org.rsmod.content.skills.agility
 import org.rsmod.map.CoordGrid
 
 /**
- * A rooftop course: an ordered chain of obstacles plus the bonus for finishing the lap.
+ * An Agility course: an ordered chain of obstacles plus the bonus for finishing the lap. Rooftops
+ * and the ground courses (Gnome Stronghold, Barbarian Outpost, Wilderness) are the same shape.
  *
  * Obstacles must be cleared **in order**. The engine does not enforce that geometrically - a player
  * who telejumps onto the middle of a roof could click obstacle five first - so
@@ -27,31 +28,40 @@ import org.rsmod.map.CoordGrid
  * @param markTiles the tiles a Mark of grace may spawn on. Must all be reachable during a lap, and
  *   there must be enough of them to give every mark of a lap its own tile.
  * @param obstacles the chain, in the order a lap runs them.
+ * @param lapStrengthXp Strength experience paid with the lap bonus. Barbarian Outpost is the only
+ *   course that pays any.
+ * @param entrances obstacles that belong to the course - same level requirement, same script - but
+ *   are not part of the lap: Barbarian Outpost's entrance pipe. They never start, advance or break
+ *   a lap.
  */
-public class RooftopCourse(
+public class AgilityCourse(
     val name: String,
     val level: Int,
     val lapXp: Double,
     val markChance: Int,
     val markTiles: List<CoordGrid>,
     val obstacles: List<Obstacle>,
+    val lapStrengthXp: Double = 0.0,
+    val entrances: List<Obstacle> = emptyList(),
 ) {
     init {
         require(level in 1..99) { "$name: level must be in 1..99, was $level" }
         require(lapXp >= 0.0) { "$name: lap xp cannot be negative, was $lapXp" }
+        require(lapStrengthXp >= 0.0) { "$name: lap strength xp cannot be negative" }
         require(markChance >= 1) { "$name: mark chance must be at least 1, was $markChance" }
         require(obstacles.size >= 2) { "$name: a course needs at least two obstacles" }
         require(markTiles.size > MARKS_PER_LAP) {
             "$name: needs more than $MARKS_PER_LAP mark tiles, has ${markTiles.size}"
         }
 
-        val duplicate = obstacles.groupBy { it.loc.id }.filterValues { it.size > 1 }.keys
+        val ids = (obstacles + entrances).flatMap { it.locs }.map { it.id }
+        val duplicate = ids.groupBy { it }.filterValues { it.size > 1 }.keys
         require(duplicate.isEmpty()) { "$name: obstacle loc used twice: $duplicate" }
     }
 
     /** Total experience for one clean lap, including the bonus. */
     val lapTotalXp: Double
-        get() = obstacles.sumOf { it.xp } + lapXp
+        get() = obstacles.sumOf { it.xp * it.repeats } + lapXp
 
     val start: Obstacle
         get() = obstacles.first()

@@ -1,9 +1,9 @@
 package org.rsmod.content.skills.agility.courses
 
 import org.rsmod.api.config.constants
+import org.rsmod.content.skills.agility.AgilityCourse
 import org.rsmod.content.skills.agility.Movement
 import org.rsmod.content.skills.agility.Obstacle
-import org.rsmod.content.skills.agility.RooftopCourse
 import org.rsmod.content.skills.agility.configs.AgilityLocs
 import org.rsmod.content.skills.agility.configs.AgilitySeqs
 import org.rsmod.map.CoordGrid
@@ -23,8 +23,8 @@ import org.rsmod.map.CoordGrid
  * the lap, for the published 570.
  */
 public object SeersVillage {
-    val course: RooftopCourse =
-        RooftopCourse(
+    val course: AgilityCourse =
+        AgilityCourse(
             name = "Seers' Village",
             level = 60,
             lapXp = 390.0,
